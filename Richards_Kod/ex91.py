@@ -1,12 +1,7 @@
 import numpy as np
-from numpy import arctan2 as atan2, sin, cos
+from numpy import sin, cos
 import matplotlib.pyplot as plt
-from IPython import display
-from scipy.constants import Boltzmann as kB
-from tkinter import *
-from tkinter import ttk
-from PIL import ImageGrab
-import time
+
 
 n=1
 dt=0.01
