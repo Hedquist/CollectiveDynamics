@@ -16,13 +16,13 @@ tk.attributes('-topmost', 0)
 canvas.place(x=res / 20, y=res / 20, height=res, width=res)
 ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
-N = 50
-l = 100
-R = 4
-Rf = 10
-v = 2
-dt = 1
-eta = 0.1
+N = 50          #antal fiskar
+l = 100         #storlek på ruta
+R = 4           #Radie av cirkel
+Rf = 10         #interraktionsradie
+v = 2           #hastighet fiskar
+dt = 1          #storlek tidssteg
+eta = 0.1       #brus i vinkel
 
 x = np.random.rand(N)*2*l - l    # x coordinates
 y = np.random.rand(N)*2*l - l    # y coordinates
@@ -132,7 +132,6 @@ for t in range(4000):
 
 
 
-    #sharkphi = np.arctan2(ydiff[yIndex] , xdiff[xIndex])
     for j in range(len(shark)):
         canvas.coords(shark[j],
                       (r_shark[j, 0] - R + l) * res / l / 2,
