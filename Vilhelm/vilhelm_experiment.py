@@ -19,14 +19,14 @@ ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B
 N = 50  # antal fiskar
 l = 100  # storlek på ruta
 R = 4  # Radie av cirkel
-Rf = 10  # interraktionsradie
+Rf = 25  # interraktionsradie
 v = 1  # maxhastighet fiskar
 dt = 1  # storlek tidssteg
-eta = 0  # brus i vinkel
-m = 0.5  # massa fiskar
+eta = 0.001     # brus i vinkel
+m = 0.95  # massa fiskar
 
-v_shark = 0.9  # maxhastighet haj
-m_shark = 0.95  # massa haj
+v_shark = 1.25  # maxhastighet haj
+m_shark = 0.985  # massa haj
 
 x = np.random.rand(N) * 2 * l - l  # x coordinates
 y = np.random.rand(N) * 2 * l - l  # y coordinates
@@ -76,12 +76,12 @@ def mass_turn(desired_phi, current_phi, mass):
     if relative_phi == 0:
         return desired_phi      # if desired angle is equal to current angle, do nothing
     elif relative_phi > 0:
-        calc = relative_phi - (np.pi - (np.pi * mass))  # mass of 0 means you can turn pi radians per tick,
-        new_phi = np.max(calc, 0)                       # mass of 1 means no turning
+        calc = current_phi - (np.pi - (np.pi * mass))   # mass of 0 means you can turn pi radians per tick,
+        new_phi = np.maximum(calc, desired_phi)            # mass of 1 means no turning
     else:
-        calc = relative_phi + (np.pi - (np.pi * mass))
-        new_phi = np.minimum(calc, 0)
-    return new_phi + desired_phi    # add value that was removed earlier
+        calc = current_phi + (np.pi - (np.pi * mass))
+        new_phi = np.minimum(calc, desired_phi)
+    return new_phi
 
 
 def update_orientation(phi, set_phi, mass): # uses mass_turn to update phi array according to set_phi
