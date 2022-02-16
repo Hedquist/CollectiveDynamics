@@ -23,7 +23,7 @@ fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 time_step = 1  # Storlek tidssteg
-simulation_iterations = 100  # Antalet iterationer simulationen kör
+simulation_iterations = 4000  # Antalet iterationer simulationen kör
 fish_noise = 0.1  # Brus i vinkel
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
