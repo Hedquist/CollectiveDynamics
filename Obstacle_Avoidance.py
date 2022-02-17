@@ -39,6 +39,15 @@ x = np.random.rand(N) * 2 * l - l  # x coordinates # Generate numbers in interva
 y = np.random.rand(N) * 2 * l - l  # y coordinates
 phi = np.random.rand(N) * 2 * np.pi  # orientations
 
+# Obstacles parameters
+R_obstacle = 5
+x_circular_obstacles = [0.5*2*l-l, 0.5*2*l-l]
+y_circular_obstacles = [0.75*2*l-l, 0.25*2*l-l]
+
+width_rectangular = 10
+height_rectangular = 10
+x_rectangular_obstacles = [0.25*2*l-l, 0.75*2*l-l]
+y_rectuangular_obstacles = [0.5*2*l-l, 0.5*2*l-l]
 
 particles = []
 listR_f = []
@@ -68,6 +77,26 @@ for j in range(N):
                                       (y[j] + R_interaction + l) * res / l / 2,
                                       outline=ccolor[5])) # x0,y0 - x1,y1
     list_aheadarrows.append((x[j]+R_interaction*np.cos(phi[j]),y[j] + R_interaction*np.sin(phi[j])))
+
+def draw_circular_obstacles(x,y,R_obstacle):
+    list_ciruclar_obstacles.append(canvas.create_oval((x - R_obstacle + l) * res / l / 2,
+                                                      (y - R_obstacle + l) * res / l / 2,
+                                                      (x + R_obstacle + l) * res / l / 2,
+                                                      (y + R_obstacle + l) * res / l / 2,
+                                                      outline=ccolor[5], fill=ccolor[3]))  # x0,y0 - x1,y1))
+
+def draw_rectangular_obstacles(x,y,width, height):
+    list_rectangular_obstacles.append(canvas.create_rectangle((x  + l) * res / l / 2,
+                                          (y  + l) * res / l / 2,
+                                          (x + width + l) * res / l / 2,
+                                          (y + height+ l) * res / l / 2,
+                                      outline=ccolor[5],fill=ccolor[3])) # x0,y0 - x1,y1))))
+
+for j in range(2):
+    draw_circular_obstacles(x_circular_obstacles[j],y_circular_obstacles[j],R_obstacle)
+    draw_rectangular_obstacles(x_rectangular_obstacles[j],y_rectuangular_obstacles[j],width_rectangular,height_rectangular)
+
+
 
 
 def wall_avoidance_angle(list_aheadarrows):
