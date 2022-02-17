@@ -43,6 +43,8 @@ phi = np.random.rand(N) * 2 * np.pi  # orientations
 particles = []
 listR_f = []
 list_aheadarrows=[]
+list_ciruclar_obstacles=[]
+list_rectangular_obstacles=[]
 
 # Parameters of triangle
 c = 1.5*R # Length of triangle
@@ -68,6 +70,40 @@ for j in range(N):
     list_aheadarrows.append((x[j]+R_interaction*np.cos(phi[j]),y[j] + R_interaction*np.sin(phi[j])))
 
 
+def wall_avoidance_angle(list_aheadarrows):
+    if (list_aheadarrows[0] > l):
+        distance = x[j] - l
+        force = 1 / (distance ** 2 + 1)
+        torque = force * R_interaction
+        angular_velocity = 2 * torque / I
+        cross_product = np.cross([np.cos(phi[j]), np.sin(phi[j])], [-1, 0])
+        angle = angular_velocity * dt * np.sign(cross_product)
+    elif (list_aheadarrows[0] < -l):
+        distance = x[j] + l
+        force = 1 / (distance ** 2 + 1)
+        torque = force * R_interaction
+        angular_velocity = 2 * torque / I
+        cross_product = np.cross([cos(phi[j]), np.sin(phi[j])], [1, 0])
+        angle = angular_velocity * dt * np.sign(cross_product)
+    elif (list_aheadarrows[1] > l):
+        distance = y[j] - l
+        force = 1 / (distance ** 2 + 1)
+        torque = force * R_interaction
+        angular_velocity = 2 * torque / I
+        cross_product = np.cross([cos(phi[j]), np.sin(phi[j])], [0, -1])
+        angle = angular_velocity * dt * np.sign(cross_product)
+    elif (list_aheadarrows[1] < -l):
+        distance = y[j] + l
+        force = 1 / (distance ** 2 + 1)
+        torque = force * R_interaction
+        angular_velocity = 2 * torque / I
+        cross_product = np.cross([cos(phi[j]), np.sin(phi[j])], [0, 1])
+        angle = angular_velocity * dt * np.sign(cross_product)
+    else:
+        angle = 0
+    return angle
+
+
 for i in range(T):
 
     x = (x + V * cos(phi) * dt )    # Update x coordinates
@@ -76,39 +112,7 @@ for i in range(T):
 
     for j in range(N):
         list_aheadarrows[j] = ((x[j] + R_interaction * np.cos(phi[j]), y[j] + R_interaction * np.sin(phi[j])))
-        distance=0
-        if (list_aheadarrows[j][0] > l):
-            distance = x[j]  - l
-            force = 1 / (distance ** 2 + 1)
-            torque = force * R_interaction
-            angular_velocity = 2 * torque / I
-            cross_product = np.cross([np.cos(phi[j]),np.sin(phi[j])],[-1,0])
-            angle = angular_velocity * dt*np.sign(cross_product)
-        elif (list_aheadarrows[j][0] < -l):
-            distance = x[j] + l
-            force = 1 / (distance ** 2 + 1)
-            torque = force * R_interaction
-            angular_velocity = 2 * torque / I
-            cross_product = np.cross([cos(phi[j]),np.sin(phi[j])],[1,0])
-            angle = angular_velocity * dt*np.sign(cross_product)
-        elif (list_aheadarrows[j][1]  > l):
-            distance = y[j]  - l
-            force = 1 / (distance ** 2 + 1)
-            torque = force * R_interaction
-            angular_velocity = 2 * torque / I
-            cross_product = np.cross([cos(phi[j]), np.sin(phi[j])], [0, -1])
-            angle = angular_velocity * dt * np.sign(cross_product)
-        elif (list_aheadarrows[j][1] < -l):
-            distance = y[j]  + l
-            force = 1 / (distance ** 2 + 1)
-            torque = force * R_interaction
-            angular_velocity = 2 * torque / I
-            cross_product = np.cross([cos(phi[j]), np.sin(phi[j])], [0, 1])
-            angle = angular_velocity * dt * np.sign(cross_product)
-        else:
-            angle=0
-
-
+        angle = wall_avoidance_angle(list_aheadarrows[j])
         distances = np.sqrt((x - x[j]) ** 2 + (y - y[j]) ** 2)  # Calculate distances array to the particle
         interact = distances < R_interaction  # Create interaction indices, List of booleans
         phi[j] = np.angle(np.sum(np.exp(phi[interact] * 1j)))  + angle + eta * np.random.randn()  # Update orientations
