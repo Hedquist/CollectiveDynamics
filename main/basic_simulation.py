@@ -11,10 +11,10 @@ tk = Tk()
 tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3)))
 tk.configure(background='white')
 
-canvas = Canvas(tk, bd=2, bg = 'white')  # Generate animation window
+canvas = Canvas(tk, bd=2, bg='white')  # Generate animation window
 tk.attributes('-topmost', 0)
 canvas.place(x=res / 20, y=res / 20, height=res, width=res)
-ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F','#FFFFFF']
+ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
 
 # Variabler
 fish_count = 50  # Antal fiskar
@@ -51,7 +51,8 @@ shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla h
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
-#print("Start värden" + str(fish_coords))
+
+# print("Start värden" + str(fish_coords))
 
 def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
@@ -98,12 +99,13 @@ def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
     new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
     return new_fish_coords
 
-    #print("Fiskens: " + str(fish_coords))
+    # print("Fiskens: " + str(fish_coords))
+
 
 def murder_fish_orientations(dead_fish_index):
-
     new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
     return new_fish_orientations
+
 
 for j in range(shark_count):  # Skapar cirklar för hajar
     shark_canvas_graphics.append(
@@ -141,8 +143,6 @@ for t in range(simulation_iterations):
 
     # print(closest_fish)
     # print(shark_coords)
-
-
 
     for j in range(shark_count):
         # Updating animation coordinates haj
@@ -190,24 +190,22 @@ for t in range(simulation_iterations):
     clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
 
     # Kollar om närmaste fisk är inom murder radien
-    if len(fish_coords) > 4: # <- den if-satsen är temporärt för att stoppa crash vid få fiskar
+    if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
         if calculate_distance(shark_coords, fish_coords[closest_fish])[
             0] < murder_radius:
-            last_index = len(fish_coords) - 1
-            #print(calculate_distance(shark_coords, fish_coords[closest_fish])[0])
-            canvas.itemconfig(fish_canvas_graphics[last_index], fill='black')
-            canvas.itemconfig(fish_canvas_graphics[last_index], outline='black')
-            canvas.coords(fish_canvas_graphics[last_index],
-                          (fish_coords[last_index, 0] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                          (fish_coords[last_index, 1] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                          (fish_coords[last_index, 0] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+            last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
+
+            canvas.coords(fish_canvas_graphics[last_index],  # Flyttar sistan indexet till utanför canvasen. Fulhack
+                          (fish_coords[
+                               last_index, 0] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+                          (fish_coords[
+                               last_index, 1] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+                          (fish_coords[
+                               last_index, 0] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
                           (fish_coords[
                                last_index, 1] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2, )
-            fish_coords = murder_fish_coords(closest_fish)
-            fish_orientations = murder_fish_orientations(closest_fish)
-
-
-
+            fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
+            fish_orientations = murder_fish_orientations(closest_fish)  # Tar bort index i orientations
 
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
     canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
