@@ -52,8 +52,6 @@ fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
 
-# print("Start värden" + str(fish_coords))
-
 def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
             2 * canvas_length) - canvas_length
@@ -95,11 +93,8 @@ def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Clu
 
 
 def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
-
     new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
     return new_fish_coords
-
-    # print("Fiskens: " + str(fish_coords))
 
 
 def murder_fish_orientations(dead_fish_index):
