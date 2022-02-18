@@ -11,10 +11,10 @@ tk = Tk()
 tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3)))
 tk.configure(background='white')
 
-canvas = Canvas(tk, bd=2)  # Generate animation window
+canvas = Canvas(tk, bd=2, bg = 'white')  # Generate animation window
 tk.attributes('-topmost', 0)
 canvas.place(x=res / 20, y=res / 20, height=res, width=res)
-ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
+ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F','#FFFFFF']
 
 # Variabler
 fish_count = 50  # Antal fiskar
@@ -25,10 +25,10 @@ fish_speed = 2  # Hastighet fiskar
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
 fish_noise = 0.1  # Brus i vinkel
-murder_radius = 10  # Hajen äter fiskar inom denna radie
+murder_radius = 5  # Hajen äter fiskar inom denna radie
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
-shark_speed = 4  # Hajens fart
+shark_speed = 3  # Hajens fart
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -189,12 +189,25 @@ for t in range(simulation_iterations):
     # Beräknar clustering coefficent
     clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
 
-    if calculate_distance(shark_coords, fish_coords[closest_fish])[
-        0] < murder_radius:  # Kollar om närmaste fisk är inom murder radien
+    # Kollar om närmaste fisk är inom murder radien
+    if len(fish_coords) > 4: # <- den if-satsen är temporärt för att stoppa crash vid få fiskar
+        if calculate_distance(shark_coords, fish_coords[closest_fish])[
+            0] < murder_radius:
+            last_index = len(fish_coords) - 1
+            #print(calculate_distance(shark_coords, fish_coords[closest_fish])[0])
+            canvas.itemconfig(fish_canvas_graphics[last_index], fill='black')
+            canvas.itemconfig(fish_canvas_graphics[last_index], outline='black')
+            canvas.coords(fish_canvas_graphics[last_index],
+                          (fish_coords[last_index, 0] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+                          (fish_coords[last_index, 1] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+                          (fish_coords[last_index, 0] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+                          (fish_coords[
+                               last_index, 1] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2, )
+            fish_coords = murder_fish_coords(closest_fish)
+            fish_orientations = murder_fish_orientations(closest_fish)
 
-        #print(calculate_distance(shark_coords, fish_coords[closest_fish])[0])
-        fish_coords = murder_fish_coords(closest_fish)
-        fish_orientations = murder_fish_orientations(closest_fish)
+
+
 
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
     canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
