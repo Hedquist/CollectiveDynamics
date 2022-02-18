@@ -123,7 +123,7 @@ for t in range(simulation_iterations):
     shark_fish_distances = calculate_distance(fish_coords, shark_coords[
         0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
-    closest_fish = np.where(shark_fish_distances == np.amin(shark_fish_distances))[0][0]  # Index av fisk närmst haj
+    closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
 
     for j in range(shark_count):
         # Updating animation coordinates haj
