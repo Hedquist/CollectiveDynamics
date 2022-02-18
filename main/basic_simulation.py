@@ -25,6 +25,7 @@ fish_speed = 2  # Hastighet fiskar
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
 fish_noise = 0.1  # Brus i vinkel
+murder_radius = 10 # Hajen äter fiskar inom denna radie
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
 shark_speed = 1.8  # Hajens fart
@@ -90,6 +91,9 @@ def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Clu
 
     return coeff / count
 
+def murder_fish(fish_coords): # Tar bort fisk som blivit uppäten
+
+    print("Fiskens: " + str(fish_coords))
 
 for j in range(shark_count):  # Skapar cirklar för hajar
     shark_canvas_graphics.append(
@@ -124,6 +128,15 @@ for t in range(simulation_iterations):
         0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
     closest_fish = np.where(shark_fish_distances == np.amin(shark_fish_distances))[0][0]  # Index av fisk närmst haj
+
+    #print(closest_fish)
+    #print(shark_coords)
+
+    if calculate_distance(shark_coords, fish_coords[closest_fish])[0] < murder_radius: # Kollar om närmaste fisk är inom kill radien
+
+        print(calculate_distance(shark_coords, fish_coords[closest_fish])[0])
+        murder_fish(closest_fish)
+
 
     for j in range(shark_count):
         # Updating animation coordinates haj
