@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull
 import time
 from shapely.geometry import Polygon
+import cell_lists
 
 res = 500  # Resolution of the animation
 tk = Tk()

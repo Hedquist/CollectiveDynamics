@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 .idea/workspace.xml
 *.npy
-*.xml
-*.iml
+
+.idea/
