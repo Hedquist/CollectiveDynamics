@@ -29,9 +29,9 @@ fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
 # Haj
-shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
-shark_speed = 1.8  # Hajens fart
-murder_radius = 5  # Hajen äter fiskar inom denna radie
+shark_count = 2  # Antal hajar (kan bara vara 1 just nu...)
+shark_speed = 1  # Hajens fart
+murder_radius = 2  # Hajen äter fiskar inom denna radie
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -48,7 +48,9 @@ else:
     fish_orientations = np.load(fish_orientations_file)  # Array med alla fiskars riktning
 
 # Startkoordinater hajar
-shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
+shark_x = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # shark x coordinates
+shark_y = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # shark y coordinates
+shark_coords = np.column_stack((shark_x, shark_y))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
@@ -137,10 +139,13 @@ for t in range(simulation_iterations):
 
     fish_orientations_old = np.copy(fish_orientations) # Spara gamla orientations för Vicsek
 
-    shark_fish_distances = calculate_distance(fish_coords, shark_coords[
-        0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+    shark_fish_distances = np.zeros((shark_count,len(fish_coords)))
+    for j in range(shark_count):
+        shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
-    closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
+    closest_fish = np.zeros(shark_count, dtype=int)
+    for j in range(shark_count):
+        closest_fish[j] = np.argmin(shark_fish_distances[j,:])  # Index av fisk närmst haj
 
     for j in range(shark_count):
         # Updating animation coordinates haj
@@ -160,7 +165,7 @@ for t in range(simulation_iterations):
                       (fish_coords[
                            j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
 
-        if j == closest_fish:
+        if j in closest_fish:
             canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
         else:
             canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
@@ -170,15 +175,17 @@ for t in range(simulation_iterations):
 
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
 
-        if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
-            fish_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
-        else:  # Annars Vicsek-modellen
-            fish_orientations[j] = np.angle(
-                np.sum(np.exp(fish_orientations_old[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
-                -1 / 2, 1 / 2)
+        for i in range(shark_count):
+            if shark_fish_distances[i, j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
+                fish_orientations[j] = get_direction(shark_coords[i], fish_coords[j])
+            else:  # Annars Vicsek-modellen
+                fish_orientations[j] = np.angle(
+                    np.sum(np.exp(fish_orientations_old[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
+                    -1 / 2, 1 / 2)
 
         #   Shark direction härifrån
-        shark_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
+        for i in range(shark_count):
+            shark_orientations[i] = get_direction(shark_coords[i], fish_coords[closest_fish[i]])
 
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
@@ -188,22 +195,25 @@ for t in range(simulation_iterations):
     clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
 
     # Kollar om närmaste fisk är inom murder radien
+    x = np.zeros(shark_count) # SÅ här får jag inte göra men tastar bara
+    for j in range(shark_count):
+        x[j] = calculate_distance(np.array([shark_coords[j]]), fish_coords[closest_fish[j]])[0]
     if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
-        if calculate_distance(shark_coords, fish_coords[closest_fish])[
-            0] < murder_radius:
-            last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
+        for j in range(shark_count):
+            if x[j] < murder_radius:
+                last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
 
-            canvas.coords(fish_canvas_graphics[last_index],  # Flyttar sistan indexet till utanför canvasen. Fulhack
-                          (fish_coords[
-                               last_index, 0] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                          (fish_coords[
-                               last_index, 1] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                          (fish_coords[
-                               last_index, 0] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                          (fish_coords[
-                               last_index, 1] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2, )
-            fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
-            fish_orientations = murder_fish_orientations(closest_fish)  # Tar bort index i orientations
+                canvas.coords(fish_canvas_graphics[last_index],  # Flyttar sistan indexet till utanför canvasen. Fulhack
+                              (fish_coords[
+                                   last_index, 0] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+                              (fish_coords[
+                                   last_index, 1] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+                              (fish_coords[
+                                   last_index, 0] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
+                              (fish_coords[
+                                   last_index, 1] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2, )
+                fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
+                fish_orientations = murder_fish_orientations(closest_fish)  # Tar bort index i orientations
 
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
     canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
