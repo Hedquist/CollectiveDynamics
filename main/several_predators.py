@@ -29,18 +29,18 @@ fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
 # Haj
-shark_count = 2  # Antal hajar (kan bara vara 1 just nu...)
-shark_speed = 1  # Hajens fart
+shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
+shark_speed = 3  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
 fish_orientations_file = 'fish_orientations_initial.npy'
 if True:
-    x = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # x coordinates
+    shark_closest_fish_distances = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # x coordinates
     y = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # y coordinates
     fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
-    fish_coords = np.column_stack((x, y))
+    fish_coords = np.column_stack((shark_closest_fish_distances, y))
     np.save(fish_coords_file, fish_coords)
     np.save(fish_orientations_file, fish_orientations)
 else:
@@ -195,23 +195,15 @@ for t in range(simulation_iterations):
     clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
 
     # Kollar om närmaste fisk är inom murder radien
-    x = np.zeros(shark_count) # SÅ här får jag inte göra men tastar bara
+    shark_closest_fish_distances = np.zeros(shark_count) # Avstånd från varje haj till dess närmsta fisk
     for j in range(shark_count):
-        x[j] = calculate_distance(np.array([shark_coords[j]]), fish_coords[closest_fish[j]])[0]
+        shark_closest_fish_distances[j] = calculate_distance(np.array([shark_coords[j]]), fish_coords[closest_fish[j]])[0]
     if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
         for j in range(shark_count):
-            if x[j] < murder_radius:
+            if shark_closest_fish_distances[j] < murder_radius:
                 last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
-
-                canvas.coords(fish_canvas_graphics[last_index],  # Flyttar sistan indexet till utanför canvasen. Fulhack
-                              (fish_coords[
-                                   last_index, 0] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                              (fish_coords[
-                                   last_index, 1] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                              (fish_coords[
-                                   last_index, 0] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                              (fish_coords[
-                                   last_index, 1] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2, )
+                canvas.delete(fish_canvas_graphics[last_index])
+                
                 fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
                 fish_orientations = murder_fish_orientations(closest_fish)  # Tar bort index i orientations
 
