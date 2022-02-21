@@ -32,6 +32,8 @@ fish_noise = 0.1  # Brus i vinkel
 shark_count = 5  # Antal hajar (kan bara vara 1 just nu...)
 shark_speed = 3  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
+fish_eaten = []
+fish_eaten_count = 0
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -218,6 +220,10 @@ for t in range(simulation_iterations):
 
                 fish_coords = murder_fish_coords(closest_fish[j])  # Tar bort index i koordinaterna
                 fish_orientations = murder_fish_orientations(closest_fish[j])  # Tar bort index i orientations
+                fish_eaten_count += 1
+                fish_eaten.append((fish_eaten_count, t * time_step))
+    else:
+        break
 
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
     canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
@@ -226,4 +232,9 @@ for t in range(simulation_iterations):
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame
     time.sleep(0.01)  # Wait between loops
+fish_eaten = np.array(fish_eaten)
+plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])
+plt.xlabel('Tid')
+plt.ylabel('Antal fiskar ätna')
+plt.show()
 tk.mainloop()
