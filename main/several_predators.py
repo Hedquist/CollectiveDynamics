@@ -232,8 +232,8 @@ for t in range(simulation_iterations):
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame
     time.sleep(0.01)  # Wait between loops
-fish_eaten = np.array(fish_eaten)
-plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])
+fish_eaten = np.array(fish_eaten) # Gör om till array för att kunna plotta
+plt.plot(fish_eaten[:, 1], fish_eaten[:, 0]) # Plotta
 plt.xlabel('Tid')
 plt.ylabel('Antal fiskar ätna')
 plt.show()
