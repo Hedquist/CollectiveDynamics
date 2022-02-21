@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull
 import time
 from shapely.geometry import Polygon
-import cell_lists
 
 res = 500  # Resolution of the animation
 tk = Tk()
@@ -30,6 +29,10 @@ fish_noise = 0.1  # Brus i vinkel
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
 shark_speed = 1.8  # Hajens fart
 
+# Skapa matrisen av cellerna för att optimera avståndsberäkningar
+cell_count_length = np.floor(canvas_length * 2 / fish_interaction_radius).astype(int)
+cell_agent_matrix = np.empty((cell_count_length, cell_count_length), dtype=list)
+
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
 fish_orientations_file = 'fish_orientations_initial.npy'
@@ -48,6 +51,16 @@ else:
 shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
+# Dela in fiskarna i vilken cell de är i
+for j in range(fish_count):
+    cell_coords = np.array(np.floor(fish_coords[j, :] / fish_interaction_radius).astype(int) + 10)
+    if not cell_agent_matrix[(cell_coords[0], cell_coords[1])]:
+        cell_agent_matrix[(cell_coords[0], cell_coords[1])] = [j]
+    else:
+        cell_agent_matrix[(cell_coords[0], cell_coords[1])].append(j)
+
+print(cell_agent_matrix[(cell_coords[0], cell_coords[1])])
+
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
@@ -63,7 +76,7 @@ def update_position(coords, speed, orientations):  # Uppdaterar en partikels pos
 def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
     return np.minimum(
         np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
-                    (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
+                (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
         np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
 
 
