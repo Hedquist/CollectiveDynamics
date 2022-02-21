@@ -32,8 +32,8 @@ fish_noise = 0.1  # Brus i vinkel
 shark_count = 5  # Antal hajar (kan bara vara 1 just nu...)
 shark_speed = 3  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
-fish_eaten = []
-fish_eaten_count = 0
+fish_eaten = [] # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
+fish_eaten_count = 0    # Antal fiskar ätna
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -220,8 +220,8 @@ for t in range(simulation_iterations):
 
                 fish_coords = murder_fish_coords(closest_fish[j])  # Tar bort index i koordinaterna
                 fish_orientations = murder_fish_orientations(closest_fish[j])  # Tar bort index i orientations
-                fish_eaten_count += 1
-                fish_eaten.append((fish_eaten_count, t * time_step))
+                fish_eaten_count += 1   # Lägg till en äten fisk
+                fish_eaten.append((fish_eaten_count, t * time_step))    # Spara hur många fiskar som ätits och när
     else:
         break
 
