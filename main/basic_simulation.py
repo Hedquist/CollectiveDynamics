@@ -17,7 +17,7 @@ canvas.place(x=res / 20, y=res / 20, height=res, width=res)
 ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
 # Variabler
-fish_count = 10000  # Antal fiskar
+fish_count = 50  # Antal fiskar
 canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
@@ -152,7 +152,9 @@ for t in range(simulation_iterations):
     shark_fish_distances = calculate_distance(fish_coords, shark_coords[0], adjecent_fish)  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
     if shark_fish_distances.any():
-        closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
+        shortest_dist = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
+        temp_adjacent_fish = np.array(adjecent_fish)
+        closest_fish = temp_adjacent_fish[np.argmin(shark_fish_distances)]
     else:
         closest_fish = -1
 
