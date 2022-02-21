@@ -137,18 +137,15 @@ for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
 
-    fish_orientations_old = np.copy(fish_orientations) # Spara gamla orientations för Vicsek
+    fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
 
     # Bestäm närmsta fisk
-    shark_fish_distances = np.zeros((shark_count,len(fish_coords)))
+    shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
     closest_fish = np.zeros(shark_count, dtype=int)
     for j in range(shark_count):
-        shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+        shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
+            j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
         closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
-
-
-
-
 
     for j in range(shark_count):
         # Updating animation coordinates haj
@@ -183,7 +180,8 @@ for t in range(simulation_iterations):
                 fish_orientations[j] = get_direction(shark_coords[i], fish_coords[j])
             else:  # Annars Vicsek-modellen
                 fish_orientations[j] = np.angle(
-                    np.sum(np.exp(fish_orientations_old[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
+                    np.sum(np.exp(
+                        fish_orientations_old[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                     -1 / 2, 1 / 2)
 
         #   Shark direction härifrån
@@ -198,9 +196,7 @@ for t in range(simulation_iterations):
     clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
 
     # Kollar om närmaste fisk är inom murder radien
-    shark_closest_fish_distances = np.zeros(shark_count) # Avstånd från varje haj till dess närmsta fisk
-
-
+    shark_closest_fish_distances = np.zeros(shark_count)  # Avstånd från varje haj till dess närmsta fisk
 
     # Haj äter fisk
     if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
@@ -208,16 +204,17 @@ for t in range(simulation_iterations):
             # Räkna om vilken fisk som är närmst efter att fiskar ätits
             shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
             closest_fish = np.zeros(shark_count, dtype=int)
-            shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+            shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
+                j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
             closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
             shark_closest_fish_distances[j] = \
-            calculate_distance(np.array([shark_coords[j]]), fish_coords[closest_fish[j]])[0] # Avstånd från haj till närmsta fisk
+                calculate_distance(np.array([shark_coords[j]]), fish_coords[closest_fish[j]])[
+                    0]  # Avstånd från haj till närmsta fisk
 
-
-            if shark_closest_fish_distances[j] < murder_radius: # Allt som händer då en fisk blir äten
+            if shark_closest_fish_distances[j] < murder_radius:  # Allt som händer då en fisk blir äten
                 last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
 
-                canvas.delete(fish_canvas_graphics[last_index]) # Ta bort sista fisk-cirkeln i array
+                canvas.delete(fish_canvas_graphics[last_index])  # Ta bort sista fisk-cirkeln i array
 
                 fish_coords = murder_fish_coords(closest_fish[j])  # Tar bort index i koordinaterna
                 fish_orientations = murder_fish_orientations(closest_fish[j])  # Tar bort index i orientations
