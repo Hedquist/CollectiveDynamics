@@ -14,7 +14,7 @@ tk.configure(background='white')
 canvas = Canvas(tk, bd=2, bg='white')  # Generate animation window
 tk.attributes('-topmost', 0)
 canvas.place(x=res / 20, y=res / 20, height=res, width=res)
-ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
+ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
 
 # Variabler
 canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
@@ -24,18 +24,20 @@ wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
 fish_count = 50  # Antal fiskar
-fish_graphic_radius = 1  # Radie av ritad cirkel
+fish_graphic_radius = 3  # Radie av ritad cirkel
 fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
 # Haj
 shark_count = 2  # Antal hajar
-shark_graphic_radius = 2 # Radie av ritad cirkel för hajar
-shark_speed = 6  # Hajens fart
+shark_graphic_radius = 4 # Radie av ritad cirkel för hajar
+shark_speed = 2.2  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
+
+visuals_on = True
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -181,7 +183,8 @@ for t in range(simulation_iterations):
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[
             j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
 
-        fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
+        # Vilka fiskar är inom en fisks interraktionsradie
+        fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius
 
         closest_shark = np.argmin(shark_fish_distances[:, j])  # Hittar index för närmaste hajen
         if shark_fish_distances[closest_shark, j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
