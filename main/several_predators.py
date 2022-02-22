@@ -20,6 +20,7 @@ ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B
 canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
+wait_time = 0.05 # Väntetiden mellan varje iteration
 
 # Fisk
 fish_count = 50  # Antal fiskar
@@ -29,7 +30,7 @@ fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
 # Haj
-shark_count = 5  # Antal hajar (kan bara vara 1 just nu...)
+shark_count = 2  # Antal hajar
 shark_speed = 3  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
 fish_eaten = [] # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
@@ -231,7 +232,7 @@ for t in range(simulation_iterations):
 
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame
-    time.sleep(0.01)  # Wait between loops
+    time.sleep(wait_time)  # Wait between loops
 fish_eaten = np.array(fish_eaten) # Gör om till array för att kunna plotta
 plt.plot(fish_eaten[:, 1], fish_eaten[:, 0]) # Plotta
 plt.xlabel('Tid')
