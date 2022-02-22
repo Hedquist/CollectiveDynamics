@@ -29,6 +29,8 @@ murder_radius = 5  # Hajen äter fiskar inom denna radie
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
 shark_speed = 3  # Hajens fart
+fish_eaten = [] # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
+fish_eaten_count = 0    # Antal fiskar ätna
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -190,17 +192,13 @@ for t in range(simulation_iterations):
             0] < murder_radius:
             last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
 
-            canvas.coords(fish_canvas_graphics[last_index],  # Flyttar sistan indexet till utanför canvasen. Fulhack
-                          (fish_coords[
-                               last_index, 0] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                          (fish_coords[
-                               last_index, 1] - fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                          (fish_coords[
-                               last_index, 0] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2,
-                          (fish_coords[
-                               last_index, 1] + fish_graphic_radius + canvas_length * 3) * res / canvas_length / 2, )
+            canvas.delete(fish_canvas_graphics[last_index])
             fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
             fish_orientations = murder_fish_orientations(closest_fish)  # Tar bort index i orientations
+            fish_eaten_count += 1  # Lägg till en äten fisk
+            fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
+    else:
+        break
 
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
     canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
@@ -209,4 +207,9 @@ for t in range(simulation_iterations):
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame
     time.sleep(0.01)  # Wait between loops
+fish_eaten = np.array(fish_eaten) # Gör om till array för att kunna plotta
+plt.plot(fish_eaten[:, 1], fish_eaten[:, 0]) # Plotta
+plt.xlabel('Tid')
+plt.ylabel('Antal fiskar ätna')
+plt.show()
 tk.mainloop()
