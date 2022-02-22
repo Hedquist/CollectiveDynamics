@@ -77,6 +77,7 @@ def update_cell_matrix(coords, interaction_radius):
 
 def fish_in_adjacent_cells(matrix, coords, interaction_radius):
     cell_coords = np.floor(coords / interaction_radius).astype(int) + 10
+    print(cell_coords)
     adjacent_agents = []
     for i in range(cell_coords[0]-1, cell_coords[0]+1):
         for j in range(cell_coords[1]-1, cell_coords[1]+1):
@@ -85,8 +86,9 @@ def fish_in_adjacent_cells(matrix, coords, interaction_radius):
     return adjacent_agents
 
 
-def calculate_distance(coords, coord, adjacent_fish):  # Räknar ut avstånd mellan punkterna coords och punkten coord
-    coords = coords[adjacent_fish]
+def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
+    adjacent = fish_in_adjacent_cells(cell_matrix, coord, fish_interaction_radius)
+    coords = coords[adjacent]
     return np.minimum(
         np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
                 (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
@@ -142,18 +144,19 @@ global_alignment_canvas_text = canvas.create_text(100, 20, text=1 / fish_count *
 clustering_coeff_canvas_text = canvas.create_text(100, 40,
                                                   text=calculate_cluster_coeff(fish_coords, fish_interaction_radius,
                                                                                fish_count))
+cell_matrix = update_cell_matrix(fish_coords, fish_interaction_radius)
 
 # Loop för allt som ska ske varje tidssteg i simulationen
 for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
     cell_matrix = update_cell_matrix(fish_coords, fish_interaction_radius)
-    adjecent_fish = fish_in_adjacent_cells(cell_matrix, shark_coords[0], fish_interaction_radius)
-    shark_fish_distances = calculate_distance(fish_coords, shark_coords[0], adjecent_fish)  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+    adjacent_fish = fish_in_adjacent_cells(cell_matrix, shark_coords[0], fish_interaction_radius)
+    shark_fish_distances = calculate_distance(fish_coords, shark_coords[0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
     if shark_fish_distances.any():
         shortest_dist = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
-        temp_adjacent_fish = np.array(adjecent_fish)
+        temp_adjacent_fish = np.array(adjacent_fish)
         closest_fish = temp_adjacent_fish[np.argmin(shark_fish_distances)]
     else:
         closest_fish = -1
@@ -181,20 +184,18 @@ for t in range(simulation_iterations):
         else:
             canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
 
-        adjecent_fish_to_fish = np.array(fish_in_adjacent_cells(cell_matrix, fish_coords[j], fish_interaction_radius))
-        inter_fish_distances = calculate_distance(fish_coords, fish_coords[j], adjecent_fish_to_fish)  # Räknar ut avstånd mellan fisk j och alla andra fiskar
-
-        fish_in_interaction_radius = adjecent_fish_to_fish[inter_fish_distances < fish_interaction_radius]  # Vilka fiskar är inom en fisks interraktionsradie
+        inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
+        adjacent_fish_to_fish = np.array(fish_in_adjacent_cells(cell_matrix, fish_coords[j], fish_interaction_radius))
+        fish_in_interaction_radius = adjacent_fish_to_fish[inter_fish_distances < fish_interaction_radius]  # Vilka fiskar är inom en fisks interraktionsradie
 
         # Om hajen är nära fisken, undvik hajen
-        if j in adjecent_fish and shark_fish_distances[adjecent_fish.index(j)] < fish_interaction_radius:
+        if j in adjacent_fish and shark_fish_distances[adjacent_fish.index(j)] < fish_interaction_radius:
             fish_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
         else:  # Annars Vicsek-modellen
             fish_orientations[j] = np.angle(
                 np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                 -1 / 2, 1 / 2)
 
-        print(fish_orientations[j])
         #   Shark direction härifrån
         shark_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
 
