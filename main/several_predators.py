@@ -20,10 +20,10 @@ ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B
 canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
-wait_time = 0.01  # Väntetiden mellan varje iteration
+wait_time = 0.05  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 50  # Antal fiskar
+fish_count = 1  # Antal fiskar
 fish_graphic_radius = 3  # Radie av ritad cirkel
 fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -31,7 +31,7 @@ fish_noise = 0.1  # Brus i vinkel
 
 # Haj
 shark_count = 2  # Antal hajar
-shark_graphic_radius = 4 # Radie av ritad cirkel för hajar
+shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = 2.2  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
@@ -78,6 +78,13 @@ def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna c
         np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
 
 
+def get_distance(a, b):  # Räknar ut avstånd mellan två punkter
+    return np.minimum(
+        np.sqrt(((a[0]) % (2 * canvas_length) - (b[0]) % (2 * canvas_length)) ** 2 + (
+                (a[1]) % (2 * canvas_length) - (b[1]) % (2 * canvas_length)) ** 2),
+        np.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2))
+
+
 def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i radianer
     if np.sqrt((coord2[0] - coord1[0]) ** 2 + (coord2[1] - coord1[1]) ** 2) < np.sqrt(
             ((coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length)) ** 2 + (
@@ -86,6 +93,36 @@ def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i 
     else:
         return np.arctan2((coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length),
                           (coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length))
+
+
+def get_shark_direction(sharks, target_fish, index):  # Ger riktningen för hajar
+    shark = sharks[index]
+    avoidance = get_shark_avoidance(sharks, target_fish, index)
+    if np.sqrt((target_fish[0] - shark[0]) ** 2 + (target_fish[1] - shark[1]) ** 2) < np.sqrt(
+            ((target_fish[0]) % (2 * canvas_length) - (shark[0]) % (2 * canvas_length)) ** 2 + (
+                    (target_fish[1]) % (2 * canvas_length) - (shark[1]) % (2 * canvas_length)) ** 2):
+
+        return np.arctan2(target_fish[1] - shark[1], target_fish[0] - shark[0]) + avoidance
+    else:
+
+        return np.arctan2((target_fish[1]) % (2 * canvas_length) - (shark[1]) % (2 * canvas_length),
+                          (target_fish[0]) % (2 * canvas_length) - (shark[0]) % (2 * canvas_length)) + avoidance
+
+
+def get_shark_avoidance(sharks_coords, target_fish, index):
+    distance_to_fish = get_distance(sharks_coords[index], target_fish)
+    orientation = get_direction(sharks_coords[index], target_fish)
+    avoidance = 0
+    for k in range(shark_count):
+        if k != index:
+            distance_to_shark = get_distance(sharks_coords[index], sharks_coords[k])
+            angle_to_shark = get_direction(sharks_coords[index], sharks_coords[k])
+            if orientation - angle_to_shark <= 0:
+                avoidance = -1 / distance_to_shark * distance_to_fish
+            else:
+                avoidance = 1 / distance_to_shark * distance_to_fish
+    return avoidance
+
 
 '''
 def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Cluster Coefficient
@@ -102,6 +139,7 @@ def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Clu
 
     return coeff / count
 '''
+
 
 def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
     new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
@@ -140,7 +178,7 @@ clustering_coeff_canvas_text = canvas.create_text(100, 40,
 '''
 # Skapar ett canvas textobjekt för antalet fiskar
 fish_count_canvas_text = canvas.create_text(100, 20,
-                                                  text=len(fish_coords))
+                                            text=len(fish_coords))
 
 # Loop för allt som ska ske varje tidssteg i simulationen
 for t in range(simulation_iterations):
@@ -197,7 +235,7 @@ for t in range(simulation_iterations):
 
         #   Shark direction härifrån
         for i in range(shark_count):
-            shark_orientations[i] = get_direction(shark_coords[i], fish_coords[closest_fish[i]])
+            shark_orientations[i] = get_shark_direction(shark_coords, fish_coords[closest_fish[i]], i)
     '''
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
@@ -210,7 +248,7 @@ for t in range(simulation_iterations):
     shark_closest_fish_distances = np.zeros(shark_count)  # Avstånd från varje haj till dess närmsta fisk
 
     # Haj äter fisk
-    if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
+    if len(fish_coords) > 0:  # <- den if-satsen är för att stoppa crash vid få fiskar
         for j in range(shark_count):
             # Räkna om vilken fisk som är närmst efter att fiskar ätits
             shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
@@ -229,14 +267,14 @@ for t in range(simulation_iterations):
 
                 fish_coords = murder_fish_coords(closest_fish[j])  # Tar bort index i koordinaterna
                 fish_orientations = murder_fish_orientations(closest_fish[j])  # Tar bort index i orientations
-                fish_eaten_count += 1/fish_count * 100  # Lägg till en äten fisk
+                fish_eaten_count += 1 / fish_count * 100  # Lägg till en äten fisk
                 fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
     else:
         break
 
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
-    #canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
-    #canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
+    # canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
+    # canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
     canvas.itemconfig(fish_count_canvas_text, text='Antal Fiskar: {:.3f}'.format(len(fish_coords)))
 
     tk.title('Iteration =' + str(t))
