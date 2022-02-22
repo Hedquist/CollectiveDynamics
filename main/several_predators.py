@@ -119,6 +119,7 @@ def get_shark_avoidance(sharks_coords, target_fish, index):
             angle_to_shark = get_direction(sharks_coords[index], sharks_coords[k]) # Vinkeln från hajen till haj K
 
             if orientation - angle_to_shark <= 0: # Vill att den ska svänga bort från den andra hajen
+                # Osäker på hur mycket de olika faktornerna ska påverka
                 avoidance = -1 / distance_to_shark * distance_to_fish + avoidance
             else:
                 avoidance = 1 / distance_to_shark * distance_to_fish + avoidance
