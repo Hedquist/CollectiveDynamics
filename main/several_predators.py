@@ -32,7 +32,7 @@ fish_noise = 0.1  # Brus i vinkel
 # Haj
 shark_count = 2  # Antal hajar
 shark_graphic_radius = 2 # Radie av ritad cirkel för hajar
-shark_speed = 2.2  # Hajens fart
+shark_speed = 6  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
@@ -136,6 +136,10 @@ clustering_coeff_canvas_text = canvas.create_text(100, 40,
                                                   text=calculate_cluster_coeff(fish_coords, fish_interaction_radius,
                                                                                fish_count))
 
+# Skapar ett canvas textobjekt för antalet fiskar
+fish_count_canvas_text = canvas.create_text(100, 60,
+                                                  text=len(fish_coords))
+
 # Loop för allt som ska ske varje tidssteg i simulationen
 for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
@@ -230,6 +234,7 @@ for t in range(simulation_iterations):
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
     canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
     canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
+    canvas.itemconfig(fish_count_canvas_text, text='Antal Fiskar: {:.3f}'.format(len(fish_coords)))
 
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame
