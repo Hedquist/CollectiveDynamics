@@ -23,7 +23,7 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 500  # Antal fiskar
+fish_count = 50  # Antal fiskar
 fish_graphic_radius = 1  # Radie av ritad cirkel
 fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -226,7 +226,7 @@ for t in range(simulation_iterations):
 
                 fish_coords = murder_fish_coords(closest_fish[j])  # Tar bort index i koordinaterna
                 fish_orientations = murder_fish_orientations(closest_fish[j])  # Tar bort index i orientations
-                fish_eaten_count += 1  # Lägg till en äten fisk
+                fish_eaten_count += 1/fish_count * 100  # Lägg till en äten fisk
                 fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
     else:
         break
@@ -242,6 +242,6 @@ for t in range(simulation_iterations):
 fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
 plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
 plt.xlabel('Tid')
-plt.ylabel('Antal fiskar ätna')
+plt.ylabel('% av fiskar ätna')
 plt.show()
 tk.mainloop()
