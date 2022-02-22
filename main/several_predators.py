@@ -20,18 +20,19 @@ ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B
 canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
-wait_time = 0.05  # Väntetiden mellan varje iteration
+wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 50  # Antal fiskar
-fish_graphic_radius = 4  # Radie av ritad cirkel
-fish_interaction_radius = 10  # Interraktionsradie för fisk
+fish_count = 500  # Antal fiskar
+fish_graphic_radius = 1  # Radie av ritad cirkel
+fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
 # Haj
 shark_count = 2  # Antal hajar
-shark_speed = 3  # Hajens fart
+shark_graphic_radius = 2 # Radie av ritad cirkel för hajar
+shark_speed = 2.2  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
@@ -112,10 +113,10 @@ def murder_fish_orientations(dead_fish_index):
 
 for j in range(shark_count):  # Skapar cirklar för hajar
     shark_canvas_graphics.append(
-        canvas.create_oval((shark_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                           (shark_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                           (shark_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                           (shark_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+        canvas.create_oval((shark_coords[j, 0] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
+                           (shark_coords[j, 1] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
+                           (shark_coords[j, 0] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
+                           (shark_coords[j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
                            outline=ccolor[1], fill=ccolor[1]))
 for j in range(fish_count):  # Skapar cirklar för fiskar
     fish_canvas_graphics.append(
@@ -153,11 +154,11 @@ for t in range(simulation_iterations):
     for j in range(shark_count):
         # Updating animation coordinates haj
         canvas.coords(shark_canvas_graphics[j],
-                      (shark_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                      (shark_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                      (shark_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                      (shark_coords[j, 0] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
+                      (shark_coords[j, 1] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
+                      (shark_coords[j, 0] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
                       (shark_coords[
-                           j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
+                           j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2, )
 
     for j in range(len(fish_coords)):
         # Updating animation coordinates fisk
