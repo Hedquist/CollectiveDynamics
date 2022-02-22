@@ -32,7 +32,7 @@ fish_noise = 0.1  # Brus i vinkel
 # Haj
 shark_count = 2  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
-shark_speed = 2.2  # Hajens fart
+shark_speed = 1.8  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
@@ -110,17 +110,18 @@ def get_shark_direction(sharks, target_fish, index):  # Ger riktningen för haja
 
 
 def get_shark_avoidance(sharks_coords, target_fish, index):
-    distance_to_fish = get_distance(sharks_coords[index], target_fish)
-    orientation = get_direction(sharks_coords[index], target_fish)
+    distance_to_fish = get_distance(sharks_coords[index], target_fish) # Avstånd till target fish
+    orientation = get_direction(sharks_coords[index], target_fish) # Vilkeln till target fish
     avoidance = 0
-    for k in range(shark_count):
+    for k in range(shark_count): # Tanken att det blir något average här mot alla hajar
         if k != index:
-            distance_to_shark = get_distance(sharks_coords[index], sharks_coords[k])
-            angle_to_shark = get_direction(sharks_coords[index], sharks_coords[k])
-            if orientation - angle_to_shark <= 0:
-                avoidance = -1 / distance_to_shark * distance_to_fish
+            distance_to_shark = get_distance(sharks_coords[index], sharks_coords[k]) # Avstånd från hajen till haj K
+            angle_to_shark = get_direction(sharks_coords[index], sharks_coords[k]) # Vinkeln från hajen till haj K
+
+            if orientation - angle_to_shark <= 0: # Vill att den ska svänga bort från den andra hajen
+                avoidance = -1 / distance_to_shark * distance_to_fish + avoidance
             else:
-                avoidance = 1 / distance_to_shark * distance_to_fish
+                avoidance = 1 / distance_to_shark * distance_to_fish + avoidance
     return avoidance
 
 
