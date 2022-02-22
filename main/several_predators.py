@@ -85,7 +85,7 @@ def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i 
         return np.arctan2((coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length),
                           (coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length))
 
-
+'''
 def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Cluster Coefficient
     v = Voronoi(coords)
     coeff = 0
@@ -99,7 +99,7 @@ def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Clu
                 coeff = coeff + 1
 
     return coeff / count
-
+'''
 
 def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
     new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
@@ -125,7 +125,7 @@ for j in range(fish_count):  # Skapar cirklar för fiskar
                            (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                            (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                            outline=ccolor[0], fill=ccolor[0]))
-
+'''
 # Skapar ett canvas textobjekt för global alignemnt coefficent
 global_alignment_canvas_text = canvas.create_text(100, 20, text=1 / fish_count * np.linalg.norm(
     [np.sum(np.cos(fish_orientations)),
@@ -135,9 +135,9 @@ global_alignment_canvas_text = canvas.create_text(100, 20, text=1 / fish_count *
 clustering_coeff_canvas_text = canvas.create_text(100, 40,
                                                   text=calculate_cluster_coeff(fish_coords, fish_interaction_radius,
                                                                                fish_count))
-
+'''
 # Skapar ett canvas textobjekt för antalet fiskar
-fish_count_canvas_text = canvas.create_text(100, 60,
+fish_count_canvas_text = canvas.create_text(100, 20,
                                                   text=len(fish_coords))
 
 # Loop för allt som ska ske varje tidssteg i simulationen
@@ -195,14 +195,14 @@ for t in range(simulation_iterations):
         #   Shark direction härifrån
         for i in range(shark_count):
             shark_orientations[i] = get_direction(shark_coords[i], fish_coords[closest_fish[i]])
-
+    '''
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
         [np.sum(np.cos(fish_orientations)), np.sum(np.sin(fish_orientations))])
 
     # Beräknar clustering coefficent
     clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
-
+'''
     # Kollar om närmaste fisk är inom murder radien
     shark_closest_fish_distances = np.zeros(shark_count)  # Avstånd från varje haj till dess närmsta fisk
 
@@ -232,8 +232,8 @@ for t in range(simulation_iterations):
         break
 
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
-    canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
-    canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
+    #canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
+    #canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
     canvas.itemconfig(fish_count_canvas_text, text='Antal Fiskar: {:.3f}'.format(len(fish_coords)))
 
     tk.title('Iteration =' + str(t))
