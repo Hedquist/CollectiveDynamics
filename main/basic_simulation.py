@@ -17,13 +17,13 @@ canvas.place(x=res / 20, y=res / 20, height=res, width=res)
 ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
 # Variabler
-fish_count = 50  # Antal fiskar
-canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
+fish_count = 5000  # Antal fiskar
+canvas_length = 500  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 time_step = 1  # Storlek tidssteg
-simulation_iterations = 4000  # Antalet iterationer simulationen kör
+simulation_iterations = 100  # Antalet iterationer simulationen kör
 fish_noise = 0.1  # Brus i vinkel
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
@@ -146,6 +146,7 @@ clustering_coeff_canvas_text = canvas.create_text(100, 40,
 # Beräknar den initiala matrisen för var alla fiskar är
 cell_matrix = update_cell_matrix(fish_coords, fish_interaction_radius)
 
+startTime = time.time()
 # Loop för allt som ska ske varje tidssteg i simulationen
 for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
@@ -216,5 +217,14 @@ for t in range(simulation_iterations):
 
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame
-    time.sleep(0.01)  # Wait between loops
+    #time.sleep(0.01)  # Wait between loops
 tk.mainloop()
+print(time.time()-startTime)
+
+#Tid för 100 iterationer och canvas length = 500:
+
+# Med 100 fiskar: 3.72 s
+# med 500 fiskar: 12.75 s
+# med 1000 fiskar: 41.63 s
+# med 5000 fiskar: 96,39 s
+
