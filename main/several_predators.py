@@ -25,7 +25,7 @@ wait_time = 0.01  # Väntetiden mellan varje iteration
 # Fisk
 fish_count = 50  # Antal fiskar
 fish_graphic_radius = 3  # Radie av ritad cirkel
-fish_interaction_radius = 30  # Interraktionsradie för fisk
+fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
