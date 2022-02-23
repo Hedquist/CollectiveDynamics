@@ -7,11 +7,11 @@ import time
 from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
-start = timer()
+start = timer() # Timer startas
 
-graphics_toggle = True
+visuals_on = True # Välj om simulationen ska visas eller ej.
 
-if graphics_toggle:
+if visuals_on:
     res = 500  # Resolution of the animation
     tk = Tk()
     tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3)))
@@ -23,20 +23,20 @@ if graphics_toggle:
     ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
 
 # Variabler
-canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
+canvas_length = 500  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 50  # Antal fiskar
-fish_graphic_radius = 3  # Radie av ritad cirkel
-fish_interaction_radius = 30  # Interraktionsradie för fisk
+fish_count = 500  # Antal fiskar
+fish_graphic_radius = 2  # Radie av ritad cirkel
+fish_interaction_radius = 50  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
 # Haj
-shark_count = 2  # Antal hajar
+shark_count = 20  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = 2.2  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
@@ -119,7 +119,7 @@ def murder_fish_orientations(dead_fish_index):
     return new_fish_orientations
 
 
-if graphics_toggle:
+if visuals_on:
     for j in range(shark_count):  # Skapar cirklar för hajar
         shark_canvas_graphics.append(
             canvas.create_oval((shark_coords[j, 0] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
@@ -164,7 +164,7 @@ for t in range(simulation_iterations):
             j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
         closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
 
-    if graphics_toggle:
+    if visuals_on:
         for j in range(shark_count):
             # Updating animation coordinates haj
             canvas.coords(shark_canvas_graphics[j],
@@ -218,7 +218,7 @@ for t in range(simulation_iterations):
     shark_closest_fish_distances = np.zeros(shark_count)  # Avstånd från varje haj till dess närmsta fisk
 
     # Haj äter fisk
-    if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
+    if len(fish_coords) > 1:  # <- den if-satsen är för att stoppa crash vid få fiskar
         for j in range(shark_count):
             # Räkna om vilken fisk som är närmst efter att fiskar ätits
             shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
@@ -233,7 +233,7 @@ for t in range(simulation_iterations):
             if shark_closest_fish_distances[j] < murder_radius:  # Allt som händer då en fisk blir äten
                 last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
 
-                if graphics_toggle:
+                if visuals_on:
                     canvas.delete(fish_canvas_graphics[last_index])  # Ta bort sista fisk-cirkeln i array
 
                 fish_coords = murder_fish_coords(closest_fish[j])  # Tar bort index i koordinaterna
@@ -246,7 +246,7 @@ for t in range(simulation_iterations):
     # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
     # canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
     # canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
-    if graphics_toggle:
+    if visuals_on:
         canvas.itemconfig(fish_count_canvas_text, text='Antal Fiskar: {:.3f}'.format(len(fish_coords)))
 
         tk.title('Iteration =' + str(t))
@@ -256,8 +256,8 @@ fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
 plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
 plt.xlabel('Tid')
 plt.ylabel('% av fiskar ätna')
-print("Time:", timer() - start)
+print("Time:", timer() - start) # Skriver hur lång tid simulationen tog
 plt.show()
 
-if graphics_toggle:
+if visuals_on:
     tk.mainloop()
