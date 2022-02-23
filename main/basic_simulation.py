@@ -17,13 +17,13 @@ canvas.place(x=res / 20, y=res / 20, height=res, width=res)
 ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
 # Variabler
-fish_count = 5000  # Antal fiskar
-canvas_length = 500  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
+fish_count = 100  # Antal fiskar
+canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 time_step = 1  # Storlek tidssteg
-simulation_iterations = 100  # Antalet iterationer simulationen kör
+simulation_iterations = 4000  # Antalet iterationer simulationen kör
 fish_noise = 0.1  # Brus i vinkel
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
