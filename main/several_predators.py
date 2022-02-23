@@ -29,14 +29,14 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 500  # Antal fiskar
+fish_count = 200  # Antal fiskar
 fish_graphic_radius = 2  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
 # Haj
-shark_count = 5  # Antal hajar
+shark_count = 3  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = 2.2  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
@@ -67,7 +67,7 @@ fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
 
-def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
+def update_position(coords, speed, orientations, time_step):  # Uppdaterar en partikels position
     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
             2 * canvas_length) - canvas_length
     coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
@@ -118,6 +118,10 @@ def murder_fish_orientations(dead_fish_index):
     new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
     return new_fish_orientations
 
+def predict_position(fish_coord, fish_orientation, distance_to_fish):
+    predicted_fish_coord = update_position(np.array([fish_coord]), fish_speed, fish_orientation, distance_to_fish/shark_speed)
+    return predicted_fish_coord[0]
+
 
 if visuals_on:
     for j in range(shark_count):  # Skapar cirklar för hajar
@@ -151,8 +155,8 @@ if visuals_on:
 
 # Loop för allt som ska ske varje tidssteg i simulationen
 for t in range(simulation_iterations):
-    fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
-    shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
+    fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
+    shark_coords = update_position(shark_coords, shark_speed, shark_orientations, time_step)  # Uppdatera hajposition
 
     fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
 
@@ -206,7 +210,8 @@ for t in range(simulation_iterations):
 
     #   Shark direction härifrån
     for i in range(shark_count):
-        shark_orientations[i] = get_direction(shark_coords[i], fish_coords[closest_fish[i]])
+        predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]], shark_fish_distances[i, closest_fish[i]])
+        shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
     '''
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
