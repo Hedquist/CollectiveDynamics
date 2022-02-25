@@ -36,10 +36,12 @@ fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
+shark_fish_relative_speed = 0.9 # Relativ hastighet mellan haj och fisk
+
 # Haj
 shark_count = 5  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
-shark_speed = 2.2  # Hajens fart
+shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
@@ -122,7 +124,7 @@ def murder_fish_orientations(dead_fish_index):
     return new_fish_orientations
 
 def predict_position(fish_coord, fish_orientation, distance_to_fish):
-    predicted_fish_coord = update_position(np.array([fish_coord]), fish_speed, fish_orientation, distance_to_fish/shark_speed * 0.85)
+    predicted_fish_coord = update_position(np.array([fish_coord]), fish_speed, fish_orientation, distance_to_fish/shark_speed * shark_fish_relative_speed * 0.9)
     return predicted_fish_coord[0]
 
 
