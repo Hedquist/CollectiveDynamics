@@ -10,7 +10,7 @@ from timeit import default_timer as timer
 
 start = timer() # Timer startas
 
-visuals_on = True # Välj om simulationen ska visas eller ej.
+visuals_on = False # Välj om simulationen ska visas eller ej.
 
 if visuals_on:
     res = 500  # Resolution of the animation
@@ -69,8 +69,6 @@ shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla h
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
-tmp = scipy.spatial.distance.cdist(fish_coords, shark_coords)
-print(tmp, tmp.shape)
 
 def update_position(coords, speed, orientations, time_step):  # Uppdaterar en partikels position
     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
@@ -165,13 +163,15 @@ for t in range(simulation_iterations):
 
     fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
 
+    fish_fish_distance_matrix = scipy.spatial.distance.cdist(fish_coords, fish_coords)    # Skapa matris med fisk-till-fisk-avstånf
+    shark_fish_distance_matrix = scipy.spatial.distance.cdist(shark_coords, fish_coords)
+
     # Bestäm närmsta fisk
-    shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
+
     closest_fish = np.zeros(shark_count, dtype=int)
     for j in range(shark_count):
-        shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
-            j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
-        closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
+
+        closest_fish[j] = np.argmin(shark_fish_distance_matrix[j, :])  # Index av fisk närmst haj
 
     if visuals_on:
         for j in range(shark_count):
@@ -198,13 +198,13 @@ for t in range(simulation_iterations):
             else:
                 canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
 
-        inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
+        #inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
 
         # Vilka fiskar är inom en fisks interraktionsradie
-        fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius
+        fish_in_interaction_radius = fish_fish_distance_matrix[:, j] < fish_interaction_radius
 
-        closest_shark = np.argmin(shark_fish_distances[:, j])  # Hittar index för närmaste hajen
-        if shark_fish_distances[closest_shark, j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
+        closest_shark = np.argmin(shark_fish_distance_matrix[:, j])  # Hittar index för närmaste hajen
+        if shark_fish_distance_matrix[closest_shark, j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
             fish_orientations[j] = get_direction(shark_coords[closest_shark], fish_coords[j])
         else:  # Annars Vicsek-modellen
             fish_orientations[j] = np.angle(
@@ -214,7 +214,7 @@ for t in range(simulation_iterations):
 
     #   Shark direction härifrån
     for i in range(shark_count):
-        predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]], shark_fish_distances[i, closest_fish[i]])
+        predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]], shark_fish_distance_matrix[i, closest_fish[i]])
         shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
     '''
     # Beräknar Global Alignment
