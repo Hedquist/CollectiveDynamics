@@ -42,7 +42,7 @@ visuals_on = True
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
 fish_orientations_file = 'fish_orientations_initial.npy'
-if True:
+if False:
     shark_closest_fish_distances = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # x coordinates
     y = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # y coordinates
     fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
@@ -58,6 +58,8 @@ shark_x = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # sha
 shark_y = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # shark y coordinates
 shark_coords = np.column_stack((shark_x, shark_y))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
+
+shark_coords = np.array([[50,50],[50,40]])
 
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
@@ -113,16 +115,20 @@ def get_shark_avoidance(sharks_coords, target_fish, index):
     distance_to_fish = get_distance(sharks_coords[index], target_fish) # Avstånd till target fish
     orientation = get_direction(sharks_coords[index], target_fish) # Vilkeln till target fish
     avoidance = 0
+    print(index)
     for k in range(shark_count): # Tanken att det blir något average här mot alla hajar
         if k != index:
             distance_to_shark = get_distance(sharks_coords[index], sharks_coords[k]) # Avstånd från hajen till haj K
             angle_to_shark = get_direction(sharks_coords[index], sharks_coords[k]) # Vinkeln från hajen till haj K
-
+            print(orientation)
+            print(angle_to_shark)
             if orientation - angle_to_shark <= 0: # Vill att den ska svänga bort från den andra hajen
                 # Osäker på hur mycket de olika faktornerna ska påverka
                 avoidance = -1 / distance_to_shark * distance_to_fish + avoidance
             else:
                 avoidance = 1 / distance_to_shark * distance_to_fish + avoidance
+
+    print(avoidance)
     return avoidance
 
 
@@ -188,11 +194,14 @@ for t in range(simulation_iterations):
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
 
     fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
-
+    if len(fish_coords) == 0:
+        break
     # Bestäm närmsta fisk
     shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
     closest_fish = np.zeros(shark_count, dtype=int)
     for j in range(shark_count):
+        if len(fish_coords) == 0:
+            break
         shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
             j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
         closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
@@ -257,6 +266,8 @@ for t in range(simulation_iterations):
             closest_fish = np.zeros(shark_count, dtype=int)
             shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
                 j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+            if len(fish_coords) == 0:
+                break
             closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
             shark_closest_fish_distances[j] = \
                 calculate_distance(np.array([shark_coords[j]]), fish_coords[closest_fish[j]])[
