@@ -8,6 +8,41 @@ from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
 
+def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
+    coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
+            2 * canvas_length) - canvas_length
+    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
+            2 * canvas_length) - canvas_length
+    return coords
+
+
+def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
+    return np.minimum(
+        np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
+                (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
+        np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
+
+
+def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i radianer
+    if np.sqrt((coord2[0] - coord1[0]) ** 2 + (coord2[1] - coord1[1]) ** 2) < np.sqrt(
+            ((coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length)) ** 2 + (
+                    (coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length)) ** 2):
+        return np.arctan2(coord2[1] - coord1[1], coord2[0] - coord1[0])
+    else:
+        return np.arctan2((coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length),
+                          (coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length))
+
+
+def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
+    new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
+    return new_fish_coords
+
+
+def murder_fish_orientations(dead_fish_index):
+    new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
+    return new_fish_orientations
+
+
 def main():
     global canvas_length, time_step, fish_orientations, fish_coords
     start = timer()  # Timer startas
@@ -25,8 +60,8 @@ def main():
     # Variabler
     canvas_length = 500  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
     time_step = 1  # Storlek tidssteg
-    simulation_iterations = 300  # Antalet iterationer simulationen kör
-    wait_time = 0.01  # Väntetiden mellan varje iteration
+    simulation_iterations = 100  # Antalet iterationer simulationen kör
+    wait_time = 0.00  # Väntetiden mellan varje iteration
     # Fisk
     fish_count = 500  # Antal fiskar
     fish_graphic_radius = 2  # Radie av ritad cirkel
@@ -61,27 +96,6 @@ def main():
     fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
     shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
-    def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
-        coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
-                2 * canvas_length) - canvas_length
-        coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
-                2 * canvas_length) - canvas_length
-        return coords
-
-    def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
-        return np.minimum(
-            np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
-                    (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
-            np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
-
-    def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i radianer
-        if np.sqrt((coord2[0] - coord1[0]) ** 2 + (coord2[1] - coord1[1]) ** 2) < np.sqrt(
-                ((coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length)) ** 2 + (
-                        (coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length)) ** 2):
-            return np.arctan2(coord2[1] - coord1[1], coord2[0] - coord1[0])
-        else:
-            return np.arctan2((coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length),
-                              (coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length))
 
     '''
     def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Cluster Coefficient
@@ -99,13 +113,6 @@ def main():
         return coeff / count
     '''
 
-    def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
-        new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
-        return new_fish_coords
-
-    def murder_fish_orientations(dead_fish_index):
-        new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
-        return new_fish_orientations
 
     if visuals_on:
         for j in range(shark_count):  # Skapar cirklar för hajar
@@ -230,9 +237,9 @@ def main():
                     fish_coords = murder_fish_coords(closest_fish[j])  # Tar bort index i koordinaterna
                     fish_orientations = murder_fish_orientations(closest_fish[j])  # Tar bort index i orientations
                     fish_eaten_count += 1 / fish_count * 100  # Lägg till en äten fisk
-                    fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
         else:
             break
+        fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
 
         # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
         # canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
