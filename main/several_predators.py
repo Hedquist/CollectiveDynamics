@@ -10,7 +10,7 @@ from timeit import default_timer as timer
 
 start = timer() # Timer startas
 
-visuals_on = False # Välj om simulationen ska visas eller ej.
+visuals_on = True # Välj om simulationen ska visas eller ej.
 
 if visuals_on:
     res = 500  # Resolution of the animation
@@ -50,10 +50,10 @@ fish_eaten_count = 0  # Antal fiskar ätna
 fish_coords_file = 'fish_coords_initial.npy'
 fish_orientations_file = 'fish_orientations_initial.npy'
 if True:
-    shark_closest_fish_distances = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # x coordinates
+    x = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # x coordinates
     y = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # y coordinates
     fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
-    fish_coords = np.column_stack((shark_closest_fish_distances, y))
+    fish_coords = np.column_stack((x, y))
     np.save(fish_coords_file, fish_coords)
     np.save(fish_orientations_file, fish_orientations)
 else:
