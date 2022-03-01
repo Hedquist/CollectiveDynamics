@@ -237,20 +237,12 @@ def is_point_outside_rectangle(rectangle_corner_coords, point, outside):
 
 # Har tagit bort modulo beräkningen
 def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
-    #return np.minimum(
-    #np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
-    #(coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2))
     return np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2)
 
 # Har tagit bort modulo beräkningen
 def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length)  - canvas_length
     coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length)  - canvas_length
-
-    '''coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length)% (
-            2 * canvas_length)  - canvas_length
-    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length)% (
-        2 * canvas_length)  - canvas_length '''
     return coords
 
 # Ger sant om någon ray är utanför
