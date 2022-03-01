@@ -1,0 +1,19 @@
+Obstacle avoidance
+
+obst_type[['wall'],['rect'],['circ]]
+
+Detect(ray_coords):
+    Ta fram vilket typ av hinder som ray detekterar
+    return [bool, bool, bool]
+
+Calc_closest_obst(ray_coords, type_of_obst):
+    Ta fram det närsta objektet
+    M.a.p på avståndet mellan fiskens grafikradie och objektets radie/periferi
+    return(objekttyp, objectindex)
+
+Avoid(ray_coords, type_of_obst, obst_index):
+    Ta fram vilken ray som inte är upptagen
+    Använd den som referens
+    Beräknar avståndet mellan fiskens grafikradie och hindrets perifer i riktning av den ockupperade rayen
+    Skala vinkeländringen med avståndet
+    return(vinkeländring)
