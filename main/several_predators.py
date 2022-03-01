@@ -23,7 +23,7 @@ if visuals_on:
     ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
 
 # Variabler
-canvas_length = 500  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
+canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.05  # Väntetiden mellan varje iteration
@@ -63,7 +63,7 @@ shark_y = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # sha
 shark_coords = np.column_stack((shark_x, shark_y))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
-shark_coords = np.array([[50,50],[50,40]])
+shark_coords = np.array([[50.0,50.0],[50.0,20.0]])
 
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
