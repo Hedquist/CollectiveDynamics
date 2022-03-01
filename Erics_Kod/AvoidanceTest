@@ -1,3 +1,5 @@
+import itertools
+
 import numpy as np
 import matplotlib.pyplot as plt
 from tkinter import *
@@ -66,11 +68,9 @@ rect_obst_coords = np.array(list(zip(x_rect_obst, y_rect_obst)))
 wall_corner_coords = np.array([[canvas_length,canvas_length],[-canvas_length,canvas_length],[-canvas_length,-canvas_length],[canvas_length,-canvas_length]])
 rect_obst_corner_coords = []
 
-obst_type = [['wall'],['rect'],['circ']]
-obst_coords = np.array([np.array([0,0]),rect_obst_coords,circ_obst_coords], dtype=object)
+obst_type = ['wall','rect','circ']
+obst_coords = [ [[0,0]] , rect_obst_coords, circ_obst_coords ]
 
-for obst in obst_coords:
-    print(obst)
 
 
 # Diverse tomma listor, mest grafik
@@ -189,6 +189,9 @@ def ray_index(ray_booleans):
         index = np.min(indices) if (left_count >= right_count) else np.max(indices)
     return index
 
+def is_point_inside_circle(circ_obst_coords, point, radius):
+    return np.linalg.norm(circ_obst_coords-point) < radius
+
 # Beräknar arean av en triangel givet tre punkter
 def triangle_area(x1, y1, x2, y2, x3, y3):
     return abs((x1 * (y2 - y3) +
@@ -259,23 +262,25 @@ def has_true(arr):
 
 
 def detect_obst(ray_coords):
+    obst_type = ['wall', 'rect', 'circ']
     n_rays = len(ray_coords)
-    obst_type_detect = [[], [], []] # Lista med vilken typ av hinder den känner av
-    obst_detect = [[],[],[]] # Lista med vilken typ plus alla ray
-    for type in obst_type:
-        for k in range(len(obst_coords[obst])):
+    obst_type_detect = [] # Lista med vilken typ av hinder den känner av Korta listan
+    obst_detect = [[],[],[]] # Lista med vilken typ plus alla ray Långa listan
+    for type in range(len(obst_type)):
+        for k in range(len(obst_coords[type])):
             if(obst_type[type]=='wall'):
-                obst_detect[type].append([ [is_point_outside_rectangle(ray_coords[i]) for i in range(n_rays)] ])
+                obst_detect[type].append([ is_point_outside_rectangle(wall_corner_coords , ray_coords[i], True) for i in range(n_rays)])
             elif(obst_type[type]=='rect'):
-                obst_detect[type].append([ [is_point_inside_rectangle(ray_coords[i]) for i in range(n_rays)] ])
+                obst_detect[type].append([ is_point_outside_rectangle(rect_obst_corner_coords[k],ray_coords[i], False) for i in range(n_rays)])
             elif(obst_type[type]=='circ'):
-                obst_detect[type].append([ [is_point_inside_circle(ray_coords[i]) for i in range(n_rays)] ])
-        if(len(obst_type)>1):
-            obst_type_detect[type] = True in list(itertools.chain.from_iterable(obst_detect[type]))
+                obst_detect[type].append([ is_point_inside_circle(circ_obst_coords[k],ray_coords[i],obst_radius) for i in range(n_rays)] )
+        if(obst_type[type]=='wall'):
+            obst_type_detect.append(True in obst_detect[type][0])
         else:
-           obst_type_detect[type] = True in obst_detect[type]
+           obst_type_detect.append(True in list(itertools.chain.from_iterable(obst_detect[type])))
+    print(obst_type_detect)
+    return (obst_type_detect)
 
-	return (obst_type_detect)
 
 # Kallar på de grafiska funktionerna
 cast_rays()
@@ -311,6 +316,8 @@ for t in range(simulation_iterations):
             rays_angle_relative_velocity[j][ray] = start_angle
             start_angle += step_angle # Uppdaterar vinkel för ray
 
+        if(True in detect_obst(rays_coords[j])):
+            time.sleep(0.5)
 
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
