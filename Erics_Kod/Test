@@ -36,19 +36,22 @@ print([ list(zip(*[obst_type2[element],obst_type4[element]])) for element in ran
 #obst_type3[1].append([False for i in range(n)])
 #print(obst_type3[1])
 #print(True in list(itertools.chain.from_iterable(obst_type3[1])))
-type = 1
-true_indices = [index for index, element in enumerate(boolean) if element]
-print(true_indices)
-obst_index[type].append([1 for i in range(len(true_indices))])
-ray_index[type].append(true_indices)
-print(obst_index)
-print(ray_index)
-print(obst_index[type][0])
-print()
+# type = 1
+# true_indices = [index for index, element in enumerate(boolean) if element]
+# print(true_indices)
+# obst_index[type].append([1 for i in range(len(true_indices))])
+# ray_index[type].append(true_indices)
+# print(obst_index)
+# print(ray_index)
+# print(obst_index[type][0])
+# print()
+#
+# true_indices = [index for index, element in enumerate(boolean) if element]
+# print(true_indices)
+# arr_ = [[],[],[]]
+# arr_[0].extend(true_indices)
+# arr_[0].extend(true_indices)
+# print([5 for i in range(5)])''
 
-true_indices = [index for index, element in enumerate(boolean) if element]
-print(true_indices)
-arr_ = [[],[],[]]
-arr_[0].extend(true_indices)
-arr_[0].extend(true_indices)
-print([5 for i in range(5)])
+list = [2,3,np.inf]
+print(np.argmax(list))

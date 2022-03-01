@@ -3,13 +3,15 @@ Obstacle avoidance
 obst_type[['wall'],['rect'],['circ]]
 
 Detect(ray_coords):
-    Ta fram vilket typ av hinder som ray detekterar
+    Ta fram vilket typ av hinder som rayen detekterar
+    Ta fram vilka hinder som ray träffar
+    Samt vilka ray som är upptagna för det hindret
     return [bool, bool, bool]
 
 Calc_closest_obst(ray_coords, type_of_obst):
-    Ta fram det närsta objektet
+    Ta fram närmsta avståndet för hindret
     M.a.p på avståndet mellan fiskens grafikradie och objektets radie/periferi
-    return(objekttyp, objectindex)
+    return(objekttyp, objectindex, avstånd)
 
 Avoid(ray_coords, type_of_obst, obst_index):
     Ta fram vilken ray som inte är upptagen
@@ -47,6 +49,19 @@ Detect(ray_coords):
            obst_type_detect[type] = True in obst_detect[type]
 
 	return (obst_type_detect)
+
+def calc_closest_obst(fish_coords, ray_coords, type_of_obst, obst_ray_index):
+    closest_obst_type_index = [[],[],[]]
+    for type in range(len(obst_type)):
+         if obst_type[type]:
+            if(obst_type[type]=='wall'):
+                 object_index = np.argmin(canvas_length- np.array(fish_coord) - fish_graphic_radius)
+            elif(obst_type[type]=='rect'):
+                 object_index = np.argmin(calculate_distance(circ_obst_coords, ray_coords))
+            elif if(obst_type[type]=='circ'):
+                 object_index = np.argmin(canvas_length - fish_coords[j])  # Hur ska index fungera för väggen?
+     return (object_type, object_index)
+
 
 
 Avoid()
