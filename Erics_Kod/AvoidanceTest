@@ -260,32 +260,36 @@ def has_true(arr):
 def detect_obst(ray_coords):
     obst_type = ['wall', 'rect', 'circ']
     n_rays = len(ray_coords)
-    obst_type_detect = [] # Lista med vilken typ av hinder den känner av Korta listan
+    obst_type_detect = [[],[],[]] # Lista med vilken typ av hinder den känner av Korta listan
     obst_detect = [[],[],[]] # Lista med vilken typ plus alla ray Långa listan
     obst_index = [[],[],[]]
     ray_index = [[],[],[]]
+
     for type in range(len(obst_type)):
         for k in range(len(obst_coords[type])):
             if(obst_type[type]=='wall'):
-                #obst_detect[type].append([ is_point_outside_rectangle(wall_corner_coords , ray_coords[i], True) for i in range(n_rays)])
-                obst_detect[type].append([False])
+                booleans = [ is_point_outside_rectangle(wall_corner_coords , ray_coords[i], True) for i in range(n_rays)]
+                obst_detect[type].append( True in booleans)
+                if(True in booleans):
+                    true_indices = [index for index, element in enumerate(booleans) if element]
+                    obst_index[type].extend([-1 for i in range(len(true_indices))])
+                    ray_index[type].extend(true_indices)
             elif(obst_type[type]=='rect'):
                 booleans = [is_point_outside_rectangle(rect_obst_corner_coords[k],ray_coords[i], False) for i in range(n_rays)]
-                obst_detect[type].append(booleans)
-                index_obst_ray = np.where(np.array(booleans))
-                for element in range(len(index_obst_ray)):
-                    obst_index[type].append(index_obst_ray[element])
-                    ray_index[type].append(index_obst_ray[element])
-
-            #elif(obst_type[type]=='circ'):
-             #   obst_detect[type].append([ is_point_inside_circle(circ_obst_coords[k],ray_coords[i],obst_radius) for i in range(n_rays)] )
-        print(np.array(obst_detect[1]))
-        print()
-        if(obst_type[type]=='wall'):
-            obst_type_detect.append(True in obst_detect[type][0])
-        else:
-           obst_type_detect.append(True in list(itertools.chain.from_iterable(obst_detect[type])))
-    #print(obst_type_detec
+                obst_detect[type].append(True in booleans)
+                if(True in booleans):
+                    true_indices = [index for index, element in enumerate(booleans) if element]
+                    obst_index[type].extend([k for i in range(len(true_indices))])
+                    ray_index[type].extend(true_indices)
+            elif(obst_type[type]=='circ'):
+                booleans = [ is_point_inside_circle(circ_obst_coords[k],ray_coords[i],obst_radius) for i in range(n_rays)]
+                obst_detect[type].append(True in booleans)
+                if(True in booleans):
+                    true_indices = [index for index, element in enumerate(booleans) if element]
+                    obst_index[type].extend([k for i in range(len(true_indices))])
+                    ray_index[type].extend(true_indices)
+        obst_type_detect[type] = True in obst_detect[type]
+    print(ray_index)
     return (obst_type_detect)
 
 
