@@ -271,7 +271,8 @@ def wall_detect(rays_coords):
         rays_outside_wall[ray] = is_point_outside_rectangle(wall_corner_coords, rays_coords[ray], True)
     return (
         (
-        True in rays_outside_wall, rays_outside_wall))  # Returnera sant eller falskt plus en lista vilka ray är utanför
+            True in rays_outside_wall,
+            rays_outside_wall))  # Returnera sant eller falskt plus en lista vilka ray är utanför
 
 
 # Returnera vinkel för att undvika vägg
@@ -386,18 +387,26 @@ def rect_obst_avoid(fish_coord, ray_angles, heading_direction, index, rays_boole
     return avoid_wall_angle
 
 
-def calc_closest_obst(ray_coords, type_of_obst):
+def calc_closest_obst(ray_coords, ray_index, object_index, type_of_obst):
     for i in length(type_of_obst):
         if type_of_obst(i):
-            if i == 0:
-                object_index = np.argmin(calculate_distance(circ_obst_coords, ray_coords))
-                object_type = circle
+            if i == 2:
+                distances = np.zeros(3)
+                for j in range(length(ray_index)):
+                    distances[j] = np.sqrt((ray_coords[ray_index[j], 0] - circ_obst_coords[object_index[j], 0]) ** 2 + (
+                                ray_coords[ray_index[j], 1] - circ_obst_coords[object_index[j], 1]) ** 2)
+                object_index = np.argmin(distances)
+                object_type = 'circle'
             elif i == 1:
-                object_index = np.argmin(calculate_distance(circ_obst_coords, ray_coords))
-                object_type = rectangle
-            elif i == 2:
-                object_index = np.argmin(canvas_length - fish_coords[j])  # Hur ska index fungera för väggen?
-                object_type = wall
+                distances = np.zeros(3)
+                for j in range(length(ray_index)):
+                    distances[j] = np.sqrt((ray_coords[ray_index[j], 0] - circ_obst_coords[object_index[j], 0]) ** 2 + (
+                            ray_coords[ray_index[j], 1] - circ_obst_coords[object_index[j], 1]) ** 2)
+                object_index = np.argmin(distances)
+                object_type = 'rectangle'
+            elif i == 0:
+                object_index = -1  # Hur ska index fungera för väggen?
+                object_type = 'wall'
     return (object_type, object_index)
 
 
