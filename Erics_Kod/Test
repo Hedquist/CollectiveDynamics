@@ -46,4 +46,4 @@ print(true_indices)
 arr_ = [[],[],[]]
 arr_[0].extend(true_indices)
 arr_[0].extend(true_indices)
-print(arr_)
+print([5 for i in range(5)])
