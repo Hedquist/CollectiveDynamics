@@ -7,8 +7,9 @@ obst_index = [[], [], []]
 ray_index = [[], [], []]
 
 obst_type = ['wall','rect','circ']
-obst_type2 = [[1],[1],[1]]
+obst_type2 = [[2,3],[2,3],[2,3]]
 obst_type3 = [[],[],[]]
+obst_type4 = [[4,5],[4,5],[4,5]]
 
 rays_coords = [[1,1], [2,2],[3,3]]
 wall_coord = [[10,10]]
@@ -20,8 +21,12 @@ obst_boolean = [[False, False, False, False, False, False],
  [True, False, False, False, False, False],
  [True, False, False, False, False, False],
  [False, False, False, False, False, False]]
+result = []
+for element in range(len(obst_type2)):
+    result.append(list(zip(*[obst_type2[element],obst_type4[element]])))
+print(result)
 
-
+print([ list(zip(*[obst_type2[element],obst_type4[element]])) for element in range(len(obst_type2)) ])
 #print(np.array(rays_coords)*np.array(boolean_rays))
 #print([arr[i] for i in range(len(arr))])
 #print(list(itertools.chain.from_iterable(boolean_rays[1])))
