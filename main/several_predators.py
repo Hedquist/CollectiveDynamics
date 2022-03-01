@@ -32,14 +32,14 @@ wait_time = 0.05  # Väntetiden mellan varje iteration
 # Fisk
 fish_count = 50  # Antal fiskar
 fish_graphic_radius = 4  # Radie av ritad cirkel
-fish_interaction_radius = 50  # Interraktionsradie för fisk
+fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
 shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 
 # Haj
-shark_count = 1  # Antal hajar
+shark_count = 5  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
@@ -160,15 +160,17 @@ def predict_position(fish_coord, fish_orientation,
     return predicted_fish_position[0]
 
 
-def get_fish_avoidance(fish_index, fishes, sharks):
+def get_fish_avoidance(fish_index, fish_near_shark, shark_near_fish):
     avoidance = 0
     count = 0
-    for i in range(len(fishes)):
-        if fishes[i] == fish_index:
-            avoidance = get_direction(fish_coords[i], shark_coords[sharks[i]])
-            count += 1
 
-    return (avoidance / count) + np.pi
+    for i in range(len(fish_near_shark)):
+        if fish_near_shark[i] == fish_index:
+            avoidance = get_direction(shark_coords[shark_near_fish[i]],fish_coords[fish_index]) + avoidance
+            count += 1
+    print(fish_index)
+    print(avoidance / count)
+    return avoidance / count
 
 
 if visuals_on:
@@ -285,7 +287,7 @@ for t in range(simulation_iterations):
     shark_closest_fish_distances = np.zeros(shark_count)  # Avstånd från varje haj till dess närmsta fisk
 
     # Haj äter fisk
-    if len(fish_coords) > 1:  # <- den if-satsen är för att stoppa crash vid få fiskar
+    if len(fish_coords) > 0:  # <- den if-satsen är för att stoppa crash vid få fiskar
         for j in range(shark_count):
             # Räkna om vilken fisk som är närmst efter att fiskar ätits
             shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
@@ -320,7 +322,7 @@ for t in range(simulation_iterations):
         tk.update()  # Update animation frame
         time.sleep(wait_time)  # Wait between loops
 fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
-plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+#plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
 plt.xlabel('Tid')
 plt.ylabel('% av fiskar ätna')
 print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
