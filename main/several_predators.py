@@ -69,14 +69,41 @@ shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla h
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
-
-def update_position(coords, speed, orientations, time_step):  # Uppdaterar en partikels position
+'''def update_position(coords, speed, orientations, time_step):  # Uppdaterar en partikels position
     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
             2 * canvas_length) - canvas_length
     coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
             2 * canvas_length) - canvas_length
+    return coords'''
+
+def update_position(coords, speed, orientations, time_step):    # Uppdaterar position
+    coords[:, 0] = coords[:, 0] + speed * np.cos(orientations) * time_step
+    coords[:, 1] = coords[:, 1] + speed * np.sin(orientations) * time_step
     return coords
 
+def bounce_angle(coords, orientations): # Ändra vinkel om partikeln åker ur rutan
+    for i in range(len(orientations)):
+        if coords[i, 0] < -canvas_length:
+            orientations[i] = np.pi-orientations[i]
+        elif coords[i, 0] > canvas_length:
+            orientations[i] = np.pi-orientations[i]
+        if coords[i, 1] < -canvas_length:
+            orientations[i] = -orientations[i]
+        elif coords[i, 1] > canvas_length:
+            orientations[i] = -orientations[i]
+    return orientations
+
+def bounce_pos(coords): # Flytta in partikel i rutan om den åker utanför
+    for coord in coords:
+        if coord[0] < -canvas_length:
+            coord[0] = -canvas_length-(coord[0]+canvas_length)
+        elif coord[0] > canvas_length:
+            coord[0] = canvas_length-(coord[0]-canvas_length)
+        if coord[1] < -canvas_length:
+            coord[1] = -canvas_length-(coord[1]+canvas_length)
+        elif coord[1] > canvas_length:
+            coord[1] = canvas_length - (coord[1] - canvas_length)
+    return coords
 
 def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
     return np.minimum(
@@ -112,16 +139,16 @@ def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Clu
 '''
 
 
-def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
+def murder_fish_coords(dead_fish_index):  # Tar bort fisk-coord som blivit uppäten
     new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
     return new_fish_coords
 
 
-def murder_fish_orientations(dead_fish_index):
+def murder_fish_orientations(dead_fish_index):  # Tar bort fisk-vinkel som blivit uppäten
     new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
     return new_fish_orientations
 
-def predict_position(fish_coord, fish_orientation, distance_to_fish):
+def predict_position(fish_coord, fish_orientation, distance_to_fish):   # Förutspår positionen av en fisk beroende på avstånd till fisk
     predicted_fish_coord = update_position(np.array([fish_coord]), fish_speed, fish_orientation, distance_to_fish/shark_speed * shark_fish_relative_speed * 0.9)
     return predicted_fish_coord[0]
 
@@ -161,10 +188,14 @@ for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations, time_step)  # Uppdatera hajposition
 
+    # Fixar så att fiskar inte simmar ur bild
+    fish_orientations = bounce_angle(fish_coords, fish_orientations)
+    fish_coords = bounce_pos(fish_coords)
+
     fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
 
-    fish_fish_distance_matrix = scipy.spatial.distance.cdist(fish_coords, fish_coords)    # Skapa matris med fisk-till-fisk-avstånf
-    shark_fish_distance_matrix = scipy.spatial.distance.cdist(shark_coords, fish_coords)
+    fish_fish_distance_matrix = scipy.spatial.distance.cdist(fish_coords, fish_coords)    # Skapa matris med fisk-till-fisk-avstånd
+    shark_fish_distance_matrix = scipy.spatial.distance.cdist(shark_coords, fish_coords)    # Skapa matris med haj-till-fisk-avstånd
 
     # Bestäm närmsta fisk
 
