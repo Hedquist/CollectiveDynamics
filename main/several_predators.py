@@ -8,9 +8,9 @@ import time
 from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
-start = timer() # Timer startas
+start = timer()  # Timer startas
 
-visuals_on = True # Välj om simulationen ska visas eller ej.
+visuals_on = True  # Välj om simulationen ska visas eller ej.
 
 if visuals_on:
     res = 500  # Resolution of the animation
@@ -36,10 +36,10 @@ fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
 
-shark_fish_relative_speed = 0.9 # Relativ hastighet mellan haj och fisk
+shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 
 # Haj
-shark_count = 2  # Antal hajar
+shark_count = 3  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
@@ -66,7 +66,7 @@ shark_y = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # sha
 shark_coords = np.column_stack((shark_x, shark_y))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
-shark_coords = np.array([[50.0,50.0],[50.0,20.0]])
+shark_coords = np.array([[40.0, 0.0], [50.0, 0.0], [60.0, 0.0]])
 
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
@@ -138,35 +138,26 @@ def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i 
 def get_shark_direction(sharks, target_fish, index):  # Ger riktningen för hajar
     shark = sharks[index]
     avoidance = get_shark_avoidance(sharks, target_fish, index)
-    if np.sqrt((target_fish[0] - shark[0]) ** 2 + (target_fish[1] - shark[1]) ** 2) < np.sqrt(
-            ((target_fish[0]) % (2 * canvas_length) - (shark[0]) % (2 * canvas_length)) ** 2 + (
-                    (target_fish[1]) % (2 * canvas_length) - (shark[1]) % (2 * canvas_length)) ** 2):
 
-        return np.arctan2(target_fish[1] - shark[1], target_fish[0] - shark[0]) + avoidance
-    else:
-
-        return np.arctan2((target_fish[1]) % (2 * canvas_length) - (shark[1]) % (2 * canvas_length),
-                          (target_fish[0]) % (2 * canvas_length) - (shark[0]) % (2 * canvas_length)) + avoidance
+    return np.arctan2(target_fish[1] - shark[1], target_fish[0] - shark[0]) + avoidance
 
 
 def get_shark_avoidance(sharks_coords, target_fish, index):
-    distance_to_fish = get_distance(sharks_coords[index], target_fish) # Avstånd till target fish
-    orientation = get_direction(sharks_coords[index], target_fish) # Vilkeln till target fish
+    distance_to_fish = get_distance(sharks_coords[index], target_fish)  # Avstånd till target fish
+    orientation = get_direction(sharks_coords[index], target_fish)  # Vilkeln till target fish
     avoidance = 0
-    print(index)
-    for k in range(shark_count): # Tanken att det blir något average här mot alla hajar
+    for k in range(shark_count):  # Tanken att det blir något average här mot alla hajar
         if k != index:
-            distance_to_shark = get_distance(sharks_coords[index], sharks_coords[k]) # Avstånd från hajen till haj K
-            angle_to_shark = get_direction(sharks_coords[index], sharks_coords[k]) # Vinkeln från hajen till haj K
-            print(orientation)
+            distance_to_shark = get_distance(sharks_coords[index], sharks_coords[k])  # Avstånd från hajen till haj K
+            angle_to_shark = get_direction(sharks_coords[index], sharks_coords[k])  # Vinkeln från hajen till haj K
+            print(index)
             print(angle_to_shark)
-            if orientation - angle_to_shark <= 0: # Vill att den ska svänga bort från den andra hajen
+            if orientation - angle_to_shark <= 0:  # Vill att den ska svänga bort från den andra hajen
                 # Osäker på hur mycket de olika faktornerna ska påverka
-                avoidance = -1 / distance_to_shark * distance_to_fish + avoidance
+                avoidance = -0.1 / distance_to_shark * distance_to_fish + avoidance
             else:
-                avoidance = 1 / distance_to_shark * distance_to_fish + avoidance
+                avoidance = 0.1 / distance_to_shark * distance_to_fish + avoidance
 
-    print(avoidance)
     return avoidance
 
 
@@ -210,10 +201,8 @@ def get_fish_avoidance(fish_index, fish_near_shark, shark_near_fish):
 
     for i in range(len(fish_near_shark)):
         if fish_near_shark[i] == fish_index:
-            avoidance = get_direction(shark_coords[shark_near_fish[i]],fish_coords[fish_index]) + avoidance
+            avoidance = get_direction(shark_coords[shark_near_fish[i]], fish_coords[fish_index]) + avoidance
             count += 1
-    print(fish_index)
-    print(avoidance / count)
     return avoidance / count
 
 
@@ -255,6 +244,9 @@ for t in range(simulation_iterations):
     # Fixar så att fiskar inte simmar ur bild
     fish_orientations = bounce_angle(fish_coords, fish_orientations)
     fish_coords = bounce_pos(fish_coords)
+
+    shark_orientations = bounce_angle(shark_coords, shark_orientations)
+    shark_coords = bounce_pos(shark_coords)
 
     fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
     if len(fish_coords) == 0:
@@ -307,7 +299,7 @@ for t in range(simulation_iterations):
         # Vilka fiskar är inom en fisks interraktionsradie
         fish_in_interaction_radius = fish_fish_distance_matrix[:, j] < fish_interaction_radius
 
-        closest_shark = np.argmin(shark_fish_distance_matrix[:, j])  # Hittar index för närmaste hajen
+        # closest_shark = np.argmin(shark_fish_distance_matrix[:, j])  # Hittar index för närmaste hajen
         if j in fish_near_shark_index:  # Om hajen är nära fisken, undvik hajen
             fish_orientations[j] = get_fish_avoidance(j, fish_near_shark_index, shark_near_fish_index)
         else:  # Annars Vicsek-modellen
@@ -320,10 +312,8 @@ for t in range(simulation_iterations):
     for i in range(shark_count):
         predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
                                                 shark_fish_distance_matrix[i, closest_fish[i]])
-        shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
-        #   Shark direction härifrån
-        for i in range(shark_count):
-            shark_orientations[i] = get_shark_direction(shark_coords, fish_coords[closest_fish[i]], i)
+        #shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
+        shark_orientations[i] = get_shark_direction(shark_coords, predicted_fish_coord, i)
     '''
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
