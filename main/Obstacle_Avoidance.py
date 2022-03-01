@@ -268,7 +268,7 @@ def detect_obst(ray_coords):
                     ray_index[type].extend(true_indices)
         obst_type_detect[type] = True in obst_detect[type]
     result = [obst_type_detect,obst_index,ray_index]
-    return (result)
+    return result
 
 # def calc_closest_obst(ray_coords, type_of_obst):
 #     for i in length(type_of_obst):
