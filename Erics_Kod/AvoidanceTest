@@ -241,8 +241,12 @@ def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna c
 
 # Har tagit bort modulo beräkningen
 def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
-    coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length)  - canvas_length
-    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length)  - canvas_length
+    #coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length)  - canvas_length
+    #coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length)  - canvas_length
+    coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length)% (
+            2 * canvas_length)  - canvas_length
+    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length)% (
+        2 * canvas_length)  - canvas_length
     return coords
 
 # Ger sant om någon ray är utanför
@@ -261,7 +265,8 @@ def detect_obst(ray_coords):
     for type in range(len(obst_type)):
         for k in range(len(obst_coords[type])):
             if(obst_type[type]=='wall'):
-                obst_detect[type].append([ is_point_outside_rectangle(wall_corner_coords , ray_coords[i], True) for i in range(n_rays)])
+                #obst_detect[type].append([ is_point_outside_rectangle(wall_corner_coords , ray_coords[i], True) for i in range(n_rays)])
+                obst_detect[type].append([False])
             elif(obst_type[type]=='rect'):
                 obst_detect[type].append([ is_point_outside_rectangle(rect_obst_corner_coords[k],ray_coords[i], False) for i in range(n_rays)])
             elif(obst_type[type]=='circ'):
