@@ -270,20 +270,28 @@ def detect_obst(ray_coords):
     result = [obst_type_detect,obst_index,ray_index]
     return result
 
-# def calc_closest_obst(ray_coords, type_of_obst):
-#     for i in length(type_of_obst):
-#         if type_of_obst(i):
-#             if i == 0:
-#                 object_index = np.argmin(calculate_distance(circ_obst_coords, ray_coords))
-#                 object_type = circle
-#             elif i == 1:
-#                 object_index = np.argmin(calculate_distance(circ_obst_coords, ray_coords))
-#                 object_type = rectangle
-#             elif i == 2:
-#                 object_index = np.argmin(canvas_length - fish_coords[j])  # Hur ska index fungera för väggen?
-#                 object_type = wall
-#     return (object_type, object_index)
 
+def calc_closest_obst(ray_coords, type_of_obst, ray_index, object_index):
+    for i in range(len(type_of_obst)):
+        if type_of_obst[i]:
+            if i == 2:
+                distances = np.zeros(3)
+                for j in range(len(ray_index[:,1])):
+                    distances[j] = np.sqrt((ray_coords[ray_index[j, 0]] - circ_obst_coords[object_index[j], 0]) ** 2 + (
+                                ray_coords[ray_index[j], 1] - circ_obst_coords[object_index[j], 1]) ** 2)
+                object_index = np.argmin(distances)
+                object_type = 'circle'
+            elif i == 1:
+                distances = np.zeros(3)
+                for j in range(len(ray_index)):
+                    distances[j] = np.sqrt((ray_coords[ray_index[j], 0] - circ_obst_coords[object_index[j], 0]) ** 2 + (
+                            ray_coords[ray_index[j], 1] - circ_obst_coords[object_index[j], 1]) ** 2)
+                object_index = np.argmin(distances)
+                object_type = 'rectangle'
+            elif i == 0:
+                object_index = -1  # Hur ska index fungera för väggen?
+                object_type = 'wall'
+    return [object_type, object_index]
 
 
 # Kallar på de grafiska funktionerna
@@ -327,7 +335,7 @@ for t in range(simulation_iterations):
         detect_ray_index = detect_info[2]
 
         if(True in detect_boolean):
-            time.sleep(0.5)
+            object_array = calc_closest_obst(rays_coords[j], detect_boolean, detect_obst_index, detect_ray_index)
 
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
