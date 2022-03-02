@@ -401,7 +401,6 @@ for t in range(simulation_iterations):
                                                  detect_obst_ray_index)
                 closest_obst_type = closest_info[1]
                 closest_obst_index = closest_info[2]
-                print(detect_ray_boolean)
                 k = list(set(detect_obst_index[closest_obst_type])).index(closest_obst_index)
                 closest_obs_ray_bool = detect_ray_boolean[closest_obst_type][k]
 
