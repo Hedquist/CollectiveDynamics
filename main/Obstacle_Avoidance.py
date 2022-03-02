@@ -16,16 +16,18 @@ tk.attributes('-topmost', 0)
 canvas.place(x=res / 20, y=res / 20, height=res, width=res) # Place canvas with origin in x och y
 ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
-# Raycasting
-FOV_angle = np.pi/3 # Field of view angle
-half_FOV = FOV_angle/2
-casted_rays = 6
-step_angle = FOV_angle/(casted_rays-1)
 
 # Parameters of the fishes
 fish_interaction_radius = 10 # Interaction radius
 fish_graphic_radius = 2 # Radius of agent
 fish_noise = 0.1 # Diffusional noise constant
+
+# Raycasting
+step_angle = 2 * np.arctan(fish_graphic_radius / fish_interaction_radius)
+casted_rays = 6
+FOV_angle = step_angle * (casted_rays - 1) # Field of view angle
+half_FOV = FOV_angle/2
+
 
 # Parameters for shark
 
