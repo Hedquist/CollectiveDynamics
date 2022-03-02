@@ -57,8 +57,5 @@ arr = [[2,2], [3,3]]
 list = [2,3,np.inf]
 print(np.min(list))
 
-s = '5, 3'
-print(s.split(','))
-
-s = ' '
-print(bool(s))
+arr = [True, True]
+print(all(arr))
