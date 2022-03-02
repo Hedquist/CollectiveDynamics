@@ -306,13 +306,13 @@ def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
             elif(obst_type[type]=='rect'):
                 dist = [ np.linalg.norm(rect_obst_coords[obst_ray_index[i][0]]-ray_coords[obst_ray_index[i][1]]) for i in range(len(obst_ray_index))]
                 minIndex = np.argmin(dist)
-                closest_dist_all[type] = min(dist)
+                closest_dist_all[type] = dist[minIndex]
                 closest_obst_index[type] = obst_ray_index[minIndex][0]
                 closest_ray_index[type] = obst_ray_index[minIndex][1]
             elif (obst_type[type]=='circ'):
                 dist = [ np.linalg.norm(circ_obst_coords[obst_ray_index[i][0]]-ray_coords[obst_ray_index[i][1]]) for i in range(len(obst_ray_index))]
                 minIndex = np.argmin(dist)
-                closest_dist_all[type] = min(dist)
+                closest_dist_all[type] = dist[minIndex]
                 closest_obst_index[type] = obst_ray_index[minIndex][0]
                 closest_ray_index[type] = obst_ray_index[minIndex][1]
         else:
