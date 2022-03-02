@@ -56,7 +56,7 @@ fish_orientations = np.random.rand(fish_count) * 0 * np.pi  # orientations
 
 
 # Koordinater för runda hinder
-x_circ_obst = [(0.5 * 2 - 1) * canvas_length, (0.75 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.25 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length]
+x_circ_obst = [(0.5 * 2 - 1) * canvas_length, (0.55 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.25 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length]
 y_circ_obst = [(0.25 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.75 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length]
 circ_obst_coords = np.array(list(zip(x_circ_obst, y_circ_obst)))
 obst_radius = [5 for i in range(len(circ_obst_coords))]
@@ -321,8 +321,9 @@ def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
     index = np.argmin(closest_dist_all)
     closest_dist = closest_dist_all[index] # Eller bara index :)
     closest_type = obst_type[index]
+    closes_obst = index
     closest_ray = closest_ray_index[index]
-    result = [closest_type,closest_dist,closest_ray]
+    result = [closest_type,closes_obst, closest_dist,closest_ray]
 
     return result
 
@@ -368,11 +369,9 @@ for t in range(simulation_iterations):
         detect_obst_ray_index = [ list(zip(*[detect_obst_index[i],detect_ray_index[i]])) for i in range(len(detect_obst_index)) ]
 
         if(True in detect_type_of_obst):
-            time.sleep(0.5)
-            #print(len(detect_obst_ray_index))
-            calc_closest_obst(fish_coords[j],rays_coords[j],detect_type_of_obst,detect_obst_ray_index)
-            print(detect_obst_ray_index)
-            #print(detect_obst_ray_index)
+            time.sleep(0.1)
+            closest_info = calc_closest_obst(fish_coords[j],rays_coords[j],detect_type_of_obst,detect_obst_ray_index)
+            print(closest_info)
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
         fish_orientations[j] = np.angle(np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(-1 / 2, 1 / 2)

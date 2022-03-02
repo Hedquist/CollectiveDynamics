@@ -271,27 +271,41 @@ def detect_obst(ray_coords):
     return result
 
 
-def calc_closest_obst(ray_coords, type_of_obst, ray_index, object_index):
-    for i in range(len(type_of_obst)):
-        if type_of_obst[i]:
-            if i == 2:
-                distances = np.zeros(3)
-                for j in range(len(ray_index[:,1])):
-                    distances[j] = np.sqrt((ray_coords[ray_index[j, 0]] - circ_obst_coords[object_index[j], 0]) ** 2 + (
-                                ray_coords[ray_index[j], 1] - circ_obst_coords[object_index[j], 1]) ** 2)
-                object_index = np.argmin(distances)
-                object_type = 'circle'
-            elif i == 1:
-                distances = np.zeros(3)
-                for j in range(len(ray_index)):
-                    distances[j] = np.sqrt((ray_coords[ray_index[j], 0] - circ_obst_coords[object_index[j], 0]) ** 2 + (
-                            ray_coords[ray_index[j], 1] - circ_obst_coords[object_index[j], 1]) ** 2)
-                object_index = np.argmin(distances)
-                object_type = 'rectangle'
-            elif i == 0:
-                object_index = -1  # Hur ska index fungera för väggen?
-                object_type = 'wall'
-    return [object_type, object_index]
+def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
+    obst_type = ['wall', 'rect', 'circ']
+    closest_obst_index = [[],[],[]]
+    closest_ray_index = [[],[],[]]
+    closest_dist_all = [[],[],[]]
+
+    for type in range(len(obst_type)):
+        if type_of_obst[type]:
+            if(obst_type[type]=='wall'):
+                closest_dist_all[type] = np.min(canvas_length- np.absolute(np.array(fish_coord)) - fish_graphic_radius)
+                closest_obst_index[type] = 0 # Hur ska index fungera för väggen?
+                #closest_ray_index[type] = obst_ray_index[type][i][1]
+            elif(obst_type[type]=='rect'):
+                dist = [ np.linalg.norm(rect_obst_coords[obst_ray_index[type][i][0]]-ray_coords[obst_ray_index[type][i][1]]) for i in range(len(obst_ray_index[type]))]
+                minIndex = np.argmin(dist)
+                closest_dist_all[type] = dist[minIndex]
+                closest_obst_index[type] = obst_ray_index[type][minIndex][0]
+                closest_ray_index[type] = obst_ray_index[type][minIndex][1]
+            elif (obst_type[type]=='circ'):
+                dist = [ np.linalg.norm(circ_obst_coords[obst_ray_index[type][i][0]]-ray_coords[obst_ray_index[type][i][1]]) for i in range(len(obst_ray_index[type]))]
+                minIndex = np.argmin(dist)
+                closest_dist_all[type] = dist[minIndex]
+                closest_obst_index[type] = obst_ray_index[type][minIndex][0]
+                closest_ray_index[type] = obst_ray_index[type][minIndex][1]
+        else:
+            closest_dist_all[type] = np.inf
+
+    index = np.argmin(closest_dist_all)
+    closest_dist = closest_dist_all[index] # Eller bara index :)
+    closest_type = obst_type[index]
+    closes_obst = index
+    closest_ray = closest_ray_index[index]
+    result = [closest_type,closes_obst, closest_dist,closest_ray]
+
+    return result
 
 
 # Kallar på de grafiska funktionerna

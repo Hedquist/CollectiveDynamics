@@ -14,7 +14,7 @@ Calc_closest_obst(ray_coords, type_of_obst):
     return(objekttyp, objectindex, avstånd)
 
 Avoid(ray_coords, type_of_obst, obst_index):
-    Ta fram vilken ray som inte är upptagen
+    Ta fram vilken ray som inte är upptagen relativ det närmsta objektet
     Använd den som referens
     Beräknar avståndet mellan fiskens grafikradie och hindrets perifer i riktning av den ockupperade rayen
     Skala vinkeländringen med avståndet
@@ -69,3 +69,10 @@ def calc_closest_obst(fish_coords, ray_coords, type_of_obst, obst_ray_index):
 
 Avoid()
     calc_closest distance
+
+
+TO DO:
+LÄgg till en ytterliggare boolean relativt hinder
+Ändrar avståndsberäkning i calc_closest
+Ändrar FOV så att avstånd mellan två ray i mitten är lika med fiskens radie
+Avstånd till kvadrat = minus bredden
