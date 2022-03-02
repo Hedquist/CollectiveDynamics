@@ -345,7 +345,7 @@ def avoid_obstacle(closest_type, closest_obst, ray_boolean):
                                                    fish_coords[j]) - obst_rect_width - fish_graphic_radius
     elif closest_type == 'wall':
         closest_obst_distance = np.min(canvas_length - np.absolute(fish_coords[j]) - fish_graphic_radius)
-    print(closest_obst_distance)
+    # print(closest_obst_distance)
 
 
 # Kallar på de grafiska funktionerna
@@ -402,8 +402,11 @@ for t in range(simulation_iterations):
                                                  detect_obst_ray_index)
                 closest_obst_type = closest_info[1]
                 closest_obst_index = closest_info[2]
-                #print(closest_info[0])
-                k = list(set(detect_obst_index[closest_obst_type])).index(closest_obst_index)
+                if(closest_obst_type == 0):
+                    closest_obs_ray_bool = detect_ray_boolean[closest_obst_type]
+                else:
+                    k = list(set(detect_obst_index[closest_obst_type])).index(closest_obst_index)
+                    closest_obs_ray_bool = detect_ray_boolean[closest_obst_type][k]
                 closest_obs_ray_bool = detect_ray_boolean[closest_obst_type][k]
                 avoid_obstacle(closest_info[0], closest_obst_index, closest_obs_ray_bool)
 
