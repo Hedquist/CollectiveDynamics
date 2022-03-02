@@ -26,7 +26,7 @@ step_angle = FOV_angle/(casted_rays-1)
 # Parameters of the fishes
 fish_interaction_radius = 10 # Interaction radius
 fish_graphic_radius = 2 # Radius of agent
-fish_noise = 0.1 # Diffusional noise constant
+fish_noise = 0.01 # Diffusional noise constant
 
 # Parameters for shark
 
@@ -49,10 +49,10 @@ fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
 '''
 
 # Debug
-x=np.array(0.2*np.ones(fish_count) * 2 * canvas_length - canvas_length)
-y=np.array(0.2*np.ones(fish_count) * 2 * canvas_length - canvas_length)
+x=np.array(0.52*np.ones(fish_count) * 2 * canvas_length - canvas_length)
+y=np.array(0.25*np.ones(fish_count) * 2 * canvas_length - canvas_length)
 fish_coords = np.column_stack((x, y))
-fish_orientations = np.random.rand(fish_count) * 0 * np.pi  # orientations
+fish_orientations = np.ones(fish_count) * 0.5 * np.pi  # orientations
 
 
 # Koordinater för runda hinder
@@ -329,7 +329,7 @@ def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
 
 # Kallar på de grafiska funktionerna
 cast_rays()
-generate_fish_not_inside_obstacle_coordinates()
+#generate_fish_not_inside_obstacle_coordinates()
 draw_fishes()
 draw_circular_obstacles()
 draw_rectangular_obstacles()
@@ -369,9 +369,9 @@ for t in range(simulation_iterations):
         detect_obst_ray_index = [ list(zip(*[detect_obst_index[i],detect_ray_index[i]])) for i in range(len(detect_obst_index)) ]
 
         if(True in detect_type_of_obst):
-            time.sleep(0.1)
+            time.sleep(0.5)
             closest_info = calc_closest_obst(fish_coords[j],rays_coords[j],detect_type_of_obst,detect_obst_ray_index)
-            print(closest_info)
+            print(detect_ray_index)
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
         fish_orientations[j] = np.angle(np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(-1 / 2, 1 / 2)
