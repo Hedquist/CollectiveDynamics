@@ -323,7 +323,7 @@ def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
     closest_type = obst_type[index]
     closest_ray = closest_ray_index[index]
     result = [closest_type,closest_dist,closest_ray]
-    print(result)
+
     return result
 
 # Kallar på de grafiska funktionerna
@@ -371,6 +371,7 @@ for t in range(simulation_iterations):
             time.sleep(0.5)
             #print(len(detect_obst_ray_index))
             calc_closest_obst(fish_coords[j],rays_coords[j],detect_type_of_obst,detect_obst_ray_index)
+            print(detect_obst_ray_index)
             #print(detect_obst_ray_index)
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie

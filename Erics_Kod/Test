@@ -54,6 +54,8 @@ print([ list(zip(*[obst_type2[element],obst_type4[element]])) for element in ran
 # print([5 for i in range(5)])''
 # Obst, ray
 arr = [[2,2], [3,3]]
-
 list = [2,3,np.inf]
 print(np.min(list))
+
+s = '5, 3'
+print(s.split(','))
