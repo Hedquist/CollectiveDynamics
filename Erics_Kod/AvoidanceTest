@@ -1,5 +1,4 @@
 import itertools
-
 import numpy as np
 import matplotlib.pyplot as plt
 from tkinter import *
@@ -60,7 +59,7 @@ fish_orientations = np.random.rand(fish_count) * 0 * np.pi  # orientations
 x_circ_obst = [(0.5 * 2 - 1) * canvas_length, (0.75 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.25 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length]
 y_circ_obst = [(0.25 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.75 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length]
 circ_obst_coords = np.array(list(zip(x_circ_obst, y_circ_obst)))
-obst_radius = [10 for i in range(len(circ_obst_coords))]
+obst_radius = [5 for i in range(len(circ_obst_coords))]
 
 
 # Koordinater för rektangulära hinder, samt dess hörner
@@ -301,20 +300,21 @@ def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
     for type in range(len(obst_type)):
         if type_of_obst[type]:
             if(obst_type[type]=='wall'):
-                closest_dist_all[type] = np.min(canvas_length- np.array(fish_coord) - fish_graphic_radius)
+                closest_dist_all[type] = np.min(canvas_length- np.absolute(np.array(fish_coord)) - fish_graphic_radius)
                 closest_obst_index[type] = 0 # Hur ska index fungera för väggen?
+                #closest_ray_index[type] = obst_ray_index[type][i][1]
             elif(obst_type[type]=='rect'):
-                dist = [ np.linalg.norm(rect_obst_coords[obst_ray_index[i][0]]-ray_coords[obst_ray_index[i][1]]) for i in range(len(obst_ray_index))]
+                dist = [ np.linalg.norm(rect_obst_coords[obst_ray_index[type][i][0]]-ray_coords[obst_ray_index[type][i][1]]) for i in range(len(obst_ray_index[type]))]
                 minIndex = np.argmin(dist)
                 closest_dist_all[type] = dist[minIndex]
-                closest_obst_index[type] = obst_ray_index[minIndex][0]
-                closest_ray_index[type] = obst_ray_index[minIndex][1]
+                closest_obst_index[type] = obst_ray_index[type][minIndex][0]
+                closest_ray_index[type] = obst_ray_index[type][minIndex][1]
             elif (obst_type[type]=='circ'):
-                dist = [ np.linalg.norm(circ_obst_coords[obst_ray_index[i][0]]-ray_coords[obst_ray_index[i][1]]) for i in range(len(obst_ray_index))]
+                dist = [ np.linalg.norm(circ_obst_coords[obst_ray_index[type][i][0]]-ray_coords[obst_ray_index[type][i][1]]) for i in range(len(obst_ray_index[type]))]
                 minIndex = np.argmin(dist)
                 closest_dist_all[type] = dist[minIndex]
-                closest_obst_index[type] = obst_ray_index[minIndex][0]
-                closest_ray_index[type] = obst_ray_index[minIndex][1]
+                closest_obst_index[type] = obst_ray_index[type][minIndex][0]
+                closest_ray_index[type] = obst_ray_index[type][minIndex][1]
         else:
             closest_dist_all[type] = np.inf
 
@@ -323,7 +323,7 @@ def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
     closest_type = obst_type[index]
     closest_ray = closest_ray_index[index]
     result = [closest_type,closest_dist,closest_ray]
-
+    print(result)
     return result
 
 # Kallar på de grafiska funktionerna
@@ -362,13 +362,16 @@ for t in range(simulation_iterations):
 
         # Kallar på metoden här
         detect_info = detect_obst(rays_coords[j])
-        detect_boolean = detect_info[0]
+        detect_type_of_obst = detect_info[0]
         detect_obst_index = detect_info[1]
         detect_ray_index = detect_info[2]
+        detect_obst_ray_index = [ list(zip(*[detect_obst_index[i],detect_ray_index[i]])) for i in range(len(detect_obst_index)) ]
 
-        if(True in detect_boolean):
+        if(True in detect_type_of_obst):
             time.sleep(0.5)
-
+            #print(len(detect_obst_ray_index))
+            calc_closest_obst(fish_coords[j],rays_coords[j],detect_type_of_obst,detect_obst_ray_index)
+            #print(detect_obst_ray_index)
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
         fish_orientations[j] = np.angle(np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(-1 / 2, 1 / 2)
