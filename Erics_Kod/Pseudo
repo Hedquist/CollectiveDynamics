@@ -51,16 +51,19 @@ Detect(ray_coords):
 	return (obst_type_detect)
 
 def calc_closest_obst(fish_coords, ray_coords, type_of_obst, obst_ray_index):
-    closest_obst_type_index = [[],[],[]]
+    closest_obst_index = [[],[],[]]
+    closest_obst_dist = [[],[],[]]
     for type in range(len(obst_type)):
          if obst_type[type]:
             if(obst_type[type]=='wall'):
-                 object_index = np.argmin(canvas_length- np.array(fish_coord) - fish_graphic_radius)
+                 closest_obst_dist[type] = np.min(canvas_length- np.array(fish_coord) - fish_graphic_radius)
             elif(obst_type[type]=='rect'):
                  object_index = np.argmin(calculate_distance(circ_obst_coords, ray_coords))
             elif if(obst_type[type]=='circ'):
                  object_index = np.argmin(canvas_length - fish_coords[j])  # Hur ska index fungera för väggen?
-     return (object_type, object_index)
+         else:
+            closest_obst_dist[type] = np.inf
+     return (object_type, object_index, distance)
 
 
 

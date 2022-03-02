@@ -257,8 +257,6 @@ def update_position(coords, speed, orientations):  # Uppdaterar en partikels pos
 def has_true(arr):
     return any(chain(*arr))
 
-
-
 def detect_obst(ray_coords):
     obst_type = ['wall', 'rect', 'circ']
     n_rays = len(ray_coords)
@@ -294,6 +292,39 @@ def detect_obst(ray_coords):
     result = [obst_type_detect,obst_index,ray_index]
     return (result)
 
+def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
+    obst_type = ['wall', 'rect', 'circ']
+    closest_obst_index = [[],[],[]]
+    closest_ray_index = [[],[],[]]
+    closest_dist_all = [[],[],[]]
+
+    for type in range(len(obst_type)):
+        if type_of_obst[type]:
+            if(obst_type[type]=='wall'):
+                closest_dist_all[type] = np.min(canvas_length- np.array(fish_coord) - fish_graphic_radius)
+                closest_obst_index[type] = 0 # Hur ska index fungera för väggen?
+            elif(obst_type[type]=='rect'):
+                dist = [ np.linalg.norm(rect_obst_coords[obst_ray_index[i][0]]-ray_coords[obst_ray_index[i][1]]) for i in range(len(obst_ray_index))]
+                minIndex = np.argmin(dist)
+                closest_dist_all[type] = min(dist)
+                closest_obst_index[type] = obst_ray_index[minIndex][0]
+                closest_ray_index[type] = obst_ray_index[minIndex][1]
+            elif (obst_type[type]=='circ'):
+                dist = [ np.linalg.norm(circ_obst_coords[obst_ray_index[i][0]]-ray_coords[obst_ray_index[i][1]]) for i in range(len(obst_ray_index))]
+                minIndex = np.argmin(dist)
+                closest_dist_all[type] = min(dist)
+                closest_obst_index[type] = obst_ray_index[minIndex][0]
+                closest_ray_index[type] = obst_ray_index[minIndex][1]
+        else:
+            closest_dist_all[type] = np.inf
+
+    index = np.argmin(closest_dist_all)
+    closest_dist = closest_dist_all[index] # Eller bara index :)
+    closest_type = obst_type[index]
+    closest_ray = closest_ray_index[index]
+    result = [closest_type,closest_dist,closest_ray]
+
+    return result
 
 # Kallar på de grafiska funktionerna
 cast_rays()
