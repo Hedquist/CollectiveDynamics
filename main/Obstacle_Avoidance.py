@@ -37,7 +37,7 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 1  # Number of particles
+fish_count = 100 # Number of particles
 
 x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -335,8 +335,8 @@ def calc_closest_obst(fish_coord, ray_coords, type_of_obst, obst_ray_index):
 
     return result
 
-
 def avoid_obstacle(closest_type, closest_obst, ray_boolean):
+    avoid_angle = 0
     if closest_type == 'circ':
         closest_obst_distance = np.linalg.norm(circ_obst_coords[closest_obst] -
                                                    fish_coords[j]) - obst_radius[closest_obst] - fish_graphic_radius
@@ -346,6 +346,23 @@ def avoid_obstacle(closest_type, closest_obst, ray_boolean):
     elif closest_type == 'wall':
         closest_obst_distance = np.min(canvas_length - np.absolute(fish_coords[j]) - fish_graphic_radius)
     # print(closest_obst_distance)
+
+    if not ray_boolean[int(len(ray_boolean) / 2 - 1)] and not ray_boolean[int(len(ray_boolean) / 2)] :
+        sign = 0
+    else:
+        i = 1
+        first_free_index = int(len(ray_boolean) / 2) - 1
+        while (ray_boolean[first_free_index]):
+            first_free_index += i * (-1) ** (i - 1)
+            i += 1
+        sign = -1  if(first_free_index <= 2) else 1
+
+    angle_weight = np.pi/2/closest_obst_distance*sign
+    return  angle_weight
+
+
+
+
 
 
 # Kallar på de grafiska funktionerna
@@ -397,18 +414,17 @@ for t in range(simulation_iterations):
                                      range(len(detect_obst_index))]
 
             if (True in detect_type_of_obst):
-                time.sleep(0.05)
+                #time.sleep(0.05)
                 closest_info = calc_closest_obst(fish_coords[j], rays_coords[j], detect_type_of_obst,
                                                  detect_obst_ray_index)
                 closest_obst_type = closest_info[1]
                 closest_obst_index = closest_info[2]
                 if(closest_obst_type == 0):
-                    closest_obs_ray_bool = detect_ray_boolean[closest_obst_type]
+                    closest_obs_ray_bool = detect_ray_boolean[closest_obst_type][0]
                 else:
                     k = list(set(detect_obst_index[closest_obst_type])).index(closest_obst_index)
                     closest_obs_ray_bool = detect_ray_boolean[closest_obst_type][k]
-                closest_obs_ray_bool = detect_ray_boolean[closest_obst_type][k]
-                avoid_obstacle(closest_info[0], closest_obst_index, closest_obs_ray_bool)
+                avoid_angle = avoid_obstacle(closest_info[0], closest_obst_index, closest_obs_ray_bool)
 
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[
             j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar

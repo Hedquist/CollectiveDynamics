@@ -76,3 +76,8 @@ LÄgg till en ytterliggare boolean relativt hinder
 Ändrar avståndsberäkning i calc_closest
 Ändrar FOV så att avstånd mellan två ray i mitten är lika med fiskens radie
 Avstånd till kvadrat = minus bredden
+
+Avoidance diskussion:
+Vad händer när alla är upptagna?
+Ändrar vinkeln till den närmsta lediga ray?
+Jobba med rays från mitten och utåt
