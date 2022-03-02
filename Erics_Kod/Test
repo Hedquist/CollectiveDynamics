@@ -59,3 +59,6 @@ print(np.min(list))
 
 s = '5, 3'
 print(s.split(','))
+
+s = ' '
+print(bool(s))
