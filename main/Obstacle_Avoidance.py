@@ -37,7 +37,7 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 1 # Number of particles
+fish_count = 10 # Number of particles
 
 x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -308,7 +308,7 @@ def detect_closest_obst(ray_coords, fish_coord):
 def avoid_obstacle(closest_type, closest_obst, ray_boolean):
     if closest_type == 'circ':
         closest_obst_distance = np.linalg.norm(circ_obst_coords[closest_obst] -
-                                               fish_coords[j]) - obst_radius[closest_obst] - fish_graphic_radius
+                                    fish_coords[j]) - obst_radius[closest_obst] - fish_graphic_radius
     elif closest_type == 'rect':
         closest_obst_distance = np.linalg.norm(rect_obst_coords[closest_obst] -
                                                fish_coords[j]) - obst_rect_width - fish_graphic_radius
