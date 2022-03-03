@@ -32,6 +32,9 @@ shark_speed = 3  # Hajens fart
 fish_eaten = [] # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0    # Antal fiskar ätna
 
+fish_turn_speed = 0.05
+shark_turn_speed = 0.015
+
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
 fish_orientations_file = 'fish_orientations_initial.npy'
@@ -46,9 +49,12 @@ else:
     fish_coords = np.load(fish_coords_file)  # Array med alla fiskars x- och y-koord
     fish_orientations = np.load(fish_orientations_file)  # Array med alla fiskars riktning
 
+fish_desired_orientations = fish_orientations.copy()  # Array med alla fiskars önskade riktning
+
 # Startkoordinater hajar
 shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
+shark_desired_orientations = shark_orientations.copy()  # Array med alla hajars önskade riktning
 
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
@@ -77,6 +83,26 @@ def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i 
     else:
         return np.arctan2((coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length),
                           (coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length))
+
+
+def torque_turn(desired_orientation, current_orientation, turn_speed):
+    relative_orientation = current_orientation - desired_orientation  # makes calculation easier
+    if relative_orientation == 0:
+        return desired_orientation  # if desired angle is equal to current angle, do nothing
+    elif relative_orientation > 0:
+        calc = current_orientation - (np.pi * turn_speed)  # turn speed of 1 means you can turn pi radians per tick,
+        new_orientation = np.maximum(calc, desired_orientation)  # turn speed of 0 means no turning
+    else:
+        calc = current_orientation + (np.pi * turn_speed)
+        new_orientation = np.minimum(calc, desired_orientation)  # This line prevents "overturning"
+    return new_orientation
+
+
+# uses torque_turn to update orientation array according to desired_orientation
+def update_orientation(current_orientations, desired_orientations, turn_speed):
+    for n in range(len(current_orientations)):
+        current_orientations[n] = torque_turn(desired_orientations[n], current_orientations[n], turn_speed)
+    return current_orientations
 
 
 def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Cluster Coefficient
@@ -131,7 +157,11 @@ clustering_coeff_canvas_text = canvas.create_text(100, 40,
 
 # Loop för allt som ska ske varje tidssteg i simulationen
 for t in range(simulation_iterations):
+    # Uppdatera fiskarnas orientationer innan uppdatering av positioner
+    fish_orientations = update_orientation(fish_orientations, fish_desired_orientations, fish_turn_speed)
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
+    # Uppdatera hajarnas orientationer innan uppdatering av positioner
+    shark_orientations = update_orientation(shark_orientations, shark_desired_orientations, shark_turn_speed)
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
     shark_fish_distances = calculate_distance(fish_coords, shark_coords[
         0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
@@ -170,14 +200,14 @@ for t in range(simulation_iterations):
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
 
         if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
-            fish_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
+            fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
         else:  # Annars Vicsek-modellen
-            fish_orientations[j] = np.angle(
+            fish_desired_orientations[j] = np.angle(
                 np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                 -1 / 2, 1 / 2)
 
         #   Shark direction härifrån
-        shark_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
+        shark_desired_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
 
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
