@@ -37,7 +37,7 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 100 # Number of particles
+fish_count = 1 # Number of particles
 
 x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -350,14 +350,17 @@ def avoid_obstacle(closest_type, closest_obst, ray_boolean):
     if not ray_boolean[int(len(ray_boolean) / 2 - 1)] and not ray_boolean[int(len(ray_boolean) / 2)] :
         sign = 0
     else:
-        i = 1
-        first_free_index = int(len(ray_boolean) / 2) - 1
-        while (ray_boolean[first_free_index]):
-            first_free_index += i * (-1) ** (i - 1)
-            i += 1
-        sign = -1  if(first_free_index <= 2) else 1
+        if(all(ray_boolean)):
+            sign = 1
+        else:
+            i = 1
+            first_free_index = int(len(ray_boolean) / 2) - 1
+            while (ray_boolean[first_free_index]):
+                first_free_index += i * (-1) ** (i - 1)
+                i += 1
+            sign = -1  if(first_free_index <= 2) else 1
 
-    angle_weight = np.pi/2/closest_obst_distance*sign
+    angle_weight = np.pi/4/closest_obst_distance*sign
     return  angle_weight
 
 
