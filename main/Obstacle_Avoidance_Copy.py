@@ -386,21 +386,6 @@ def rect_obst_avoid(fish_coord, ray_angles, heading_direction, index, rays_boole
     return avoid_wall_angle
 
 
-def calc_closest_obst(ray_coords, type_of_obst):
-    for i in length(type_of_obst):
-        if type_of_obst(i):
-            if i == 0:
-                object_index = np.argmin(calculate_distance(circ_obst_coords, ray_coords))
-                object_type = circle
-            elif i == 1:
-                object_index = np.argmin(calculate_distance(circ_obst_coords, ray_coords))
-                object_type = rectangle
-            elif i == 2:
-                object_index = np.argmin(canvas_length - fish_coords[j])  # Hur ska index fungera för väggen?
-                object_type = wall
-    return (object_type, object_index)
-
-
 # Kallar på de grafiska funktionerna
 cast_rays()
 generate_fish_not_inside_obstacle_coordinates()
