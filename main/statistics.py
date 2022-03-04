@@ -1,4 +1,4 @@
-# Program som  beräknar medelvärden och std
+# Program som  beräknar medelvärden och std samt plottar en figur
 import numpy as np
 import matplotlib.pyplot as plt
 import several_predators as sp
@@ -16,7 +16,7 @@ for i in range(n):
 fish_eaten_mean = np.mean(data, axis=1)  # Beräkna medelvärdet längs rader
 fish_eaten_std = np.std(data, axis=1)  # Beräkna standardavvikelsen längs rader
 fig, ax = plt.subplots()
-markers, caps, bars = ax.errorbar(t, fish_eaten_mean, yerr=fish_eaten_std, fmt='bo')
+markers, caps, bars = ax.errorbar(t, fish_eaten_mean, yerr=fish_eaten_std, fmt='b-')
 [bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
 [cap.set_alpha(0.3) for cap in caps]
 plt.show()
