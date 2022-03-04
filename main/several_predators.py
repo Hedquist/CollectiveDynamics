@@ -27,10 +27,10 @@ if visuals_on:
 canvas_length = 500  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
-wait_time = 0.01  # Väntetiden mellan varje iteration
+wait_time = 0.001  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 1  # Antal fiskar
+fish_count = 4  # Antal fiskar
 fish_graphic_radius = 8  # Radie av ritad cirkel
 fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -42,11 +42,11 @@ shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 shark_count = 2  # Antal hajar
 shark_graphic_radius = 10  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
-murder_radius = 2  # Hajen äter fiskar inom denna radie
+shark_interaction_radius = 100 # Radien som Hajen "ser"
+murder_radius = 10  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
 
-print(np.arctan2(0.1, -1))
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
 fish_orientations_file = 'fish_orientations_initial.npy'
@@ -62,12 +62,12 @@ else:
     fish_orientations = np.load(fish_orientations_file)  # Array med alla fiskars riktning
 
 # Startkoordinater hajar
-shark_x = (np.random.rand(shark_count) * 2 * canvas_length - canvas_length)/2  # shark x coordinates
-shark_y = (np.random.rand(shark_count) * 2 * canvas_length - canvas_length)/2  # shark y coordinates
+shark_x = (np.random.rand(shark_count) * 2 * canvas_length - canvas_length) / 2  # shark x coordinates
+shark_y = (np.random.rand(shark_count) * 2 * canvas_length - canvas_length) / 2  # shark y coordinates
 shark_coords = np.column_stack((shark_x, shark_y))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
-#shark_coords = np.array([[-50.0, 0.0], [0.0, 0.0]])
+# shark_coords = np.array([[-50.0, 0.0], [0.0, 0.0]])
 
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
@@ -145,35 +145,18 @@ def get_shark_avoidance(sharks_coords, target_fish, index):
     for k in range(shark_count):  # Tanken att det blir något average här mot alla hajar
         if k != index:
             distance_to_shark = get_distance(sharks_coords[index], sharks_coords[k])  # Avstånd från hajen till haj K
-            angle_to_shark = get_direction(sharks_coords[k], sharks_coords[index])  # Vinkeln från hajen till haj K
+            angle_to_shark = get_direction(sharks_coords[index], sharks_coords[k])  # Vinkeln från hajen till haj K
             # print(index)
             # print(angle_to_shark)
-            if orientation - angle_to_shark <= 0:  # Vill att den ska svänga bort från den andra hajen
-            # Osäker på hur mycket de olika faktornerna ska påverka
-                avoidance = -0.5 / (np.maximum(distance_to_shark,1)) * np.minimum(distance_to_fish,100) + avoidance
-            else:
-                avoidance = 0.5 * angle_to_shark / (np.maximum(distance_to_shark,1)) * np.minimum(distance_to_fish,100) + avoidance
+            if orientation - angle_to_shark < 0:  # Vill att den ska svänga bort från den andra hajen
+                # Osäker på hur mycket de olika faktornerna ska påverka
+                avoidance = -1 / (np.maximum(distance_to_shark, 1)) * np.minimum(distance_to_fish, 100) + avoidance
+            elif orientation - angle_to_shark > 0:
+                avoidance = 1 / (np.maximum(distance_to_shark, 1)) * np.minimum(distance_to_fish, 100) + avoidance
     # if distance_to_shark < 6 * fish_interaction_radius:
     # avoidance = (orientation + angle_to_shark) / 2
 
-
-    return avoidance
-
-'''
-def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Cluster Coefficient
-    v = Voronoi(coords)
-    coeff = 0
-    for i, reg_num in enumerate(v.point_region):
-        # clock = time.time()
-        indices = v.regions[reg_num]
-
-        if -1 not in indices:  # some regions can be opened
-            area = Polygon(v.vertices[indices]).area
-            if area < interaction_radius ** 2 * np.pi:
-                coeff = coeff + 1
-
-    return coeff / count
-'''
+    return avoidance / (len(shark_coords) - 1)
 
 
 def murder_fish_coords(dead_fish_index):  # Tar bort fisk-coord som blivit uppäten
@@ -204,6 +187,14 @@ def get_fish_avoidance(fish_index, fish_near_shark, shark_near_fish):
             count += 1
     return avoidance / count
 
+def get_target_fish(sharks_fish_distance, index):
+
+    current_fish = 0
+    for i in sharks_fish_distance:
+        next = sum(sharks_fish_distance[i])
+
+    return 0
+
 
 if visuals_on:
     for j in range(shark_count):  # Skapar cirklar för hajar
@@ -220,20 +211,13 @@ if visuals_on:
                                (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                                (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                                outline=ccolor[0], fill=ccolor[0]))
-    '''
-    # Skapar ett canvas textobjekt för global alignemnt coefficent
-    global_alignment_canvas_text = canvas.create_text(100, 20, text=1 / fish_count * np.linalg.norm(
-        [np.sum(np.cos(fish_orientations)),
-         np.sum(np.sin(fish_orientations))]))
 
-# Skapar ett canvas textobjekt för clustering coefficent
-clustering_coeff_canvas_text = canvas.create_text(100, 40,
-                                                  text=calculate_cluster_coeff(fish_coords, fish_interaction_radius,
-                                                                               fish_count))
-'''
+
+
 # Skapar ett canvas textobjekt för antalet fiskar
-fish_count_canvas_text = canvas.create_text(100, 20,
-                                            text=len(fish_coords))
+if visuals_on:
+    fish_count_canvas_text = canvas.create_text(100, 20,
+                                                text=len(fish_coords))
 
 # Loop för allt som ska ske varje tidssteg i simulationen
 for t in range(simulation_iterations):
@@ -256,12 +240,14 @@ for t in range(simulation_iterations):
     shark_fish_distance_matrix = scipy.spatial.distance.cdist(shark_coords,
                                                               fish_coords)  # Skapa matris med haj-till-fisk-avstånd
 
+    print(shark_fish_distance_matrix)
     shark_near_fish_index = np.where(shark_fish_distance_matrix < fish_interaction_radius)[0]
     # print(np.where(shark_fish_distance_matrix < fish_interaction_radius)[0])
 
     fish_near_shark_index = np.where(shark_fish_distance_matrix < fish_interaction_radius)[1]
     # print(np.where(shark_fish_distance_matrix < fish_interaction_radius)[1])
     # Bestäm närmsta fisk
+
 
     closest_fish = np.zeros(shark_count, dtype=int)
     for j in range(shark_count):
@@ -309,6 +295,7 @@ for t in range(simulation_iterations):
 
     #   Shark direction härifrån
     for i in range(shark_count):
+        target_fish = get_target_fish(shark_fish_distance_matrix, i)
         predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
                                                 shark_fish_distance_matrix[i, closest_fish[i]])
         # shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
@@ -366,7 +353,7 @@ plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
 plt.xlabel('Tid')
 plt.ylabel('% av fiskar ätna')
 print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
-#plt.show()
+# plt.show()
 
-if visuals_on:
-    tk.mainloop()
+# if visuals_on:
+# tk.mainloop()
