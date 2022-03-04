@@ -168,8 +168,6 @@ def get_fish_avoidance(fish_index, fish_near_shark, shark_near_fish):
         if fish_near_shark[i] == fish_index:
             avoidance = get_direction(shark_coords[shark_near_fish[i]],fish_coords[fish_index]) + avoidance
             count += 1
-    print(fish_index)
-    print(avoidance / count)
     return avoidance / count
 
 
