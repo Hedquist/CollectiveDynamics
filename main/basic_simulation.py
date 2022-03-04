@@ -29,8 +29,8 @@ murder_radius = 5  # Hajen äter fiskar inom denna radie
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
 shark_speed = 3  # Hajens fart
-fish_eaten = [] # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
-fish_eaten_count = 0    # Antal fiskar ätna
+fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
+fish_eaten_count = 0  # Antal fiskar ätna
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -112,24 +112,25 @@ def murder_fish_orientations(dead_fish_index):
     return new_fish_orientations
 
 
-def detect_wall(fish_near_wall):
-    rays_outside_wall = (canvas_length - np.absolute(np.array(rays_coords[fish_near_wall]))) < 0
-    for k in np.size(rays_outside_wall,1):
-        if not rays_outside_wall[int(len(rays_outside_wall) / 2 - 1)] and not rays_outside_wall[int(len(rays_outside_wall) / 2)]:
-            sign = 0
+def detect_wall(ray_coords):
+    rays_outside_wall = canvas_length - np.absolute(np.array(ray_coords)) < 0
+    if not rays_outside_wall[int(len(rays_outside_wall) / 2 - 1)] and not rays_outside_wall[
+        int(len(rays_outside_wall) / 2)]:
+        sign = 0
+    else:
+        if all(rays_outside_wall):
+            sign = 1
         else:
-            if all(rays_outside_wall):
-                sign = 1
-            else:
-                i = 1
-                first_free_index = int(len(rays_outside_wall) / 2) - 1
-                while rays_outside_wall[first_free_index]:
-                    first_free_index += i * (-1) ** (i - 1)
-                    i += 1
-                sign = -1 if (first_free_index <= 2) else 1
+            i = 1
+            first_free_index = int(len(rays_outside_wall) / 2) - 1
+            while rays_outside_wall[first_free_index]:
+                first_free_index += i * (-1) ** (i - 1)
+                i += 1
+            sign = -1 if (first_free_index <= 2) else 1
 
-    angle_weight = np.pi / 4  * sign
+    angle_weight = np.pi / 4 * sign  # Vikta med avstånd
     return angle_weight
+
 
 def cast_rays():
     for j in range(fish_count):
@@ -179,9 +180,6 @@ for t in range(simulation_iterations):
 
     closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
 
-    # print(closest_fish)
-    # print(shark_coords)
-
     for j in range(shark_count):
         # Updating animation coordinates haj
         canvas.coords(shark_canvas_graphics[j],
@@ -215,6 +213,9 @@ for t in range(simulation_iterations):
 
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[
             j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
+
+        if fish_near_wall[j, 0] or fish_near_wall[j, 1]:
+            avoid_angle = detect_wall(rays_coords[j])
 
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
 
@@ -256,8 +257,8 @@ for t in range(simulation_iterations):
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame
     time.sleep(0.01)  # Wait between loops
-fish_eaten = np.array(fish_eaten) # Gör om till array för att kunna plotta
-plt.plot(fish_eaten[:, 1], fish_eaten[:, 0]) # Plotta
+fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
+plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
 plt.xlabel('Tid')
 plt.ylabel('Antal fiskar ätna')
 plt.show()
