@@ -133,7 +133,7 @@ def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i 
 
 def get_shark_direction(sharks, target_fish, index):  # Ger riktningen för hajar
     shark = sharks[index]
-    avoidance = get_shark_avoidance_2(sharks, target_fish, index)
+    avoidance = get_shark_avoidance(sharks, target_fish, index) #Ta bort 2:an och understrecket så kör den gamla
 
     return np.arctan2(target_fish[1] - shark[1], target_fish[0] - shark[0]) + avoidance
 
@@ -305,10 +305,8 @@ for t in range(simulation_iterations):
                           (fish_coords[
                                j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
 
-            if j in closest_fish:
-                canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
-            else:
-                canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
+
+            canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
 
         # inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j
         # och alla andra fiskar
@@ -332,14 +330,8 @@ for t in range(simulation_iterations):
                                                 shark_fish_distance_matrix[i, target_fish])
         # shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
         shark_orientations[i] = get_shark_direction(shark_coords, predicted_fish_coord, i)
-    '''
-    # Beräknar Global Alignment
-    global_alignment_coeff = 1 / fish_count * np.linalg.norm(
-        [np.sum(np.cos(fish_orientations)), np.sum(np.sin(fish_orientations))])
 
-    # Beräknar clustering coefficent
-    clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
-'''
+        canvas.itemconfig(fish_canvas_graphics[target_fish], fill=ccolor[2])
     # Kollar om närmaste fisk är inom murder radien
     shark_closest_fish_distances = np.zeros(shark_count)  # Avstånd från varje haj till dess närmsta fisk
     # Haj äter fisk
