@@ -40,7 +40,7 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100 # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 2# Number of particles
+fish_count = 1# Number of particles
 '''
 x=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -173,22 +173,6 @@ def draw_rectangular_obstacles():
                                                                  (x_rect_obst[j] - obst_rect_width + canvas_length) * res / canvas_length / 2,
                                                                  (y_rect_obst[j] - obst_rect_height + canvas_length) * res / canvas_length / 2,
                                                                  outline=ccolor[5], fill=ccolor[4])) # x0,y0 - x1,y1))))
-# Ger index för den rayen som inte är upptagen
-def ray_index(ray_booleans):
-    if(isinstance(ray_booleans, np.ndarray)):
-        ray_booleans = np.ndarray.tolist(ray_booleans)
-    length = len(ray_booleans)
-    left_boolean = ray_booleans[:length // 2]
-    right_boolean = ray_booleans[length // 2:]
-    left_count = left_boolean.count(False)
-    right_count = right_boolean.count(False)
-    arr = np.array(ray_booleans)
-    indices = np.where(arr==False)
-    if(all(element == True for element in ray_booleans)):
-        index = 0
-    else:
-        index = np.min(indices) if (left_count >= right_count) else np.max(indices)
-    return index
 
 def is_point_inside_circle(circ_obst_coords, point, radius):
     return np.linalg.norm(circ_obst_coords-point) < radius
@@ -364,14 +348,19 @@ for t in range(simulation_iterations):
 
         # Obstacle Avoidance
         avoid_angle = 0
-        detect_info = detect_closest_obst(rays_coords[j],fish_coords[j])
-        detect_obst = detect_info[0]
+        rect_obst_in_radius = calculate_distance(rect_obst_coords,fish_coords[j]) < fish_interaction_radius
+        circ_obst_in_radius = calculate_distance(circ_obst_coords,fish_coords[j]) < fish_interaction_radius
+        wall_outside = [ is_point_outside_rectangle(wall_corner_coords , rays_coords[j][i], True) for i in range(casted_rays)]
 
-        if detect_obst:
-            closest_obst_type = detect_info[1]
-            closest_obst = detect_info[2]
-            closest_ray_boolean =  detect_info[3]
-            avoid_angle = avoid_obstacle(closest_obst_type, closest_obst, closest_ray_boolean)
+
+        if True in rect_obst_in_radius or True in circ_obst_in_radius or True in wall_outside:
+            detect_info = detect_closest_obst(rays_coords[j],fish_coords[j])
+            detect_obst = detect_info[0]
+            if detect_obst:
+                closest_obst_type = detect_info[1]
+                closest_obst = detect_info[2]
+                closest_ray_boolean =  detect_info[3]
+                avoid_angle = avoid_obstacle(closest_obst_type, closest_obst, closest_ray_boolean)
 
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
