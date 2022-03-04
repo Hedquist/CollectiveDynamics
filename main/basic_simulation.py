@@ -50,6 +50,14 @@ else:
 shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
+# Raycasting
+step_angle = 2 * np.arctan(fish_graphic_radius / fish_interaction_radius)
+casted_rays = 6
+FOV_angle = step_angle * (casted_rays - 1)  # Field of view angle
+half_FOV = FOV_angle / 2
+
+rays_coords = [[] for i in range(fish_count)]
+rays_angle_relative_velocity = [[] for i in range(fish_count)]
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
@@ -103,6 +111,87 @@ def murder_fish_orientations(dead_fish_index):
     new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
     return new_fish_orientations
 
+def detect_closest_obst(ray_coords, fish_coord):
+    obst_type = ['wall', 'rect', 'circ']
+    n_rays = len(ray_coords)
+    obst_type_detect = [[],[],[]] # Lista med vilken typ av hinder den känner av Korta listan
+    obst_detect = [[],[],[]] # Lista med vilken typ plus alla ray Långa listan
+    closest_obst_all = [[],[],[]]
+    list_obst_index_raydist_raybool = [[],[],[]]
+
+    for type in range(len(obst_type)):
+        for k in range(len(obst_coords[type])):
+            if obst_type[type]=='wall':
+                booleans = [ is_point_outside_rectangle(wall_corner_coords , ray_coords[i], True) for i in range(n_rays)] # Kollar om ray coordinaten är utanför
+                detect =  True in booleans
+                if detect:
+                    obst_detect[type].append(detect)
+                    closest_ray_dist = np.min(canvas_length- np.absolute(np.array(fish_coord)) - fish_graphic_radius)
+                    list_obst_index_raydist_raybool[type].append([k,closest_ray_dist,booleans])
+            elif obst_type[type]=='rect':
+                booleans = [is_point_outside_rectangle(rect_obst_corner_coords[k],ray_coords[i], False) for i in range(n_rays)]
+                detect =  True in booleans
+                if detect:
+                    obst_detect[type].append(detect)
+                    closest_ray_dist = np.min( [np.linalg.norm(np.array(rect_obst_coords[k])-np.array(ray_coords[index])) for index, element in enumerate(booleans) if element] )
+                    list_obst_index_raydist_raybool[type].append([k,closest_ray_dist , booleans])
+                    # Tar fram endast de avstånden som en ray är träffad, och minsta avstånden av dessa
+            elif obst_type[type]=='circ':
+                booleans = [ is_point_inside_circle(circ_obst_coords[k],ray_coords[i],obst_radius[k]) for i in range(n_rays)]
+                detect =  True in booleans
+                if detect :
+                    obst_detect[type].append(detect)
+                    closest_ray_dist = np.min( [np.linalg.norm(np.array(circ_obst_coords[k])-np.array(ray_coords[index])) for index, element in enumerate(booleans) if element] )
+                    list_obst_index_raydist_raybool[type].append([k,closest_ray_dist , booleans])
+        obst_type_detect[type] = True in obst_detect[type]
+        if obst_type_detect[type]:
+            closest_obst_all[type] = min(list_obst_index_raydist_raybool[type], key = lambda x: x[1])
+        else:
+            closest_obst_all[type] = [-1,np.inf,False]
+
+    min_dist_type =  min(closest_obst_all, key = lambda x: x[1]) # Ger den array med minsta avståndet i [[],[],[]]
+    closest_obst_index = min_dist_type[0]
+    closest_ray_boolean =  min_dist_type[2]
+    closest_obst_type = closest_obst_all.index(min_dist_type)
+    result = [True in obst_type_detect, obst_type[closest_obst_type],closest_obst_index,closest_ray_boolean]
+    return result
+
+def avoid_obstacle(closest_type, closest_obst, ray_boolean):
+    if closest_type == 'circ':
+        closest_obst_distance = np.linalg.norm(circ_obst_coords[closest_obst] -
+                                    fish_coords[j]) - obst_radius[closest_obst] - fish_graphic_radius
+    elif closest_type == 'rect':
+        closest_obst_distance = np.linalg.norm(rect_obst_coords[closest_obst] -
+                                               fish_coords[j]) - obst_rect_width - fish_graphic_radius
+    elif closest_type == 'wall':
+        closest_obst_distance = np.min(canvas_length - np.absolute(fish_coords[j]) - fish_graphic_radius)
+
+    if not ray_boolean[int(len(ray_boolean) / 2 - 1)] and not ray_boolean[int(len(ray_boolean) / 2)] :
+        sign = 0
+    else:
+        if all(ray_boolean):
+            sign = 1
+        else:
+            i = 1
+            first_free_index = int(len(ray_boolean) / 2) - 1
+            while ray_boolean[first_free_index] :
+                first_free_index += i * (-1) ** (i - 1)
+                i += 1
+            sign = -1  if(first_free_index <= 2) else 1
+
+    angle_weight = np.pi/4/closest_obst_distance*sign
+    return  angle_weight
+
+def cast_rays():
+    for j in range(fish_count):
+        start_angle = fish_orientations[j] - half_FOV  # Startvinkel
+        start_angle_arc = start_angle  # Memorerar för j:te partikeln
+        for ray in range(casted_rays):
+            rays_coords[j].append([fish_coords[j][0] + fish_interaction_radius * np.cos(start_angle),
+                                   fish_coords[j][1] + fish_interaction_radius * np.sin(start_angle)])
+            rays_angle_relative_velocity[j].append(start_angle)
+            start_angle += step_angle  # Uppdaterar vinkel för ray
+
 
 for j in range(shark_count):  # Skapar cirklar för hajar
     shark_canvas_graphics.append(
@@ -118,6 +207,8 @@ for j in range(fish_count):  # Skapar cirklar för fiskar
                            (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                            (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                            outline=ccolor[0], fill=ccolor[0]))
+
+cast_rays()
 
 # Skapar ett canvas textobjekt för global alignemnt coefficent
 global_alignment_canvas_text = canvas.create_text(100, 20, text=1 / fish_count * np.linalg.norm(
@@ -158,6 +249,25 @@ for t in range(simulation_iterations):
                       (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                       (fish_coords[
                            j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
+
+        start_angle = fish_orientations[j] - half_FOV  # Startvinkel
+        start_angle_arc = start_angle  # Memorerar för j:te partikeln
+        for ray in range(casted_rays):
+            rays_coords[j][ray] = [fish_coords[j][0] + fish_interaction_radius * np.cos(start_angle),
+                                   fish_coords[j][1] + fish_interaction_radius * np.sin(start_angle)]
+            rays_angle_relative_velocity[j][ray] = start_angle
+            start_angle += step_angle  # Uppdaterar vinkel för ray
+
+        # Obstacle Avoidance
+        avoid_angle = 0
+        detect_info = detect_closest_obst(rays_coords[j], fish_coords[j])
+        detect_obst = detect_info[0]
+
+        if detect_obst:
+            closest_obst_type = detect_info[1]
+            closest_obst = detect_info[2]
+            closest_ray_boolean = detect_info[3]
+            avoid_angle = avoid_obstacle(closest_obst_type, closest_obst, closest_ray_boolean)
 
         if j == closest_fish:
             canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj

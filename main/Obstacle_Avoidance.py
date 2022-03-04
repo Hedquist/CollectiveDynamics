@@ -353,7 +353,7 @@ for t in range(simulation_iterations):
                       (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j][
                            1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2)  # x0,y0 - x1,y1
-        # Rayscating
+        # Rays casting
         start_angle = fish_orientations[j] - half_FOV  # Startvinkel
         start_angle_arc = start_angle  # Memorerar för j:te partikeln
         for ray in range(casted_rays):
