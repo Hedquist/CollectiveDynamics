@@ -21,19 +21,19 @@ fish_count = 50  # Antal fiskar
 canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
-fish_speed = 2  # Hastighet fiskar
+fish_speed = 1  # Hastighet fiskar
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
-fish_noise = 0.1  # Brus i vinkel
+fish_noise = 0.2  # Brus i vinkel
 murder_radius = 5  # Hajen äter fiskar inom denna radie
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
-shark_speed = 3  # Hajens fart
-fish_eaten = [] # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
+shark_speed = 0.85  # Hajens fart
+fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0    # Antal fiskar ätna
 
-fish_turn_speed = 0.05
-shark_turn_speed = 0.015
+fish_turn_speed = 0.015
+shark_turn_speed = 0.05
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -206,8 +206,8 @@ for t in range(simulation_iterations):
                 np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                 -1 / 2, 1 / 2)
 
-        #   Shark direction härifrån
-        shark_desired_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
+        #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
+        shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(

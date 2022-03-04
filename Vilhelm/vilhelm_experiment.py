@@ -23,10 +23,10 @@ Rf = 25  # interraktionsradie
 v = 1  # maxhastighet fiskar
 dt = 1  # storlek tidssteg
 eta = 0.001     # brus i vinkel
-m = 0.95  # massa fiskar
+m = 0.985  # massa fiskar
 
-v_shark = 1.25  # maxhastighet haj
-m_shark = 0.985  # massa haj
+v_shark = 0.9  # maxhastighet haj
+m_shark = 0.95  # massa haj
 
 x = np.random.rand(N) * 2 * l - l  # x coordinates
 y = np.random.rand(N) * 2 * l - l  # y coordinates
