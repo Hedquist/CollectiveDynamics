@@ -17,14 +17,14 @@ canvas.place(x=res / 20, y=res / 20, height=res, width=res)
 ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
 
 # Variabler
-fish_count = 50  # Antal fiskar
+fish_count = 20  # Antal fiskar
 canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
-time_step = 0.2  # Storlek tidssteg
+time_step = 0.5  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
-fish_noise = 0.1  # Brus i vinkel
+fish_noise = 0.0  # Brus i vinkel
 murder_radius = 5  # Hajen äter fiskar inom denna radie
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
@@ -233,16 +233,20 @@ for t in range(simulation_iterations):
         if fish_near_wall[j, 0] or fish_near_wall[j, 1]:
             avoid_angle = detect_wall(fish_rays_coords[j]) / (
                         np.minimum(fish_distance_to_wall[j, 0], fish_distance_to_wall[j, 1]) - fish_graphic_radius)
-            print(np.rad2deg(avoid_angle))
+        else:
+            avoid_angle = 0;
 
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
 
         if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
-            fish_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
+            fish_orientations[j] = get_direction(shark_coords[0], fish_coords[j]) + avoid_angle
         else:  # Annars Vicsek-modellen
             fish_orientations[j] = np.angle(
                 np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                 -1 / 2, 1 / 2) + avoid_angle
+            if j == 1:
+                print("Vinkel: {}, medelvinkeln: {}, avoid_angle: {}".format(np.rad2deg(fish_orientations[1]), np.rad2deg(np.angle(
+                np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j)))), np.rad2deg(avoid_angle)))
 
         #   Shark direction härifrån
         if shark_near_wall[0, 0] or shark_near_wall[0, 1]:
