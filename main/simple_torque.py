@@ -34,6 +34,7 @@ fish_eaten_count = 0    # Antal fiskar ätna
 
 fish_turn_speed = 0.015
 shark_turn_speed = 0.05
+omega_max = np.pi / time_step  # Maximala vinkelhastigheten för fiskar och hajar
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
