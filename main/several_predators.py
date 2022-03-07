@@ -30,7 +30,7 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.05  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 50  # Antal fiskar
+fish_count = 5  # Antal fiskar
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -42,7 +42,7 @@ shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 shark_count = 5  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
-murder_radius = 2  # Hajen äter fiskar inom denna radie
+murder_radius = 4  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
 
@@ -216,12 +216,16 @@ for t in range(simulation_iterations):
                                                              fish_coords)  # Skapa matris med fisk-till-fisk-avstånd
     shark_fish_distance_matrix = scipy.spatial.distance.cdist(shark_coords,
                                                               fish_coords)  # Skapa matris med haj-till-fisk-avstånd
+    shark_shark_distance_matrix = scipy.spatial.distance.cdist(shark_coords,
+                                                              shark_coords)  # Skapa matris med haj-till-haj-avstånd
 
     shark_near_fish_index = np.where(shark_fish_distance_matrix < fish_interaction_radius)[0]
     # print(np.where(shark_fish_distance_matrix < fish_interaction_radius)[0])
 
     fish_near_shark_index = np.where(shark_fish_distance_matrix < fish_interaction_radius)[1]
     # print(np.where(shark_fish_distance_matrix < fish_interaction_radius)[1])
+
+
     # Bestäm närmsta fisk
 
     closest_fish = np.zeros(shark_count, dtype=int)
@@ -273,6 +277,11 @@ for t in range(simulation_iterations):
         predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
                                                 shark_fish_distance_matrix[i, closest_fish[i]])
         shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
+        for j in range(shark_count):
+            if i != j:
+                if shark_shark_distance_matrix[i, j] < murder_radius:
+                    shark_orientations[i] = get_direction(shark_coords[j], shark_coords[i])
+
     '''
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
