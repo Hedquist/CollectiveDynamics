@@ -10,7 +10,7 @@ from timeit import default_timer as timer
 
 start = timer()  # Timer startas
 
-visuals_on = True  # Välj om simulationen ska visas eller ej.
+visuals_on = False  # Välj om simulationen ska visas eller ej.
 
 if visuals_on:
     res = 500  # Resolution of the animation
@@ -66,6 +66,17 @@ shark_y = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # sha
 shark_coords = np.column_stack((shark_x, shark_y))  # Array med alla hajars x- och y-koord
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
+# Raycasting
+step_angle = 2 * np.arctan(fish_graphic_radius / fish_interaction_radius)
+casted_rays = 6
+FOV_angle = step_angle * (casted_rays - 1)  # Field of view angle
+half_FOV = FOV_angle / 2
+
+fish_rays_coords = [[] for i in range(fish_count)]
+fish_rays_angle_relative_velocity = [[] for i in range(fish_count)]
+shark_rays_coords = []
+shark_rays_angle_relative_velocity = []
+
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
@@ -110,10 +121,7 @@ def bounce_pos(coords):  # Flytta in partikel i rutan om den åker utanför
 
 
 def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
-    return np.minimum(
-        np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
-                (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
-        np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
+    return np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2)
 
 
 def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i radianer
@@ -151,6 +159,44 @@ def murder_fish_coords(dead_fish_index):  # Tar bort fisk-coord som blivit uppä
 def murder_fish_orientations(dead_fish_index):  # Tar bort fisk-vinkel som blivit uppäten
     new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
     return new_fish_orientations
+
+def detect_wall(ray_coords):
+    rays = canvas_length - np.absolute(np.array(ray_coords)) < 0
+    rays_outside_wall = np.array([False, False, False, False, False, False])
+    for l in range(casted_rays):
+        rays_outside_wall[l] = True in rays[l]
+    if not rays_outside_wall[int(len(rays_outside_wall) / 2 - 1)] and not rays_outside_wall[
+        int(len(rays_outside_wall) / 2)]:
+        sign = 0
+    else:
+        if all(rays_outside_wall):
+            sign = 1
+        else:
+            i = 1
+            first_free_index = int(len(rays_outside_wall) / 2) - 1
+            while rays_outside_wall[first_free_index]:
+                first_free_index += i * (-1) ** (i - 1)
+                i += 1
+            sign = -1 if (first_free_index <= 2) else 1
+
+    angle_weight = np.pi / 4 * sign  # Vikta med avstånd
+    return angle_weight
+
+def cast_rays():
+    for j in range(fish_count):
+        start_angle = fish_orientations[j] - half_FOV  # Startvinkel
+        for ray in range(casted_rays):
+            fish_rays_coords[j].append([fish_coords[j][0] + fish_interaction_radius * np.cos(start_angle),
+                                        fish_coords[j][1] + fish_interaction_radius * np.sin(start_angle)])
+            fish_rays_angle_relative_velocity[j].append(start_angle)
+            start_angle += step_angle  # Uppdaterar vinkel för ray
+
+    start_angle = shark_orientations - half_FOV  # Startvinkel
+    for ray in range(casted_rays):
+        shark_rays_coords.append([shark_coords[0, 0] + fish_interaction_radius * np.cos(start_angle),
+                                  shark_coords[0, 1] + fish_interaction_radius * np.sin(start_angle)])
+        shark_rays_angle_relative_velocity.append(start_angle)
+        start_angle += step_angle  # Uppdaterar vinkel för ray
 
 
 def predict_position(fish_coord, fish_orientation,
@@ -201,6 +247,8 @@ if visuals_on:
     fish_count_canvas_text = canvas.create_text(100, 20,
                                                 text=len(fish_coords))
 
+cast_rays()
+
 # Loop för allt som ska ske varje tidssteg i simulationen
 for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
@@ -209,6 +257,8 @@ for t in range(simulation_iterations):
     # Fixar så att fiskar inte simmar ur bild
     fish_orientations = bounce_angle(fish_coords, fish_orientations)
     fish_coords = bounce_pos(fish_coords)
+    shark_orientations = bounce_angle(shark_coords, shark_orientations)
+    shark_coords = bounce_pos(shark_coords)
 
     fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
 
@@ -222,6 +272,13 @@ for t in range(simulation_iterations):
 
     fish_near_shark_index = np.where(shark_fish_distance_matrix < fish_interaction_radius)[1]
     # print(np.where(shark_fish_distance_matrix < fish_interaction_radius)[1])
+
+    fish_distance_to_wall = (canvas_length - np.absolute(np.array(fish_coords)))
+    fish_near_wall = fish_distance_to_wall < fish_interaction_radius
+    shark_distance_to_wall = (canvas_length - np.absolute(np.array(shark_coords)))
+    shark_near_wall = shark_distance_to_wall < fish_interaction_radius
+    avoid_angle = 0
+
     # Bestäm närmsta fisk
 
     closest_fish = np.zeros(shark_count, dtype=int)
@@ -238,6 +295,14 @@ for t in range(simulation_iterations):
                           (shark_coords[
                                j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2, )
 
+    start_angle = shark_orientations - half_FOV  # Startvinkel
+    start_angle_arc = start_angle  # Memorerar för j:te partikeln
+    for ray in range(casted_rays):
+        shark_rays_coords[ray] = [shark_coords[0, 0] + fish_interaction_radius * np.cos(start_angle),
+                                  shark_coords[0, 1] + fish_interaction_radius * np.sin(start_angle)]
+        shark_rays_angle_relative_velocity[ray] = start_angle
+        start_angle += step_angle  # Uppdaterar vinkel för ray
+
     for j in range(len(fish_coords)):
         if visuals_on:
             # Updating animation coordinates fisk
@@ -253,20 +318,34 @@ for t in range(simulation_iterations):
             else:
                 canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
 
+        start_angle = fish_orientations[j] - half_FOV  # Startvinkel
+        start_angle_arc = start_angle  # Memorerar för j:te partikeln
+        for ray in range(casted_rays):
+            fish_rays_coords[j][ray] = [fish_coords[j][0] + fish_interaction_radius * np.cos(start_angle),
+                                        fish_coords[j][1] + fish_interaction_radius * np.sin(start_angle)]
+            fish_rays_angle_relative_velocity[j][ray] = start_angle
+            start_angle += step_angle  # Uppdaterar vinkel för ray
+
         # inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j
         # och alla andra fiskar
+
+        if fish_near_wall[j, 0] or fish_near_wall[j, 1]:
+            avoid_angle = detect_wall(fish_rays_coords[j]) / (
+                    np.minimum(fish_distance_to_wall[j, 0], fish_distance_to_wall[j, 1]) - fish_graphic_radius)
+        else:
+            avoid_angle = 0
 
         # Vilka fiskar är inom en fisks interraktionsradie
         fish_in_interaction_radius = fish_fish_distance_matrix[:, j] < fish_interaction_radius
 
         closest_shark = np.argmin(shark_fish_distance_matrix[:, j])  # Hittar index för närmaste hajen
         if j in fish_near_shark_index:  # Om hajen är nära fisken, undvik hajen
-            fish_orientations[j] = get_fish_avoidance(j, fish_near_shark_index, shark_near_fish_index)
+            fish_orientations[j] = get_fish_avoidance(j, fish_near_shark_index, shark_near_fish_index) + avoid_angle
         else:  # Annars Vicsek-modellen
             fish_orientations[j] = np.angle(
                 np.sum(np.exp(
                     fish_orientations_old[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
-                -1 / 2, 1 / 2)
+                -1 / 2, 1 / 2) + avoid_angle
 
     #   Shark direction härifrån
     for i in range(shark_count):
