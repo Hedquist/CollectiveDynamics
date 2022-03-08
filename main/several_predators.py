@@ -30,7 +30,7 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.05  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 5  # Antal fiskar
+fish_count = 100  # Antal fiskar
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -110,10 +110,7 @@ def bounce_pos(coords):  # Flytta in partikel i rutan om den åker utanför
 
 
 def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
-    return np.minimum(
-        np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
-                (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
-        np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
+    return np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2)
 
 
 def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i radianer
