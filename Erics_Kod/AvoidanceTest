@@ -5,8 +5,6 @@ from tkinter import *
 from tkinter import ttk
 import time
 from itertools import chain
-
-
 res = 700  # Resolution of the animation
 tk = Tk()
 tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3))) # Set height x width window
@@ -48,26 +46,26 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100 # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 1# Number of particles
+fish_count = 5# Number of particles
 
-# x=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
-# y=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
-# fish_coords = np.column_stack((x, y))
-# fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
+x=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
+y=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
+fish_coords = np.column_stack((x, y))
+fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
 
 
 #Debug
-x=np.array(0.52*np.ones(fish_count) * 2 * canvas_length - canvas_length)
-y=np.array(0.60*np.ones(fish_count) * 2 * canvas_length - canvas_length)
-fish_coords = np.column_stack((x, y))
-fish_orientations = np.ones(fish_count) * 1.5 * np.pi  # orientations
+# x=np.array(0.52*np.ones(fish_count) * 2 * canvas_length - canvas_length)
+# y=np.array(0.60*np.ones(fish_count) * 2 * canvas_length - canvas_length)
+# fish_coords = np.column_stack((x, y))
+# fish_orientations = np.ones(fish_count) * 1.5 * np.pi  # orientations
 
 
 # Koordinater för runda hinder
 x_circ_obst = [(0.5 * 2 - 1) * canvas_length, (0.55 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.25 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length]
 y_circ_obst = [(0.25 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.75 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length, (0.5 * 2 - 1) * canvas_length]
 circ_obst_coords = np.array(list(zip(x_circ_obst, y_circ_obst)))
-obst_radius = [5 for i in range(len(circ_obst_coords))]
+obst_radius = [obst_radius for i in range(len(circ_obst_coords))]
 
 
 # Koordinater för rektangulära hinder, samt dess hörner
@@ -76,11 +74,12 @@ y_rect_obst = [(0.25 * 2 - 1) * canvas_length, (0.25 * 2 - 1) * canvas_length, (
 rect_obst_coords = np.array(list(zip(x_rect_obst, y_rect_obst)))
 wall_corner_coords = np.array([[canvas_length,canvas_length],[-canvas_length,canvas_length],[-canvas_length,-canvas_length],[canvas_length,-canvas_length]])
 rect_obst_corner_coords = []
+obst_rect_width = [obst_rect_width for i in range(len(rect_obst_coords))]
+obst_rect_height = [obst_rect_height for i in range(len(rect_obst_coords))]
+
 
 obst_type = ['wall','rect','circ']
 obst_coords = [ [[0,0]] , rect_obst_coords, circ_obst_coords ]
-
-
 
 # Diverse tomma listor, mest grafik
 circ_and_rect_obst_coords = np.concatenate((circ_obst_coords, rect_obst_coords))
@@ -118,7 +117,7 @@ def calculate_rectangle_corner_coordinates(position, base, height):
 
 # Ta fram hörnen till rektangulära hinder och lägg det i en lista
 for i in range(len(rect_obst_coords)):
-    rect_obst_corner_coords.append(calculate_rectangle_corner_coordinates(rect_obst_coords[i], obst_rect_width, obst_rect_height))
+    rect_obst_corner_coords.append(calculate_rectangle_corner_coordinates(rect_obst_coords[i], obst_rect_width[i], obst_rect_height[i]))
 
 # Funktion för att fisken startposition inte hamnar i ett hinder
 def generate_fish_not_inside_obstacle_coordinates():
@@ -176,10 +175,10 @@ def draw_circular_obstacles():
 # Ritar rektangulära hinder
 def draw_rectangular_obstacles():
     for j in range(rect_obst_coords.shape[0]):
-        rect_obst_canvas_graphics.append(canvas.create_rectangle((x_rect_obst[j] + obst_rect_width + canvas_length) * res / canvas_length / 2,
-                                                                 (y_rect_obst[j] + obst_rect_height + canvas_length) * res / canvas_length / 2,
-                                                                 (x_rect_obst[j] - obst_rect_width + canvas_length) * res / canvas_length / 2,
-                                                                 (y_rect_obst[j] - obst_rect_height + canvas_length) * res / canvas_length / 2,
+        rect_obst_canvas_graphics.append(canvas.create_rectangle((x_rect_obst[j] + obst_rect_width[j] + canvas_length) * res / canvas_length / 2,
+                                                                 (y_rect_obst[j] + obst_rect_height[j] + canvas_length) * res / canvas_length / 2,
+                                                                 (x_rect_obst[j] - obst_rect_width[j] + canvas_length) * res / canvas_length / 2,
+                                                                 (y_rect_obst[j] - obst_rect_height[j] + canvas_length) * res / canvas_length / 2,
                                                                  outline=ccolor[5], fill=ccolor[4])) # x0,y0 - x1,y1))))
 # Ger index för den rayen som inte är upptagen
 def ray_index(ray_booleans):
@@ -318,7 +317,7 @@ def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
     result = [obst_type[closest_obst_type], closest_obst_index, ray_boolean]
     # if True in obst_type_detect:
     #     print(result)
-    #     time.sleep(1)
+    #     time.sleep(0.01)
     return result
 
 def avoid_obstacle(closest_type, closest_obst, ray_boolean):
@@ -327,7 +326,7 @@ def avoid_obstacle(closest_type, closest_obst, ray_boolean):
                                                fish_coords[j]) - obst_radius[closest_obst] - fish_graphic_radius
     elif closest_type == 'rect':
         closest_obst_distance = np.linalg.norm(rect_obst_coords[closest_obst] -
-                                               fish_coords[j]) - obst_rect_width - fish_graphic_radius
+                                               fish_coords[j]) - obst_rect_width[closest_obst] - fish_graphic_radius
     elif closest_type == 'wall':
         closest_obst_distance = np.min(canvas_length - np.absolute(fish_coords[j]) - fish_graphic_radius)
 
