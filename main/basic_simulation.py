@@ -70,6 +70,7 @@ def update_position(coords, speed, orientations):  # Uppdaterar en partikels pos
     coords[:, 1] = coords[:, 1] + speed * np.sin(orientations) * time_step
     return coords
 
+
 def bounce_angle(coords, orientations):  # Ändra vinkel om partikeln åker ur rutan
     for i in range(len(orientations)):
         if coords[i, 0] < -canvas_length:
@@ -163,8 +164,8 @@ def cast_rays():
 
     start_angle = shark_orientations - half_FOV  # Startvinkel
     for ray in range(casted_rays):
-        shark_rays_coords.append([shark_coords[0,0] + fish_interaction_radius * np.cos(start_angle),
-                                     shark_coords[0,1] + fish_interaction_radius * np.sin(start_angle)])
+        shark_rays_coords.append([shark_coords[0, 0] + fish_interaction_radius * np.cos(start_angle),
+                                  shark_coords[0, 1] + fish_interaction_radius * np.sin(start_angle)])
         shark_rays_angle_relative_velocity.append(start_angle)
         start_angle += step_angle  # Uppdaterar vinkel för ray
 
@@ -201,8 +202,14 @@ for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
 
+    print(shark_orientations)
+
     fish_orientations = bounce_angle(fish_coords, fish_orientations)
     fish_coords = bounce_pos(fish_coords)
+    shark_orientations = bounce_angle(shark_coords, np.array([shark_orientations]))
+    print("Bounce")
+    print(shark_orientations)
+    shark_coords = bounce_pos(shark_coords)
 
     shark_fish_distances = calculate_distance(fish_coords, shark_coords[
         0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
@@ -212,7 +219,6 @@ for t in range(simulation_iterations):
     shark_distance_to_wall = (canvas_length - np.absolute(np.array(shark_coords)))
     shark_near_wall = shark_distance_to_wall < fish_interaction_radius
     avoid_angle = 0
-
 
     # print(closest_fish)
     # print(shark_coords)
@@ -231,7 +237,7 @@ for t in range(simulation_iterations):
     start_angle_arc = start_angle  # Memorerar för j:te partikeln
     for ray in range(casted_rays):
         shark_rays_coords[ray] = [shark_coords[0, 0] + fish_interaction_radius * np.cos(start_angle),
-                                     shark_coords[0, 1] + fish_interaction_radius * np.sin(start_angle)]
+                                  shark_coords[0, 1] + fish_interaction_radius * np.sin(start_angle)]
         shark_rays_angle_relative_velocity[ray] = start_angle
         start_angle += step_angle  # Uppdaterar vinkel för ray
 
@@ -262,7 +268,7 @@ for t in range(simulation_iterations):
 
         if fish_near_wall[j, 0] or fish_near_wall[j, 1]:
             avoid_angle = detect_wall(fish_rays_coords[j]) / (
-                        np.minimum(fish_distance_to_wall[j, 0], fish_distance_to_wall[j, 1]) - fish_graphic_radius)
+                    np.minimum(fish_distance_to_wall[j, 0], fish_distance_to_wall[j, 1]) - fish_graphic_radius)
         else:
             avoid_angle = 0;
 
@@ -274,21 +280,22 @@ for t in range(simulation_iterations):
             fish_orientations[j] = np.angle(
                 np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                 -1 / 2, 1 / 2) + avoid_angle
-            if j == 1:
-                print("Vinkel: {}, medelvinkeln: {}, avoid_angle: {}".format(np.rad2deg(fish_orientations[1]), np.rad2deg(np.angle(
-                np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j)))), np.rad2deg(avoid_angle)))
 
         #   Shark direction härifrån
         if shark_near_wall[0, 0] or shark_near_wall[0, 1]:
-            avoid_angle = detect_wall(shark_rays_coords) / (
-                        np.minimum(shark_distance_to_wall[0, 0], shark_distance_to_wall[0, 1]) - fish_graphic_radius)
+            #avoid_angle = detect_wall(shark_rays_coords) / (
+                    #np.minimum(shark_distance_to_wall[0, 0], shark_distance_to_wall[0, 1]) - fish_graphic_radius)
             # print(np.rad2deg(avoid_angle))
             if avoid_angle == 0:
                 shark_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
             else:
                 shark_orientations += avoid_angle
+                print("avoid:")
+                print(shark_orientations)
         else:
             shark_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
+            print("To fish:")
+            print(shark_orientations)
 
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
