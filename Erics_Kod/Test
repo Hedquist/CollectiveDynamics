@@ -57,5 +57,12 @@ arr = [[2,2], [3,3]]
 list = [2,3,np.inf]
 print(np.min(list))
 
-arr = [True, True]
-print(all(arr))
+index = [[],[],[]]
+index[1].append(1)
+index[1].append(2)
+true_indices = [index for index, element in enumerate(boolean) if element]
+print(true_indices)
+index[2].extend(true_indices)
+print(index)
+empty = []
+print(len(empty))

@@ -37,7 +37,7 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 10 # Number of particles
+fish_count = 500 # Number of particles
 
 x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -353,7 +353,7 @@ for t in range(simulation_iterations):
                       (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j][
                            1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2)  # x0,y0 - x1,y1
-        # Rayscating
+        # Rays casting
         start_angle = fish_orientations[j] - half_FOV  # Startvinkel
         start_angle_arc = start_angle  # Memorerar för j:te partikeln
         for ray in range(casted_rays):
