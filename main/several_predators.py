@@ -30,7 +30,7 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.05  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 50  # Antal fiskar
+fish_count = 200  # Antal fiskar
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 30  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -320,7 +320,7 @@ for t in range(simulation_iterations):
         tk.update()  # Update animation frame
         time.sleep(wait_time)  # Wait between loops
 fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
-#plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
 plt.xlabel('Tid')
 plt.ylabel('% av fiskar ätna')
 print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
