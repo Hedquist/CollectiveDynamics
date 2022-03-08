@@ -28,7 +28,7 @@ fish_noise = 0.0  # Brus i vinkel
 murder_radius = 5  # Hajen äter fiskar inom denna radie
 
 shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
-shark_speed = 3  # Hajens fart
+shark_speed = 1.7  # Hajens fart
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
 
@@ -281,21 +281,7 @@ for t in range(simulation_iterations):
                 np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                 -1 / 2, 1 / 2) + avoid_angle
 
-        #   Shark direction härifrån
-        if shark_near_wall[0, 0] or shark_near_wall[0, 1]:
-            #avoid_angle = detect_wall(shark_rays_coords) / (
-                    #np.minimum(shark_distance_to_wall[0, 0], shark_distance_to_wall[0, 1]) - fish_graphic_radius)
-            # print(np.rad2deg(avoid_angle))
-            if avoid_angle == 0:
-                shark_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
-            else:
-                shark_orientations += avoid_angle
-                print("avoid:")
-                print(shark_orientations)
-        else:
-            shark_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
-            print("To fish:")
-            print(shark_orientations)
+    shark_orientations = get_direction(shark_coords[0], fish_coords[closest_fish])
 
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
