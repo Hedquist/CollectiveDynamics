@@ -55,10 +55,33 @@ shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
 
 def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
-    coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
-            2 * canvas_length) - canvas_length
-    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
-            2 * canvas_length) - canvas_length
+    coords[:, 0] = coords[:, 0] + speed * np.cos(orientations) * time_step
+    coords[:, 1] = coords[:, 1] + speed * np.sin(orientations) * time_step
+    return coords
+
+def bounce_angle(coords, orientations):  # Ändra vinkel om partikeln åker ur rutan
+    for i in range(len(orientations)):
+        if coords[i, 0] < -canvas_length:
+            orientations[i] = np.pi - orientations[i]
+        elif coords[i, 0] > canvas_length:
+            orientations[i] = np.pi - orientations[i]
+        if coords[i, 1] < -canvas_length:
+            orientations[i] = -orientations[i]
+        elif coords[i, 1] > canvas_length:
+            orientations[i] = -orientations[i]
+    return orientations
+
+
+def bounce_pos(coords):  # Flytta in partikel i rutan om den åker utanför
+    for coord in coords:
+        if coord[0] < -canvas_length:
+            coord[0] = -canvas_length - (coord[0] + canvas_length)
+        elif coord[0] > canvas_length:
+            coord[0] = canvas_length - (coord[0] - canvas_length)
+        if coord[1] < -canvas_length:
+            coord[1] = -canvas_length - (coord[1] + canvas_length)
+        elif coord[1] > canvas_length:
+            coord[1] = canvas_length - (coord[1] - canvas_length)
     return coords
 
 
@@ -133,10 +156,15 @@ clustering_coeff_canvas_text = canvas.create_text(100, 40,
 for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
+
+    fish_orientations = bounce_angle(fish_coords, fish_orientations)
+    fish_coords = bounce_pos(fish_coords)
+
     shark_fish_distances = calculate_distance(fish_coords, shark_coords[
         0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
     closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
+
 
     # print(closest_fish)
     # print(shark_coords)
