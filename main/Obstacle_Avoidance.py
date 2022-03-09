@@ -256,9 +256,22 @@ def update_position(coords, speed, orientations):  # Uppdaterar en partikels pos
     return coords
 
 
-# Kolla om en flerdimensionell array har true i sig
-def has_true(arr):
-    return any(chain(*arr))
+def detect_obst_in_radius(fish_coord):
+    obst_type_in_radius = [[], [], []] # Lista med index för de hinder som detekterats innanför interaktionsradien
+    detected = []
+    rect_obst_in_radius = calculate_distance(rect_obst_coords,fish_coord) - rect_obst_width < fish_interaction_radius
+    circ_obst_in_radius = calculate_distance(circ_obst_coords,fish_coord) - circ_obst_radius < fish_interaction_radius
+    is_outside_wall = (canvas_length - np.abs(fish_coord) -fish_interaction_radius) < 0
+    if True in is_outside_wall:
+        obst_type_in_radius[0].append(0)
+        detected.append(True)
+    elif True in rect_obst_in_radius:
+        obst_type_in_radius[1].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
+        detected.append(True)
+    elif True in circ_obst_in_radius:
+        obst_type_in_radius[2].extend([index for index, element in enumerate(circ_obst_in_radius) if element])
+        detected.append(True)
+    return [True in detected,obst_type_in_radius]
 
 def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
     obst_type = ['wall', 'rect', 'circ']
@@ -381,19 +394,9 @@ for t in range(simulation_iterations):
 
         # Obstacle Avoidance
         avoid_angle = 0
-        rect_obst_in_radius = calculate_distance(rect_obst_coords,fish_coords[j]) - rect_obst_width < fish_interaction_radius
-        circ_obst_in_radius = calculate_distance(circ_obst_coords,fish_coords[j]) - circ_obst_radius < fish_interaction_radius
-        is_outside_wall = (canvas_length - np.abs(fish_coords[j]) -fish_interaction_radius) < 0
-        obst_type_in_radius = [[], [], []] # Lista med index för de hinder som detekterats
-
-        if True in is_outside_wall:
-            obst_type_in_radius[0].append(0)
-        elif True in rect_obst_in_radius:
-            obst_type_in_radius[1].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
-        elif True in circ_obst_in_radius:
-            obst_type_in_radius[2].extend([index for index, element in enumerate(circ_obst_in_radius) if element])
-
-        if True in is_outside_wall or True in rect_obst_in_radius or True in circ_obst_in_radius:
+        detect_obst_in_radius_info = detect_obst_in_radius(fish_coords[j])
+        obst_type_in_radius = detect_obst_in_radius_info[1]
+        if detect_obst_in_radius_info[0]:
             detect_info = detect_closest_obst(rays_coords[j],fish_coords[j],obst_type_in_radius) # Tar fram närmsta hindret
             closest_obst_type, closest_obst_index, ray_boolean = detect_info[0], detect_info[1], detect_info[2] # Tilldelar namn
             avoid_angle = 0 if detect_info[1] == -1 else avoid_obstacle(closest_obst_type,closest_obst_index,ray_boolean)
