@@ -35,7 +35,7 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 10 # Number of particles
+fish_count = 20 # Number of particles
 
 x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -52,7 +52,7 @@ rect_obst_height = []
 with open('Obstacles', 'r') as filestream:
     next(filestream) # Skip first row
     for line in filestream: # Read every row
-        if line is not "\n":
+        if line != "\n":
             currentline = line.split(',')
             if('None' not in currentline[:3]):
                 circ_obst_coords.append( [float(currentline[0]), float(currentline[1])] )

@@ -1,5 +1,7 @@
 import numpy as np
 import itertools
+from scipy.spatial import distance
+
 n=6
 
 empty = []
@@ -15,24 +17,32 @@ rays_coords = [[1,1], [2,2],[3,3]]
 wall_coord = [[10,10]]
 obst_coords = [ [[0,0]], [[1,1],[2,2]], [[5,5],[6,6], [7,7]] ]
 arr = [1,2,3]
-boolean = [True, True, False, False, False, False]
+boolean = [False, False, False, False, False, False]
 boolean_rays = [ [False,True], [[True,True],[True,False]], [[True,True],[True,False]] ]
-obst_boolean = [[False, False, False, False, False, False],
- [True, False, False, False, False, False],
- [True, False, False, False, False, False],
- [False, False, False, False, False, False]]
 result = []
 for element in range(len(obst_type2)):
     result.append(list(zip(*[obst_type2[element],obst_type4[element]])))
 print(result)
 
 print([ list(zip(*[obst_type2[element],obst_type4[element]])) for element in range(len(obst_type2)) ])
-
 list = [2,3,np.inf]
-print(np.min(list))
 
 a = [False, False]
 b = [True,True]
 
 merge = [a or b for a, b in zip(a, b)]
-print(merge)
+
+print()
+coords = np.array([(35.0456, -85.2672),
+ (35.1174, -89.9711),
+(35.9728, -83.9422)])
+
+fish_repulsion_radius = 5
+print(np.linalg.norm(coords[0]-coords[1]))
+cdist = distance.cdist(coords, coords, 'euclidean') # Avstånd till alla
+print(cdist)
+d_ij = np.where((cdist > 0) & (cdist < fish_repulsion_radius))
+print(d_ij)
+print(d_ij[])
+
+
