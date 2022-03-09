@@ -29,8 +29,6 @@ half_FOV = FOV_angle / 2
 
 # Parameters for shark
 
-
-
 # Physical parameters of the system
 simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
@@ -88,14 +86,6 @@ circ_obst_canvas_graphics = []
 rect_obst_canvas_graphics = []
 
 
-# Ortogonalprojektion
-def proj_of_u_on_v(u,v):
-    v_norm = np.sqrt(sum(v**2))
-    return (np.dot(u, v)/v_norm**2)*v
-
-# Vanlig avståndsfunktion mellan två punkter
-def distance(r1,r2):
-    return np.sqrt((r1[0]-r2[0])**2+(r1[1]-r2[1])**2)
 
 # Ta fram hörnen till rektangulära hinder
 def calculate_rectangle_corner_coordinates(position, base, height):
