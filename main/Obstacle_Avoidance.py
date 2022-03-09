@@ -251,8 +251,6 @@ def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna c
 
 # Har tagit bort modulo beräkningen
 def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
-    # coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length)  - canvas_length
-    # coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length)  - canvas_length
     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
             2 * canvas_length) - canvas_length
     coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
@@ -371,13 +369,12 @@ def avoid_obstacle(closest_type, closest_obst, ray_boolean):
 
 def calculate_fish_velocity(fish_distance_matrix, obstacle_distance_array):
     index_close_fish = np.nonzero(fish_distance_matrix < fish_graphic_radius * 2)
-    for i in range(index_close_fish[:, 0]):
-        for k in range(index_close_fish[i, :]):
-            if k + i > fish_count:
-                break
-            if obstacle_distance_array[i] < obstacle_distance_array[k] and not i == k:
-                fish_speed_array[i] = (fish_slowdown_range + fish_distance_matrix[i, k] - fish_graphic_radius * 2) * fish_speed
-
+    for i in range(len(index_close_fish[0])):
+        if obstacle_distance_array[index_close_fish[0][i]] < obstacle_distance_array[index_close_fish[1][i]]:
+            fish_speed_array[index_close_fish[0][i]] = (fish_slowdown_range + (fish_distance_matrix[
+                index_close_fish[0][i], index_close_fish[1][i]] - fish_graphic_radius * 2)) / fish_slowdown_range * fish_speed
+        else:
+            fish_speed_array[i] = fish_speed
 
 
 # Kallar på de grafiska funktionerna
@@ -388,7 +385,7 @@ draw_circular_obstacles()
 draw_rectangular_obstacles()
 
 for t in range(simulation_iterations):
-    fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
+    fish_coords = update_position(fish_coords, fish_speed_array, fish_orientations)  # Uppdatera fiskposition
     main_fish_distances = cdist(fish_coords, fish_coords)
     for j in range(len(fish_coords)):  # Updating animation coordinates fisk
         canvas.coords(fish_canvas_graphics[j],
@@ -440,6 +437,7 @@ for t in range(simulation_iterations):
                 2]  # Tilldelar namn
             avoid_angle_and_closest_dist = avoid_obstacle(closest_obst_type, closest_obst_index,
                                                           ray_boolean)
+            fish_distance_closest_obstacle[j] = avoid_angle_and_closest_dist[1]
             avoid_angle = 0 if detect_info[1] == -1 else avoid_angle_and_closest_dist[0]
 
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[
@@ -449,6 +447,8 @@ for t in range(simulation_iterations):
             np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(-1 / 2,
                                                                                                                  1 / 2) + avoid_angle
         # fish_orientations[j] += fish_noise * np.random.uniform(-1 / 2, 1 / 2) + wall_avoid_angle + circular_avoid_angle + rectangular_avoid_angle
+
+        calculate_fish_velocity(main_fish_distances, fish_distance_closest_obstacle)
 
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame
