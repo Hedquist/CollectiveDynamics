@@ -22,9 +22,7 @@ boolean_rays = [ [False,True], [[True,True],[True,False]], [[True,True],[True,Fa
 result = []
 for element in range(len(obst_type2)):
     result.append(list(zip(*[obst_type2[element],obst_type4[element]])))
-print(result)
 
-print([ list(zip(*[obst_type2[element],obst_type4[element]])) for element in range(len(obst_type2)) ])
 list = [2,3,np.inf]
 
 a = [False, False]
@@ -33,16 +31,57 @@ b = [True,True]
 merge = [a or b for a, b in zip(a, b)]
 
 print()
-coords = np.array([(35.0456, -85.2672),
- (35.1174, -89.9711),
-(35.9728, -83.9422)])
+fish_coords = np.array([(35.0456, -85.2672),
+                        (35.1174, -89.9711),
+                        (35.9728, -83.9422)])
 
 fish_repulsion_radius = 5
-print(np.linalg.norm(coords[0]-coords[1]))
-cdist = distance.cdist(coords, coords, 'euclidean') # Avstånd till alla
-print(cdist)
-d_ij = np.where((cdist > 0) & (cdist < fish_repulsion_radius))
-print(d_ij)
-print(d_ij[])
+#print(np.linalg.norm(coords[0]-coords[1]))
+# cdist = distance.cdist(fish_coords, fish_coords, 'euclidean') # Avstånd till alla
+# print(cdist)
+# d_ij = np.where((cdist > 0) & (cdist < fish_repulsion_radius)) # För fisk i och j är avstånd mindre än fiskradien?
+# indices = np.array((d_ij[0],d_ij[1])).T # Slår ihop arrayerna
+# print(d_ij, 'd_ij')
+# k = np.where(d_ij[0] == 0) # Var är d_ij gäller detta för i:te fisken?
+# print(k,'k')
+# row = d_ij[0][k] # Rad index
+# col = d_ij[1][k] # Column index
+# print(cdist[row,col])
+# print(fish_coords[row])
+# print(fish_coords[col])
+# r_vec_ij = (fish_coords[col] - fish_coords[row])/cdist[row,col]
+# print(r_vec_ij, 'r_vec_ij')
+# numerator = np.sum(r_vec_ij,axis=0)
+# denumerator = np.linalg.norm(numerator)
+# print(np.sum(r_vec_ij,axis=0))
+#print(indices, 'indices')
+#print(indices[:int(np.shape(indices)[0]/2)])
+#print(d_ij[])
+
+
+fish_coords = np.array([(35.0456, -85.2672),
+                        (35.1174, -89.9711),
+                        (35.9728, -83.9422),
+                        (0,0)])
+cdist = distance.cdist(fish_coords, fish_coords, 'euclidean') # Avstånd till alla
+d_ij = np.where((cdist > 0) & (cdist < fish_repulsion_radius)) # För vilka fisk i och j är avstånd mindre än fiskradien?
+print(cdist,"cdist")
+print()
+print(d_ij,"d_ij")
+print()
+
+#for i in range(len(fish_coords)):
+i = 0
+indices = np.where(d_ij[0] == i) # Tar fram index för de fiskar som är innanför radien för i:te fisken
+print(indices,"ïndices")
+print(np.size(indices))
+if np.size(indices) != 0:
+    row = d_ij[0][indices] # Rad index denna fisk
+    col = d_ij[1][indices] # Column index andra fiskar
+    r_vec_ij = (fish_coords[col] - fish_coords[row])/cdist[row,col]
+    numerator = np.sum(r_vec_ij,axis=0)
+    denumerator = np.linalg.norm(numerator)
+    d_vec = numerator/denumerator
+    print(d_vec, np.arctan2(d_vec[1],d_vec[0]))
 
 
