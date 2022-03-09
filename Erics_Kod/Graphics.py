@@ -18,6 +18,7 @@ ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B
 fish_interaction_radius = 10 # Interaction radius
 fish_graphic_radius = 2 # Radius of agent
 fish_noise = 0.1 # Diffusional noise constant
+fish_arrow_length = fish_interaction_radius
 
 # Raycasting main
 step_angle = 2 * np.arctan(fish_graphic_radius / fish_interaction_radius)
@@ -49,7 +50,7 @@ circ_obst_radius = []
 rect_obst_width = []
 rect_obst_height = []
 
-with open('Obstacles2', 'r') as filestream:
+with open('Obstacles', 'r') as filestream:
     next(filestream) # Skip first row
     for line in filestream: # Read every row
         if line is not "\n":
@@ -79,7 +80,7 @@ rays_coords = [[] for i in range(fish_count)]
 rays_angle_relative_velocity = [[] for i in range(fish_count)]
 circ_obst_canvas_graphics = []
 rect_obst_canvas_graphics = []
-
+fish_direction_arrow_graphics = []
 
 def draw_fishes():
 
@@ -95,6 +96,10 @@ def draw_fishes():
                                                                           (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
                                                                           (fish_coords[j][1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
                                                                           outline=ccolor[2],width=1)) # x0,y0 - x1,y1
+        fish_direction_arrow_graphics.append(canvas.create_line( (fish_coords[j][0]  + fish_graphic_radius *np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                                                       (fish_coords[j][1] + fish_graphic_radius *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                                                       (fish_coords[j][0] +  (fish_graphic_radius + fish_arrow_length ) *np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                                                       (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length ) *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,arrow=LAST ))# x0,y0 - x1,y1
 # Ritar ut rays och lägger dess vinkel och spetsens koordinater i en lista
 def cast_rays():
 
