@@ -374,7 +374,7 @@ for t in range(simulation_iterations):
                       (fish_coords[j][0]  + fish_graphic_radius *np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j][1] + fish_graphic_radius *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j][0] +  (fish_graphic_radius + fish_arrow_length ) *np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                      (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length ) *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2 )# x0,y0 - x1,y1
+                      (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length ) *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2 )
         # Rayscating
         start_angle = fish_orientations[j] - half_FOV # Startvinkel
         start_angle_arc = start_angle # Memorerar för j:te partikeln
