@@ -28,10 +28,6 @@ half_FOV = FOV_angle / 2
 
 # Parameters for shark
 
-# Parameters for the obstacles
-rect_obst_width = 4
-rect_obst_height = 4
-
 # Physical parameters of the system
 simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
