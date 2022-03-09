@@ -26,7 +26,6 @@ casted_rays = 6
 FOV_angle = step_angle * (casted_rays - 1)  # Field of view angle
 half_FOV = FOV_angle / 2
 
-
 # Parameters for shark
 
 # Physical parameters of the system
@@ -34,7 +33,7 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100 # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 5# Number of particles
+fish_count = 1 # Number of particles
 
 x=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -42,7 +41,7 @@ fish_coords = np.column_stack((x, y))
 fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
 
 
-#Debug
+# #Debug
 # x=np.array(0.52*np.ones(fish_count) * 2 * canvas_length - canvas_length)
 # y=np.array(0.60*np.ones(fish_count) * 2 * canvas_length - canvas_length)
 # fish_coords = np.column_stack((x, y))
@@ -246,16 +245,20 @@ def update_position(coords, speed, orientations):  # Uppdaterar en partikels pos
 # Tar fram index för de hindren innanför interaktionsradien
 def detect_obst_in_radius(fish_coord):
     obst_type_in_radius = [[], [], []] # Lista med index för de hinder som detekterats innanför interaktionsradien
+    detected = []
     rect_obst_in_radius = calculate_distance(rect_obst_coords,fish_coord) - rect_obst_width < fish_interaction_radius
     circ_obst_in_radius = calculate_distance(circ_obst_coords,fish_coord) - circ_obst_radius < fish_interaction_radius
     is_outside_wall = (canvas_length - np.abs(fish_coord) -fish_interaction_radius) < 0
     if True in is_outside_wall:
         obst_type_in_radius[0].append(0)
+        detected.append(True)
     elif True in rect_obst_in_radius:
         obst_type_in_radius[1].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
+        detected.append(True)
     elif True in circ_obst_in_radius:
         obst_type_in_radius[2].extend([index for index, element in enumerate(circ_obst_in_radius) if element])
-    return obst_type_in_radius
+        detected.append(True)
+    return [True in detected,obst_type_in_radius]
 
 # Tar fram närmsta objektet
 def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
@@ -379,8 +382,9 @@ for t in range(simulation_iterations):
 
         # Obstacle Avoidance
         avoid_angle = 0
-        obst_type_in_radius = detect_obst_in_radius(fish_coords[j])
-        if True in obst_type_in_radius[0] or True in obst_type_in_radius[1] or True in obst_type_in_radius[2]:
+        detect_obst_in_radius_info = detect_obst_in_radius(fish_coords[j])
+        obst_type_in_radius = detect_obst_in_radius_info[1]
+        if detect_obst_in_radius_info[0]:
             detect_info = detect_closest_obst(rays_coords[j],fish_coords[j],obst_type_in_radius) # Tar fram närmsta hindret
             closest_obst_type, closest_obst_index, ray_boolean = detect_info[0], detect_info[1], detect_info[2] # Tilldelar namn
             avoid_angle = 0 if detect_info[1] == -1 else avoid_obstacle(closest_obst_type,closest_obst_index,ray_boolean)

@@ -25,6 +25,7 @@ step_angle = FOV_angle / (casted_rays - 1)
 fish_interaction_radius = 10  # Interaction radius
 fish_graphic_radius = 2  # Radius of agent
 fish_noise = 0.1  # Diffusional noise constant
+obst_type = ['wall','rect','circ']
 
 # Parameters for shark
 
@@ -272,6 +273,36 @@ def wall_detect(rays_coords):
     return (
         (
         True in rays_outside_wall, rays_outside_wall))  # Returnera sant eller falskt plus en lista vilka ray är utanför
+
+# Tar fram index för de hindren innanför interaktionsradien
+def detect_obst_in_radius(fish_coord):
+    obst_type_in_radius = [[], [], []] # Lista med index för de hinder som detekterats innanför interaktionsradien
+    obst_type_in_radius2 = [[], [], []] # Lista med index för de hinder som detekterats innanför interaktionsradien
+
+    detected = []
+    rect_obst_in_radius = calculate_distance(rect_obst_coords,fish_coord) - rect_obst_width < fish_interaction_radius
+    circ_obst_in_radius = calculate_distance(circ_obst_coords,fish_coord) - circ_obst_radius < fish_interaction_radius
+    is_outside_wall = (canvas_length - np.abs(fish_coord) -fish_interaction_radius) < 0
+    if True in is_outside_wall:
+        obst_type_in_radius[0].append(0)
+        detected.append(True)
+    elif True in rect_obst_in_radius:
+        obst_type_in_radius[1].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
+        detected.append(True)
+    elif True in circ_obst_in_radius:
+        obst_type_in_radius[2].extend([index for index, element in enumerate(circ_obst_in_radius) if element])
+        detected.append(True)
+
+    list = [is_outside_wall,rect_obst_in_radius,circ_obst_in_radius]
+    for type in range (len(obst_type_in_radius)):
+        if obst_type[type]=='wall' and True in list[type]:
+            obst_type_in_radius2[type].append(0)
+        elif not obst_type[type]=='wall' and True in list[type]:
+            obst_type_in_radius2[type].extend([index for index, element in enumerate(list[type]) if element])
+    print(obst_type_in_radius)
+    print(obst_type_in_radius2)
+    print()
+    return [True in detected,obst_type_in_radius]
 
 
 # Returnera vinkel för att undvika vägg
