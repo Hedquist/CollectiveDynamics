@@ -20,9 +20,9 @@ ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B
 # Parameters of the fishes
 fish_interaction_radius = 10 # Interaction radius
 fish_graphic_radius = 2 # Radius of agent
-fish_noise = 0.2 # Diffusional noise constant
+fish_noise = 0.1 # Diffusional noise constant
 fish_arrow_length = fish_interaction_radius/2
-fish_repulsion_radius = fish_graphic_radius+1
+fish_repulsion_radius = fish_graphic_radius + 1
 
 # Raycasting main
 step_angle = 2 * np.arctan((fish_graphic_radius+1) / fish_interaction_radius)
@@ -58,7 +58,7 @@ circ_obst_radius = []
 rect_obst_width = []
 rect_obst_height = []
 
-with open('Obstacles3', 'r') as filestream:
+with open('Obstacles2', 'r') as filestream:
     next(filestream) # Skip first row
     for line in filestream: # Read every row
         if line != "\n":
@@ -88,7 +88,6 @@ rays_angle_relative_velocity = [[] for i in range(fish_count)]
 circ_obst_canvas_graphics = []
 rect_obst_canvas_graphics = []
 fish_direction_arrow_graphics = []
-fish_number_graphics = []
 
 # Ta fram hörnen till rektangulära hinder
 def calculate_rectangle_corner_coordinates(position, base, height):
@@ -141,8 +140,6 @@ def draw_fishes():
                                                                  (fish_coords[j][1] + fish_graphic_radius *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                                  (fish_coords[j][0] +  (fish_graphic_radius + fish_arrow_length ) *np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                                  (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length ) *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,arrow=LAST ))# x0,y0 - x1,y1
-        # fish_number_graphics.append(canvas.create_text((fish_coords[j][0]+canvas_length)* res / canvas_length / 2
-        #                                                , (fish_coords[j][1]+canvas_length)* res / canvas_length / 2,fill="black",font="Times 20",text=str(j)))
 # Ritar ut rays och lägger dess vinkel och spetsens koordinater i en lista
 def cast_rays():
 
@@ -391,9 +388,6 @@ for t in range(simulation_iterations):
                       (fish_coords[j][1] + fish_graphic_radius *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j][0] +  (fish_graphic_radius + fish_arrow_length ) *np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length ) *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2 )
-        # canvas.coords(fish_number_graphics[j],
-        #                             (fish_coords[j][0]+canvas_length)* res / canvas_length / 2
-        #                                                , (fish_coords[j][1]+canvas_length)* res / canvas_length / 2)
         # Rayscating
         start_angle = fish_orientations[j] - half_FOV # Startvinkel
         start_angle_arc = start_angle # Memorerar för j:te partikeln
@@ -415,14 +409,12 @@ for t in range(simulation_iterations):
         if np.size(indices)!=0:
             row = d_ij[0][indices] # Rad index denna fisk
             col = d_ij[1][indices] # Column index andra fiskar
-            r_vec_ij = (fish_coords[col] - fish_coords[row])/fish_cdist[row,col]
-            r_vec_ij_norm = np.linalg.norm(r_vec_ij)
-            d_vec = np.sum(r_vec_ij/r_vec_ij_norm,axis=0)
+            r_vec_ij = (fish_coords[col] - fish_coords[row])
+            numerator = np.sum(r_vec_ij,axis=0)
+            denumerator = np.linalg.norm(numerator)
+            d_vec = -numerator/denumerator
             repulsion_angle = np.arctan2(d_vec[1],d_vec[0])
             weight_boolean_repulsion = True
-        else:
-            repulsion_angle = 0
-
 
         # Obstacle Avoidance
         avoid_angle = 0
@@ -437,21 +429,22 @@ for t in range(simulation_iterations):
             avoid_info = avoid_obstacle(fish_coords[j], closest_obst_type, closest_obst_index, ray_boolean) # [avoid_angle, closest_obst_dist]
             avoid_angle = 0 if detect_info[1] == -1 else avoid_info[0] # Kollar om strålarna detekterar något
             dist = 1 if detect_info[1] == -1 else np.abs(avoid_info[1]) # Samma här
+
             if dist < fish_interaction_radius and dist !=1:
                 weight_boolean_vicsek = False
                 if weight_boolean_repulsion:
                     weight_boolean_avoid = False
-                    weight_boolean_vicsek = False
                 else:
                     weight_boolean_avoid = True
 
+
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
-        if weight_boolean_repulsion:
-            fish_orientations[j] += repulsion_angle + fish_noise * np.random.uniform(-1 / 2, 1 / 2)
+        if(weight_boolean_repulsion):
+            fish_orientations[j] = repulsion_angle
         else:
             fish_orientations[j] = weight_boolean_avoid *fish_orientations[j] + weight_boolean_vicsek*np.angle(np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) \
-                               + fish_noise * np.random.uniform(-1 / 2, 1 / 2) + avoid_angle + weight_boolean_repulsion*repulsion_angle
+                               + weight_boolean_vicsek *fish_noise * np.random.uniform(-1 / 2, 1 / 2) + avoid_angle
 
 
     tk.title('Iteration =' + str(t))

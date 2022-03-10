@@ -241,7 +241,8 @@ for t in range(simulation_iterations):
         if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
             fish_orientations[j] = get_direction(shark_coords[0], fish_coords[j]) + avoid_angle
         else:  # Annars Vicsek-modellen
-            fish_orientations[j] = np.angle(
+
+            fish_orientations[j] = (avoid_angle == 0)*np.angle(
                 np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                 -1 / 2, 1 / 2) + avoid_angle
             if j == 1:
