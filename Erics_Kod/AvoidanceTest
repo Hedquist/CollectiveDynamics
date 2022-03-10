@@ -22,7 +22,7 @@ fish_interaction_radius = 10 # Interaction radius
 fish_graphic_radius = 2 # Radius of agent
 fish_noise = 0.1 # Diffusional noise constant
 fish_arrow_length = fish_interaction_radius/2
-fish_repulsion_radius = fish_interaction_radius
+fish_repulsion_radius = fish_graphic_radius + 1
 
 # Raycasting main
 step_angle = 2 * np.arctan((fish_graphic_radius+1) / fish_interaction_radius)
@@ -37,7 +37,7 @@ simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100 # Size of box
 fish_speed = 20  # Particle velocity
-fish_count = 5 # Number of particles
+fish_count = 40 # Number of particles
 
 x=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -409,15 +409,12 @@ for t in range(simulation_iterations):
         if np.size(indices)!=0:
             row = d_ij[0][indices] # Rad index denna fisk
             col = d_ij[1][indices] # Column index andra fiskar
-            r_vec_ij = (fish_coords[col] - fish_coords[row])/fish_cdist[row,col]
+            r_vec_ij = (fish_coords[col] - fish_coords[row])
             numerator = np.sum(r_vec_ij,axis=0)
             denumerator = np.linalg.norm(numerator)
             d_vec = -numerator/denumerator
             repulsion_angle = np.arctan2(d_vec[1],d_vec[0])
             weight_boolean_repulsion = True
-        else:
-            repulsion_angle = 0
-
 
         # Obstacle Avoidance
         avoid_angle = 0
@@ -432,19 +429,22 @@ for t in range(simulation_iterations):
             avoid_info = avoid_obstacle(fish_coords[j], closest_obst_type, closest_obst_index, ray_boolean) # [avoid_angle, closest_obst_dist]
             avoid_angle = 0 if detect_info[1] == -1 else avoid_info[0] # Kollar om strålarna detekterar något
             dist = 1 if detect_info[1] == -1 else np.abs(avoid_info[1]) # Samma här
+
             if dist < fish_interaction_radius and dist !=1:
                 weight_boolean_vicsek = False
                 if weight_boolean_repulsion:
                     weight_boolean_avoid = False
-                    print(np.rad2deg(repulsion_angle))
                 else:
                     weight_boolean_avoid = True
 
 
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
-        fish_orientations[j] = weight_boolean_avoid *fish_orientations[j] + weight_boolean_vicsek*np.angle(np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) \
-                               + fish_noise * np.random.uniform(-1 / 2, 1 / 2) + avoid_angle + weight_boolean_repulsion*repulsion_angle +weight_boolean_repulsion *fish_orientations[j]
+        if(weight_boolean_repulsion):
+            fish_orientations[j] = repulsion_angle
+        else:
+            fish_orientations[j] = weight_boolean_avoid *fish_orientations[j] + weight_boolean_vicsek*np.angle(np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) \
+                               + weight_boolean_vicsek *fish_noise * np.random.uniform(-1 / 2, 1 / 2) + avoid_angle
 
 
     tk.title('Iteration =' + str(t))
