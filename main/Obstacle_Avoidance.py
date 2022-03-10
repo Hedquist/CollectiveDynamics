@@ -21,7 +21,7 @@ fish_interaction_radius = 10  # Interaction radius
 fish_graphic_radius = 2  # Radius of agent
 fish_noise = 0.1  # Diffusional noise constant
 fish_arrow_length = fish_interaction_radius / 2
-fish_slowdown_range = 0.5
+fish_slowdown_range = 0.2
 
 # Raycasting
 step_angle = 2 * np.arctan(fish_graphic_radius / fish_interaction_radius)
@@ -373,7 +373,9 @@ def calculate_fish_velocity(fish_distance_matrix, obstacle_distance_array):
     tmp_matrix = fish_distance_matrix < fish_graphic_radius * 2
     tmp_matrix_diag = np.fill_diagonal(tmp_matrix, False)
     index_close_fish = np.nonzero(tmp_matrix)
-    for i in range(len(index_close_fish[0]) - 1):
+    if len(index_close_fish[0]) > fish_count:
+        print(index_close_fish[0])
+    for i in range(len(index_close_fish[0])):
         if obstacle_distance_array[index_close_fish[0][i]] < obstacle_distance_array[index_close_fish[1][i]]:
             distance = (fish_distance_matrix[index_close_fish[0][i],index_close_fish[1][i]] - fish_graphic_radius * 2)
             if distance < - fish_slowdown_range:
@@ -381,10 +383,10 @@ def calculate_fish_velocity(fish_distance_matrix, obstacle_distance_array):
             elif distance > 0:
                 tmp_fish_speed = fish_speed
             else:
-                tmp_fish_speed = fish_speed / (- fish_slowdown_range) * distance + fish_speed
+                tmp_fish_speed = fish_speed / (fish_slowdown_range) * distance + fish_speed
             fish_speed_array[index_close_fish[0][i]] = tmp_fish_speed
         else:
-            fish_speed_array[i] = fish_speed
+            fish_speed_array[index_close_fish[0][i]] = fish_speed
 
 
 # Kallar på de grafiska funktionerna
