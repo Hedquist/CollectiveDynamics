@@ -21,7 +21,7 @@ fish_interaction_radius = 10  # Interaction radius
 fish_graphic_radius = 2  # Radius of agent
 fish_noise = 0.1  # Diffusional noise constant
 fish_arrow_length = fish_interaction_radius / 2
-fish_slowdown_range = 0.2
+fish_slowdown_range = 0.5
 
 # Raycasting
 step_angle = 2 * np.arctan(fish_graphic_radius / fish_interaction_radius)
@@ -35,7 +35,7 @@ half_FOV = FOV_angle / 2
 simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
-fish_count = 10  # Number of particles
+fish_count = 100  # Number of particles
 fish_speed = 20
 fish_speed_array = np.ones(fish_count) * fish_speed  # Particle velocity
 
@@ -368,11 +368,19 @@ def avoid_obstacle(closest_type, closest_obst, ray_boolean):
 
 
 def calculate_fish_velocity(fish_distance_matrix, obstacle_distance_array):
-    index_close_fish = np.nonzero(fish_distance_matrix < fish_graphic_radius * 2)
-    for i in range(len(index_close_fish[0])):
+    tmp_matrix = fish_distance_matrix < fish_graphic_radius * 2
+    tmp_matrix_diag = np.fill_diagonal(tmp_matrix, False)
+    index_close_fish = np.nonzero(tmp_matrix)
+    for i in range(len(index_close_fish[0]) - 1):
         if obstacle_distance_array[index_close_fish[0][i]] < obstacle_distance_array[index_close_fish[1][i]]:
-            fish_speed_array[index_close_fish[0][i]] = (fish_slowdown_range + (fish_distance_matrix[
-                index_close_fish[0][i], index_close_fish[1][i]] - fish_graphic_radius * 2)) / fish_slowdown_range * fish_speed
+            distance = (fish_distance_matrix[index_close_fish[0][i],index_close_fish[1][i]] - fish_graphic_radius * 2)
+            if distance < - fish_slowdown_range:
+                tmp_fish_speed = 0
+            elif distance > 0:
+                tmp_fish_speed = fish_speed
+            else:
+                tmp_fish_speed = fish_speed / (- fish_slowdown_range) * distance + fish_speed
+            fish_speed_array[index_close_fish[0][i]] = tmp_fish_speed
         else:
             fish_speed_array[i] = fish_speed
 
@@ -386,6 +394,7 @@ draw_rectangular_obstacles()
 
 for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed_array, fish_orientations)  # Uppdatera fiskposition
+    fish_speed_array = np.ones(fish_count) * fish_speed
     main_fish_distances = cdist(fish_coords, fish_coords)
     for j in range(len(fish_coords)):  # Updating animation coordinates fisk
         canvas.coords(fish_canvas_graphics[j],
