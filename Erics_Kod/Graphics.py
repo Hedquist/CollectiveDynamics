@@ -53,7 +53,7 @@ rect_obst_height = []
 with open('Obstacles', 'r') as filestream:
     next(filestream) # Skip first row
     for line in filestream: # Read every row
-        if line is not "\n":
+        if line != "\n":
             currentline = line.split(',')
             if('None' not in currentline[:3]):
                 circ_obst_coords.append( [float(currentline[0]), float(currentline[1])] )
@@ -81,6 +81,7 @@ rays_angle_relative_velocity = [[] for i in range(fish_count)]
 circ_obst_canvas_graphics = []
 rect_obst_canvas_graphics = []
 fish_direction_arrow_graphics = []
+fish_number_graphics = []
 
 def draw_fishes():
 
@@ -100,6 +101,8 @@ def draw_fishes():
                                                        (fish_coords[j][1] + fish_graphic_radius *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                        (fish_coords[j][0] +  (fish_graphic_radius + fish_arrow_length ) *np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                        (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length ) *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,arrow=LAST ))# x0,y0 - x1,y1
+        fish_number_graphics.append(canvas.create_text((fish_coords[j][0]+canvas_length)* res / canvas_length / 2
+                                                       , (fish_coords[j][1]+canvas_length)* res / canvas_length / 2,fill="black",font="Times 30 bold",text=str(j)))
 # Ritar ut rays och lägger dess vinkel och spetsens koordinater i en lista
 def cast_rays():
 

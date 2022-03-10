@@ -1,3 +1,4 @@
+import cdist as cdist
 import numpy as np
 import matplotlib.pyplot as plt
 from tkinter import *
@@ -35,7 +36,7 @@ half_FOV = FOV_angle / 2
 simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
-fish_count = 100  # Number of particles
+fish_count = 40  # Number of particles
 fish_speed = 20
 fish_speed_array = np.ones(fish_count) * fish_speed  # Particle velocity
 
