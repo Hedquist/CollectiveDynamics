@@ -22,5 +22,8 @@ for fts in fish_turning_speed:
         j = j + 1
     i = i + 1
 
-plt.imshow(fish_eaten_matrix)
+# rng = np.random.default_rng()
+# fish_eaten_matrix = rng.integers(low=0, high=st.fish_count-4, size=n*n).reshape((n, n))
+plt.imshow(fish_eaten_matrix, interpolation='nearest', origin='lower')
+plt.colorbar()
 plt.show()
