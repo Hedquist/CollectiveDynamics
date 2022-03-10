@@ -78,8 +78,12 @@ print(np.size(indices))
 if np.size(indices) != 0:
     row = d_ij[0][indices] # Rad index denna fisk
     col = d_ij[1][indices] # Column index andra fiskar
+    print(row, 'row')
+    print(col,'çol')
     r_vec_ij = (fish_coords[col] - fish_coords[row])/cdist[row,col]
+    print(r_vec_ij,'r_ij_vec')
     numerator = np.sum(r_vec_ij,axis=0)
+    print(numerator,'numerator')
     denumerator = np.linalg.norm(numerator)
     d_vec = numerator/denumerator
     print(d_vec, np.arctan2(d_vec[1],d_vec[0]))

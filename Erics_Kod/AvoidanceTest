@@ -416,9 +416,8 @@ for t in range(simulation_iterations):
             row = d_ij[0][indices] # Rad index denna fisk
             col = d_ij[1][indices] # Column index andra fiskar
             r_vec_ij = (fish_coords[col] - fish_coords[row])/fish_cdist[row,col]
-            numerator = np.sum(r_vec_ij,axis=0)
-            denumerator = np.linalg.norm(numerator)
-            d_vec = numerator
+            r_vec_ij_norm = np.linalg.norm(r_vec_ij)
+            d_vec = np.sum(r_vec_ij/r_vec_ij_norm,axis=0)
             repulsion_angle = np.arctan2(d_vec[1],d_vec[0])
             weight_boolean_repulsion = True
         else:
@@ -449,7 +448,7 @@ for t in range(simulation_iterations):
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
         if weight_boolean_repulsion:
-            fish_orientations[j] += repulsion_angle
+            fish_orientations[j] += repulsion_angle + fish_noise * np.random.uniform(-1 / 2, 1 / 2)
         else:
             fish_orientations[j] = weight_boolean_avoid *fish_orientations[j] + weight_boolean_vicsek*np.angle(np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) \
                                + fish_noise * np.random.uniform(-1 / 2, 1 / 2) + avoid_angle + weight_boolean_repulsion*repulsion_angle
