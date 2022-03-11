@@ -6,7 +6,7 @@ from scipy.spatial.distance import *
 import time
 from itertools import chain
 
-res = 700  # Resolution of the animation
+res = 600  # Resolution of the animation
 tk = Tk()
 tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3)))  # Set height x width window
 tk.configure(background='white')
@@ -141,12 +141,12 @@ def draw_fishes():
                                (fish_coords[j][0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                                (fish_coords[j][1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                                outline=ccolor[0], fill=ccolor[0]))
-        fish_interaction_radius_canvas_graphics.append(
-            canvas.create_oval((fish_coords[j][0] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                               (fish_coords[j][1] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                               (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                               (fish_coords[j][1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                               outline=ccolor[2], width=1))
+        # fish_interaction_radius_canvas_graphics.append(
+        #     canvas.create_oval((fish_coords[j][0] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+        #                        (fish_coords[j][1] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+        #                        (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+        #                        (fish_coords[j][1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+        #                        outline=ccolor[2], width=1))
         fish_direction_arrow_graphics.append(canvas.create_line((fish_coords[j][0] + fish_graphic_radius * np.cos(
             fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                                 (fish_coords[j][1] + fish_graphic_radius * np.sin(
@@ -169,13 +169,13 @@ def cast_rays():
         start_angle = fish_orientations[j] - half_FOV  # Startvinkel
         start_angle_arc = start_angle  # Memorerar för j:te partikeln
         for ray in range(casted_rays):
-            fish_canvas_rays_graphics[j].append(
-                canvas.create_line((fish_coords[j][0] + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j][1] + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j][0] + fish_interaction_radius * np.cos(
-                                       start_angle) + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j][1] + fish_interaction_radius * np.sin(
-                                       start_angle) + canvas_length) * res / canvas_length / 2, fill=ccolor[3]))
+            # fish_canvas_rays_graphics[j].append(
+            #     canvas.create_line((fish_coords[j][0] + canvas_length) * res / canvas_length / 2,
+            #                        (fish_coords[j][1] + canvas_length) * res / canvas_length / 2,
+            #                        (fish_coords[j][0] + fish_interaction_radius * np.cos(
+            #                            start_angle) + canvas_length) * res / canvas_length / 2,
+            #                        (fish_coords[j][1] + fish_interaction_radius * np.sin(
+            #                            start_angle) + canvas_length) * res / canvas_length / 2, fill=ccolor[3]))
             rays_coords[j].append([fish_coords[j][0] + fish_interaction_radius * np.cos(start_angle),
                                    fish_coords[j][1] + fish_interaction_radius * np.sin(start_angle)])
             rays_angle_relative_velocity[j].append(start_angle)
@@ -366,17 +366,24 @@ def avoid_obstacle(fish_coord,closest_type, closest_obst, ray_boolean):
             sign = -1 if (first_free_index <= 2) else 1
 
     angle_weight = np.pi / 4 / closest_obst_distance * sign
+    if np.abs(angle_weight) > np.pi/2:
+        angle_weight = np.pi/2 * sign
     return np.array([angle_weight, closest_obst_distance])
 
 
 def calculate_fish_velocity(fish_distance_matrix, obstacle_distance_array):
     tmp_matrix = fish_distance_matrix < fish_graphic_radius * 2
-    tmp_matrix_diag = np.fill_diagonal(tmp_matrix, False)
+    np.fill_diagonal(tmp_matrix, False)
     index_close_fish = np.nonzero(tmp_matrix)
-    if len(index_close_fish[0]) > fish_count:
-        print(index_close_fish[0])
+    #if len(index_close_fish[0]) > fish_count:
+        # print(index_close_fish[0])
     for i in range(len(index_close_fish[0])):
-        if obstacle_distance_array[index_close_fish[0][i]] < obstacle_distance_array[index_close_fish[1][i]]:
+        fish_fish_angle = np.arctan2(fish_coords[index_close_fish[0][i], 0], fish_coords[index_close_fish[0][i], 0])
+        delta_angle_1 = min((2 * np.pi) - abs(fish_orientations[index_close_fish[0][i]] - fish_fish_angle),
+                            abs(fish_orientations[index_close_fish[0][i]] - fish_fish_angle))
+        delta_angle_2 = min((2 * np.pi) - abs(fish_orientations[index_close_fish[1][i]] - fish_fish_angle),
+                            abs(fish_orientations[index_close_fish[1][i]] - fish_fish_angle))
+        if delta_angle_1 < delta_angle_2:
             distance = (fish_distance_matrix[index_close_fish[0][i],index_close_fish[1][i]] - fish_graphic_radius * 2)
             if distance < - fish_slowdown_range:
                 tmp_fish_speed = 0
@@ -406,12 +413,12 @@ for t in range(simulation_iterations):
                       (fish_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2)
-        canvas.coords(fish_interaction_radius_canvas_graphics[j],
-                      (fish_coords[j][0] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                      (fish_coords[j][1] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                      (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                      (fish_coords[j][
-                           1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2)
+        # canvas.coords(fish_interaction_radius_canvas_graphics[j],
+        #               (fish_coords[j][0] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+        #               (fish_coords[j][1] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+        #               (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+        #               (fish_coords[j][
+        #                    1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2)
         canvas.coords(fish_direction_arrow_graphics[j],
                       (fish_coords[j][0] + fish_graphic_radius * np.cos(
                           fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
@@ -426,13 +433,13 @@ for t in range(simulation_iterations):
         start_angle = fish_orientations[j] - half_FOV  # Startvinkel
         start_angle_arc = start_angle  # Memorerar för j:te partikeln
         for ray in range(casted_rays):
-            canvas.coords(fish_canvas_rays_graphics[j][ray],
-                          (fish_coords[j][0] + canvas_length) * res / canvas_length / 2,
-                          (fish_coords[j][1] + canvas_length) * res / canvas_length / 2,
-                          (fish_coords[j][0] + fish_interaction_radius * np.cos(
-                              start_angle) + canvas_length) * res / canvas_length / 2,
-                          (fish_coords[j][1] + fish_interaction_radius * np.sin(
-                              start_angle) + canvas_length) * res / canvas_length / 2)
+            # canvas.coords(fish_canvas_rays_graphics[j][ray],
+            #               (fish_coords[j][0] + canvas_length) * res / canvas_length / 2,
+            #               (fish_coords[j][1] + canvas_length) * res / canvas_length / 2,
+            #               (fish_coords[j][0] + fish_interaction_radius * np.cos(
+            #                   start_angle) + canvas_length) * res / canvas_length / 2,
+            #               (fish_coords[j][1] + fish_interaction_radius * np.sin(
+            #                   start_angle) + canvas_length) * res / canvas_length / 2)
 
             rays_coords[j][ray] = [fish_coords[j][0] + fish_interaction_radius * np.cos(start_angle),
                                    fish_coords[j][1] + fish_interaction_radius * np.sin(start_angle)]
