@@ -18,7 +18,7 @@ ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B
 
 # Parameters of the fishes
 fish_interaction_radius = 10  # Interaction radius
-fish_graphic_radius = 2  # Radius of agent
+fish_graphic_radius = 4  # Radius of agent
 fish_noise = 0.1  # Diffusional noise constant
 fish_arrow_length = fish_interaction_radius / 2
 
@@ -62,6 +62,11 @@ with open('Obstacles', 'r') as filestream:
                 rect_obst_width.append(float(currentline[5]))
                 rect_obst_height.append(float(currentline[6]))
     circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
+
+circ_obst_radius = np.array(circ_obst_radius)
+rect_obst_width = np.array(rect_obst_width)
+rect_obst_height = np.array(rect_obst_height)
+
 
 obst_type = ['rect', 'circ'] #
 obst_coords = [rect_obst_coords, circ_obst_coords] #
@@ -225,20 +230,6 @@ def is_point_outside_rectangle(rectangle_corner_coords, point, outside):
     else:
         return (A1 + A2 + A3 + A4 < A)
 
-def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
-    return np.minimum(
-        np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
-                (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
-        np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
-
-def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
-    coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
-            2 * canvas_length) - canvas_length
-    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
-            2 * canvas_length) - canvas_length
-    return coords
-
-
 def detect_obst_in_radius(fish_coord):
     obst_type_in_radius = [[], []]  # Lista med index för de hinder som detekterats innanför interaktionsradien
     detected = []
@@ -326,9 +317,23 @@ def avoid_obstacle(fish_coord,closest_type, closest_obst, ray_boolean):
                 i += 1
             sign = -1 if (first_free_index <= 2) else 1
 
-    angle_weight = np.pi / 4 / closest_obst_distance * sign
+    angle_weight = np.pi / 4 / closest_obst_distance * sign # August får ändra
+    if np.abs(angle_weight) > np.pi/2:
+        angle_weight = np.pi/2*sign
     return angle_weight
 
+def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
+    return np.minimum(
+        np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
+                (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
+        np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
+
+def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
+    coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
+            2 * canvas_length) - canvas_length
+    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
+            2 * canvas_length) - canvas_length
+    return coords
 
 # Kallar på de grafiska funktionerna
 cast_rays()
@@ -360,6 +365,29 @@ for t in range(simulation_iterations):
                           fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length) * np.sin(
                           fish_orientations[j]) + canvas_length) * res / canvas_length / 2)
+
+        # Overlapp circular obstacles
+        circ_obst_distances = calculate_distance(circ_obst_coords, fish_coords[j])
+        angles = np.arctan2(circ_obst_coords[:,1] - fish_coords[j,1], circ_obst_coords[:,0] - fish_coords[j,0])  # Directions of others array from the particle
+        overlapp = circ_obst_distances < (fish_graphic_radius + circ_obst_radius)  # Applying
+        for ind in np.where(overlapp)[0]:
+            fish_coords[j,0] = fish_coords[j,0] + (circ_obst_distances[ind] - (fish_graphic_radius + circ_obst_radius[ind]) ) * np.cos(angles[ind]) / 2
+            fish_coords[j,1] = fish_coords[j,1] + (circ_obst_distances[ind] - (fish_graphic_radius + circ_obst_radius[ind])) * np.sin(angles[ind]) / 2
+            #fish_coords[ind] = fish_coords[ind] - (circ_obst_distances[ind] - (fish_graphic_radius + circ_obst_radius[ind])) * np.cos(angles[ind]) / 2
+            #fish_coords[ind] = fish_coords[ind] - (circ_obst_distances[ind] - (fish_graphic_radius + circ_obst_radius[ind])) * np.sin(angles[ind]) / 2
+
+        # # Overlapp fishes
+        fish_distances = calculate_distance(fish_coords, fish_coords[j])
+        angles = np.arctan2(fish_coords[:,1] - fish_coords[j,1], fish_coords[:,0] - fish_coords[j,0])  # Directions of others array from the particle
+        overlapp = fish_distances < (2 * fish_graphic_radius)  # Applying
+        overlapp[j] = False  # area extraction
+        for ind in np.where(overlapp)[0]:
+            fish_coords[j,0] = fish_coords[j,0] + (fish_distances[ind] - 2 * fish_graphic_radius) * np.cos(angles[ind]) / 2
+            fish_coords[j,1] = fish_coords[j,1] + (fish_distances[ind] - 2 * fish_graphic_radius) * np.sin(angles[ind]) / 2
+            fish_coords[ind] = fish_coords[ind] - (fish_distances[ind] - 2 * fish_graphic_radius) * np.cos(angles[ind]) / 2
+            fish_coords[ind] = fish_coords[ind] - (fish_distances[ind] - 2 * fish_graphic_radius) * np.sin(angles[ind]) / 2
+
+
 
         # Rays casting
         start_angle = fish_orientations[j] - half_FOV  # Startvinkel
