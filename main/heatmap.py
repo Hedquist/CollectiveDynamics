@@ -12,8 +12,10 @@ fish_eaten_matrix = np.zeros((n, n))  # Allokera minne
 
 i = 0
 for fts in fish_turning_speed:
+    fts = np.trunc(100 * fts) * 0.01  # Ta bort trunkeringsfel
     j = 0
     for sts in shark_turning_speed:
+        sts = np.trunc(100 * sts) * 0.01  # Ta bort trunkeringsfel
         res = 0
         for k in range(5):
             res += st.main(fts, sts)  # Anropa simulationen med olika turning speed
