@@ -6,7 +6,7 @@ import simple_torque as st
 
 fish_turning_speed = np.linspace(0.01, 1, 10)  # Fiskarnas turning speed
 shark_turning_speed = np.linspace(0.01, 1, 10)  # Hajarnas turning speed
-N = 1
+N = 5
 
 n = len(fish_turning_speed)
 fish_eaten_matrix = np.zeros((n, n))  # Allokera minne
@@ -29,3 +29,4 @@ for fts in fish_turning_speed:
 plt.imshow(fish_eaten_matrix, interpolation='nearest', origin='lower')
 plt.colorbar()
 plt.show()
+np.save('fish_eaten_matrix.npy', fish_eaten_matrix)
