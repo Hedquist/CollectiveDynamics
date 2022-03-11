@@ -15,7 +15,7 @@ for fts in fish_turning_speed:
     j = 0
     for sts in shark_turning_speed:
         res = 0
-        for k in range(10):
+        for k in range(5):
             res += st.main(fts, sts)  # Anropa simulationen med olika turning speed
         res /= 10
         fish_eaten_matrix[i, j] = res  # Medelvärde av antal ätna fiskar
