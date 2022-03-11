@@ -159,6 +159,7 @@ if visuals_on:
                                                                                    fish_count))
 def main(fish_turn_speed, shark_turn_speed):
     fish_eaten_count = 0
+    global fish_coords, fish_orientations, shark_coords, shark_orientations
     # Loop för allt som ska ske varje tidssteg i simulationen
     for t in range(simulation_iterations):
         # Uppdatera fiskarnas orientationer innan uppdatering av positioner
@@ -252,3 +253,6 @@ if visuals_on:
     plt.ylabel('Antal fiskar ätna')
     plt.show()
     tk.mainloop()
+
+if __name__ == 'main':
+    print('Hello')
