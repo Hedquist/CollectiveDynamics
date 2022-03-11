@@ -34,9 +34,8 @@ shark_speed = 0.85  # Hajens fart
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0    # Antal fiskar ätna
 
-fish_turn_speed = 0.015
-shark_turn_speed = 0.05
-omega_max = np.pi / time_step  # Maximala vinkelhastigheten för fiskar och hajar
+# fish_turn_speed = 0.015
+# shark_turn_speed = 0.05
 
 # Start koordinater fiskar
 fish_coords_file = 'fish_coords_initial.npy'
@@ -158,84 +157,85 @@ if visuals_on:
     clustering_coeff_canvas_text = canvas.create_text(100, 40,
                                                       text=calculate_cluster_coeff(fish_coords, fish_interaction_radius,
                                                                                    fish_count))
+def main(fish_turn_speed, shark_turn_speed):
+    fish_eaten_count = 0
+    # Loop för allt som ska ske varje tidssteg i simulationen
+    for t in range(simulation_iterations):
+        # Uppdatera fiskarnas orientationer innan uppdatering av positioner
+        fish_orientations = update_orientation(fish_orientations, fish_desired_orientations, fish_turn_speed)
+        fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
+        # Uppdatera hajarnas orientationer innan uppdatering av positioner
+        shark_orientations = update_orientation(shark_orientations, shark_desired_orientations, shark_turn_speed)
+        shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
+        shark_fish_distances = calculate_distance(fish_coords, shark_coords[
+            0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
-# Loop för allt som ska ske varje tidssteg i simulationen
-for t in range(simulation_iterations):
-    # Uppdatera fiskarnas orientationer innan uppdatering av positioner
-    fish_orientations = update_orientation(fish_orientations, fish_desired_orientations, fish_turn_speed)
-    fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
-    # Uppdatera hajarnas orientationer innan uppdatering av positioner
-    shark_orientations = update_orientation(shark_orientations, shark_desired_orientations, shark_turn_speed)
-    shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
-    shark_fish_distances = calculate_distance(fish_coords, shark_coords[
-        0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+        closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
 
-    closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
+        # print(closest_fish)
+        # print(shark_coords)
 
-    # print(closest_fish)
-    # print(shark_coords)
+        if visuals_on:
+            for j in range(shark_count):
+                # Updating animation coordinates haj
+                canvas.coords(shark_canvas_graphics[j],
+                              (shark_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[
+                                   j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
 
-    if visuals_on:
-        for j in range(shark_count):
-            # Updating animation coordinates haj
-            canvas.coords(shark_canvas_graphics[j],
-                          (shark_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                          (shark_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                          (shark_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                          (shark_coords[
-                               j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
+            for j in range(len(fish_coords)):
+                # Updating animation coordinates fisk
+                canvas.coords(fish_canvas_graphics[j],
+                              (fish_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[
+                                   j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
+
+            if j == closest_fish:
+                canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
+            else:
+                canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
 
         for j in range(len(fish_coords)):
-            # Updating animation coordinates fisk
-            canvas.coords(fish_canvas_graphics[j],
-                          (fish_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                          (fish_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                          (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                          (fish_coords[
-                               j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
+            inter_fish_distances = calculate_distance(fish_coords, fish_coords[
+            j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
 
-        if j == closest_fish:
-            canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
+        fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
+
+        if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
+            fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
+        else:  # Annars Vicsek-modellen
+            fish_desired_orientations[j] = np.angle(
+                np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
+                -1 / 2, 1 / 2)
+
+        #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
+        shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
+
+        if visuals_on:
+            # Beräknar Global Alignment
+            global_alignment_coeff = 1 / fish_count * np.linalg.norm(
+                [np.sum(np.cos(fish_orientations)), np.sum(np.sin(fish_orientations))])
+
+            # Beräknar clustering coefficent
+            clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
+
+        # Kollar om närmaste fisk är inom murder radien
+        if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
+            if calculate_distance(shark_coords, fish_coords[closest_fish])[
+                0] < murder_radius:
+                last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
+                if visuals_on:
+                    canvas.delete(fish_canvas_graphics[last_index])
+                fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
+                fish_orientations = murder_fish_orientations(closest_fish)  # Tar bort index i orientations
+                fish_eaten_count += 1  # Lägg till en äten fisk
         else:
-            canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
-
-    for j in range(len(fish_coords)):
-        inter_fish_distances = calculate_distance(fish_coords, fish_coords[
-        j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
-
-    fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
-
-    if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
-        fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
-    else:  # Annars Vicsek-modellen
-        fish_desired_orientations[j] = np.angle(
-            np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
-            -1 / 2, 1 / 2)
-
-    #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
-    shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
-
-    if visuals_on:
-        # Beräknar Global Alignment
-        global_alignment_coeff = 1 / fish_count * np.linalg.norm(
-            [np.sum(np.cos(fish_orientations)), np.sum(np.sin(fish_orientations))])
-
-        # Beräknar clustering coefficent
-        clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
-
-    # Kollar om närmaste fisk är inom murder radien
-    if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
-        if calculate_distance(shark_coords, fish_coords[closest_fish])[
-            0] < murder_radius:
-            last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
-            if visuals_on:
-                canvas.delete(fish_canvas_graphics[last_index])
-            fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
-            fish_orientations = murder_fish_orientations(closest_fish)  # Tar bort index i orientations
-            fish_eaten_count += 1  # Lägg till en äten fisk
-            fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
-    else:
-        break
+            break
+    return fish_eaten_count
 
     if visuals_on:
         # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
