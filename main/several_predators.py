@@ -10,7 +10,7 @@ from timeit import default_timer as timer
 
 start = timer()  # Timer startas
 
-visuals_on = False  # Välj om simulationen ska visas eller ej.
+visuals_on = True  # Välj om simulationen ska visas eller ej.
 
 if visuals_on:
     res = 500  # Resolution of the animation
@@ -125,13 +125,7 @@ def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna c
 
 
 def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i radianer
-    if np.sqrt((coord2[0] - coord1[0]) ** 2 + (coord2[1] - coord1[1]) ** 2) < np.sqrt(
-            ((coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length)) ** 2 + (
-                    (coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length)) ** 2):
-        return np.arctan2(coord2[1] - coord1[1], coord2[0] - coord1[0])
-    else:
-        return np.arctan2((coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length),
-                          (coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length))
+    return np.arctan2((coord2[1]) - (coord1[1]), (coord2[0]) - (coord1[0]))
 
 
 '''
@@ -340,12 +334,17 @@ for t in range(simulation_iterations):
 
         closest_shark = np.argmin(shark_fish_distance_matrix[:, j])  # Hittar index för närmaste hajen
         if j in fish_near_shark_index:  # Om hajen är nära fisken, undvik hajen
-            fish_orientations[j] = get_fish_avoidance(j, fish_near_shark_index, shark_near_fish_index) + avoid_angle
+            if avoid_angle == 0:
+                fish_orientations[j] = get_fish_avoidance(j, fish_near_shark_index, shark_near_fish_index)
+            else:
+                fish_orientations[j] = fish_orientations[j] + avoid_angle
         else:  # Annars Vicsek-modellen
-            fish_orientations[j] = np.angle(
-                np.sum(np.exp(
-                    fish_orientations_old[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
-                -1 / 2, 1 / 2) + avoid_angle
+            if avoid_angle == 0:
+                fish_orientations[j] = np.angle(
+                    np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
+                    -1 / 2, 1 / 2)
+            else:
+                fish_orientations[j] = fish_orientations[j] + avoid_angle
 
     #   Shark direction härifrån
     for i in range(shark_count):
