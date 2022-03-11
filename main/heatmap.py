@@ -4,9 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import simple_torque as st
 
-fish_turning_speed = np.linspace(0.01, 1, 100)  # Fiskarnas turning speed
-shark_turning_speed = np.linspace(0.01, 1, 100)  # Hajarnas turning speed
-N = 5
+fish_turning_speed = np.linspace(0.01, 1, 10)  # Fiskarnas turning speed
+shark_turning_speed = np.linspace(0.01, 1, 10)  # Hajarnas turning speed
+N = 1
 
 n = len(fish_turning_speed)
 fish_eaten_matrix = np.zeros((n, n))  # Allokera minne
@@ -17,7 +17,8 @@ for fts in fish_turning_speed:
     for sts in shark_turning_speed:
         res = 0.0
         for k in range(N):
-            res += st.main(fts, sts)  # Anropa simulationen med olika turning speed
+            temp = st.main(fts, sts)
+            res += temp  # Anropa simulationen med olika turning speed
         res /= N
         fish_eaten_matrix[i, j] = res  # Medelvärde av antal ätna fiskar
         j = j + 1
