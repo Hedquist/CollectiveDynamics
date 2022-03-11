@@ -17,7 +17,7 @@ rays_coords = [[1,1], [2,2],[3,3]]
 wall_coord = [[10,10]]
 obst_coords = [ [[0,0]], [[1,1],[2,2]], [[5,5],[6,6], [7,7]] ]
 arr = [1,2,3]
-boolean = [False, False, False, False, False, False]
+boolean = [True, False, False, False, False, False]
 boolean_rays = [ [False,True], [[True,True],[True,False]], [[True,True],[True,False]] ]
 result = []
 for element in range(len(obst_type2)):
