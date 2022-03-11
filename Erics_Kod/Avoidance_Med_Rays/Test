@@ -89,3 +89,5 @@ if np.size(indices) != 0:
     print(d_vec, np.arctan2(d_vec[1],d_vec[0]))
 
 
+for ind in d_ij:
+    print(ind)
