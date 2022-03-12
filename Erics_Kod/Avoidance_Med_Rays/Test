@@ -91,3 +91,8 @@ if np.size(indices) != 0:
 
 for ind in d_ij:
     print(ind)
+
+print()
+arr1 = np.array([[0,1],[2,3]])
+arr2 = np.array([[2,3],[4,5]])
+print(np.minimum(arr1,arr2))
