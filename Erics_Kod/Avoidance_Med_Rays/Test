@@ -96,3 +96,13 @@ print()
 arr1 = np.array([[0,1],[2,3]])
 arr2 = np.array([[2,3],[4,5]])
 print(np.minimum(arr1,arr2))
+rect_obst_coords = np.array([-2,2])
+print(rect_obst_coords,'rect')
+fish_coords = np.array([-5,6])
+delta = rect_obst_coords - fish_coords
+print(delta,'delta')
+minIndex = np.argmin(np.absolute(delta))
+print(minIndex,'minIndex')
+print(delta[minIndex])
+point_normal = rect_obst_coords + [delta[minIndex]*(minIndex == 0) , delta[minIndex]*(minIndex == 1)]
+print(point_normal, 'point_normal')
