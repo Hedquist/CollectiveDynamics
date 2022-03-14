@@ -22,7 +22,7 @@ fish_interaction_radius = 10  # Interaction radius
 fish_graphic_radius = 2  # Radius of agent
 fish_noise = 0.1  # Diffusional noise constant
 fish_arrow_length = fish_graphic_radius
-fish_ray_radius = fish_interaction_radius/2+3
+fish_ray_radius = fish_interaction_radius
 
 # Raycasting
 step_angle = 2 * np.arctan(fish_graphic_radius / fish_interaction_radius)
@@ -36,14 +36,14 @@ half_FOV = FOV_angle / 2
 simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
-fish_count = 1 # Number of particles
+fish_count = 50 # Number of particles
 fish_speed = 20
 
 x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
 fish_coords = np.column_stack((x, y))
 fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
-visual_debug = False
+visual_debug = True
 
 circ_obst_coords = []
 rect_obst_coords = []
@@ -241,29 +241,69 @@ def is_point_outside_rectangle(rectangle_corner_coords, point, outside):
     else:
         return (A1 + A2 + A3 + A4 < A)
 
+def distance_circ_to_rect_boolean(circ_coord,circ_radius, rect_corners_coords):
+    R = circ_radius
+    Xc, Yc = circ_coord[0], circ_coord[1]  # Fiskens koordinater
+    X1, Y1 = rect_corners_coords[:,0,0], rect_corners_coords[:,0,1] # Ena hörnet
+    X2, Y2 = rect_corners_coords[:,3,0],rect_corners_coords[:,3,1] # Andra hörnet
+
+    NearestX = np.maximum(X1, np.minimum(Xc, X2)) # Tar fram de närmsta punkten
+    NearestY = np.maximum(Y1, np.minimum(Yc, Y2))
+
+    Dx = NearestX - Xc # Avståndet från närmsta punkten på rektangeln till fiskens centrum
+    Dy = NearestY - Yc
+    circle_inside_rectangular = (Dx * Dx + Dy * Dy) <= R *R
+
+    return circle_inside_rectangular
+
+def distance_circ_to_rect(circ_coord,circ_radius,rect_corners_coords):
+    R = circ_radius
+    Xc, Yc = circ_coord[0], circ_coord[1]  # Fiskens koordinater
+    X1, Y1 = rect_corners_coords[0,0], rect_corners_coords[0,1] # Ena hörnet
+    X2, Y2 = rect_corners_coords[3,0],rect_corners_coords[3,1] # Andra hörnet
+
+    NearestX = np.maximum(X1, np.minimum(Xc, X2)) # Tar fram de närmsta punkten
+    NearestY = np.maximum(Y1, np.minimum(Yc, Y2))
+
+    Dx = NearestX - Xc # Avståndet från närmsta punkten på rektangeln till fiskens centrum
+    Dy = NearestY - Yc
+
+    dist = np.sqrt((np.absolute(Dx)-R)**2 + (np.absolute((Dy)-R))**2)
+
+    return dist
+
+
+
+
+
 def detect_obst_in_radius(fish_coord):
     obst_type_in_radius = [[], []]  # Lista med index för de hinder som detekterats innanför interaktionsradien
     detected = []
-    rect_obst_in_radius = calculate_distance(rect_obst_coords, fish_coord) - rect_obst_width < fish_ray_radius
+    #rect_obst_in_radius = calculate_distance(rect_obst_coords, fish_coord) - rect_obst_width < fish_interaction_radius
+    rect_obst_in_radius = distance_circ_to_rect_boolean(fish_coord,fish_ray_radius,rect_obst_corner_coords)
     circ_obst_in_radius = calculate_distance(circ_obst_coords, fish_coord) - circ_obst_radius < fish_ray_radius
     if True in rect_obst_in_radius:
         obst_type_in_radius[0].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
         detected.append(True)
+
     elif True in circ_obst_in_radius:
         obst_type_in_radius[1].extend([index for index, element in enumerate(circ_obst_in_radius) if element])
         detected.append(True)
+
+    # if True in detected:
+    #     print(obst_type_in_radius)
+    #     time.sleep(0.1)
     return [True in detected, obst_type_in_radius]
 
 
 def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
-    obst_type = ['rect', 'circ']
     n_rays = len(ray_coords)
     obst_type_detect = [[], []]  # Lista med vilken typ av hinder den känner av Korta listan
     obst_detect = [[], []]  # Lista med vilken typ plus alla ray Långa listan
     closest_obst_all = [[], []]  # Lista med (ett enda) hinder index, strålavstånd och boolean
     list_obst_index_raydist_raybool = [[], []]  # Lista med (flera) hinder index, strålavstånd och boolean
     common_ray_boolean = [False for i in range(n_rays)]  # Boolean relativ partikeln
-
+    ray_coords = np.array(ray_coords)
     for type in range(len(obst_type)):
         for k in range(len(obst_type_in_radius[type])):
             obst_index = obst_type_in_radius[type][k]  # Hinder index
@@ -273,9 +313,10 @@ def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
                 detect = True in booleans
                 if detect:
                     obst_detect[type].append(detect)
-                    closest_ray_dist = np.min([np.linalg.norm(np.array(rect_obst_coords[obst_index])
-                                                              - np.array(ray_coords[index])) for index, element in
-                                               enumerate(booleans) if element])
+                    # closest_ray_dist = np.min([np.linalg.norm(np.array(rect_obst_coords[obst_index])
+                    #                                           - np.array(ray_coords[index])) for index, element in
+                    #                            enumerate(booleans) if element])
+                    closest_ray_dist = distance_circ_to_rect(fish_coords[j],fish_graphic_radius,rect_obst_corner_coords[obst_index])
                     list_obst_index_raydist_raybool[type].append([obst_index, closest_ray_dist, booleans])
                     # Tar fram endast de avstånden som en ray är träffad, och minsta avstånden av dessa
                     a, b = common_ray_boolean, booleans  # Merga ihop boolean till boolean
@@ -289,6 +330,7 @@ def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
                     closest_ray_dist = np.min([np.linalg.norm(np.array(circ_obst_coords[obst_index])
                                                               - np.array(ray_coords[index])) for index, element in
                                                enumerate(booleans) if element])
+                    list_obst_index_raydist_raybool[type].append([obst_index, closest_ray_dist, booleans])
                     list_obst_index_raydist_raybool[type].append([obst_index, closest_ray_dist, booleans])
                     a, b = common_ray_boolean, booleans  # Merga ihop boolean till boolean
                     common_ray_boolean = [a or b for a, b in zip(a, b)]
@@ -470,15 +512,21 @@ for t in range(simulation_iterations):
 
         rect_obst_distances = calculate_distance(rect_obst_coords, fish_coords[j])
         fish_inside_rect_obst = (Dx * Dx + Dy * Dy) <= R *R
+        # for ind in np.where(fish_inside_rect_obst)[0]:
+        #     delta = fish_coords[j] - rect_obst_coords[ind]
+        #     minIndex = np.argmin(np.absolute(delta)) # Tar fram närmaste x eller y koordinaten
+        #     point_normal = rect_obst_coords[ind] + np.array([ delta[minIndex] if minIndex == 0 else 0 , delta[minIndex] if minIndex == 1 else 0]) # Position för normapunkten
+        #     normal_vec = fish_coords[j] - point_normal # Normalens vektor
+        #     normal_distance = np.linalg.norm(normal_vec)
+        #     angle = np.arctan2(normal_vec[1], normal_vec[0])  # Directions of others array from the particle
+        #     fish_coords[j,0] = fish_coords[j,0] + np.absolute(normal_distance - (R + rect_obst_width[ind]) ) * np.cos(angle)
+        #     fish_coords[j,1] = fish_coords[j,1] + np.absolute(normal_distance  - (R + rect_obst_height[ind])) * np.sin(angle)
         for ind in np.where(fish_inside_rect_obst)[0]:
-            delta = fish_coords[j] - rect_obst_coords[ind]
-            minIndex = np.argmin(np.absolute(delta)) # Tar fram närmaste x eller y koordinaten
-            point_normal = rect_obst_coords[ind] + np.array([ delta[minIndex] if minIndex == 0 else 0 , delta[minIndex] if minIndex == 1 else 0]) # Position för normapunkten
-            normal_vec = fish_coords[j] - point_normal # Normalens vektor
+            normal_vec = fish_coords[j] - np.array([NearestX[ind],NearestY[ind]]) # Normalens vektor
             normal_distance = np.linalg.norm(normal_vec)
             angle = np.arctan2(normal_vec[1], normal_vec[0])  # Directions of others array from the particle
-            fish_coords[j,0] = fish_coords[j,0] + np.absolute(normal_distance - (R + rect_obst_width[ind]) ) * np.cos(angle)
-            fish_coords[j,1] = fish_coords[j,1] + np.absolute(normal_distance  - (R + rect_obst_height[ind])) * np.sin(angle)
+            fish_coords[j,0] = fish_coords[j,0] + np.absolute(normal_distance - (R) ) * np.cos(angle)
+            fish_coords[j,1] = fish_coords[j,1] + np.absolute(normal_distance  - (R)) * np.sin(angle)
         # if True in fish_inside_rect_obst:
         #     weight_boolean_avoid = False
             #time.sleep(0.1)

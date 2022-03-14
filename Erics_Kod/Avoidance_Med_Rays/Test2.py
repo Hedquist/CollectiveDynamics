@@ -8,7 +8,7 @@ circ_obst_radius = []
 rect_obst_width = []
 rect_obst_height = []
 
-with open('Obstacles3', 'r') as filestream:
+with open('Obstacles4', 'r') as filestream:
     next(filestream)  # Skip first row
     for line in filestream:  # Read every row
         if line != "\n":
@@ -63,4 +63,52 @@ Dx = Xn - Xc
 Dy = Yn - Yc
 fish_inside_rect_obst = (Dx * Dx + Dy * Dy) <= fish_graphic_radius * fish_graphic_radius
 
+print()
+circ_coord = np.array([10,5])
+rect_coords = rect_obst_coords
+circ_radius = 2
+rect_width = rect_obst_width
+rect_height = rect_obst_height
 
+delta = circ_coord - rect_coords
+print(delta,'delta')
+min_index = [np.argmin(np.absolute(delta[i])) for i in range(len(delta)) ]# Tar fram närmaste x eller y koordinaten
+print(min_index,'min_index')
+displacement = [ [delta[index,min_index[index]] if min_index[index] == 0 else 0, delta[index,min_index[index]] if min_index[index] == 1 else 0 ] for index, element in enumerate(min_index)  ]
+print(displacement,'displacement')
+point_normal_coords = np.array(rect_coords + np.array(displacement)) # Position för normapunkten
+print(point_normal_coords, 'point_normal_coords')
+normal_vec = circ_coord - point_normal_coords # Normalens vektor
+print(normal_vec, 'normal_vec')
+normal_dist = np.array([np.linalg.norm(element) for element in normal_vec])
+print(normal_dist, 'normal dist')
+normal_angle = np.array(np.arctan2(normal_vec[:,1], normal_vec[:,0]))  # Directions of others array from the particle
+print(normal_angle, 'normal angle')
+actual_dist = normal_dist - (circ_radius + rect_width*np.cos(normal_angle) + rect_height*np.sin(normal_angle))
+print(actual_dist)
+dx,dy = np.absolute(normal_dist - (circ_radius + rect_width) ) * np.cos(normal_angle),np.absolute(normal_dist - (circ_radius + rect_height) ) * np.sin(normal_angle)
+print(dx,dy)
+dist = [ dx[index] if np.absolute(dx[index]) > np.absolute(dy[index]) else dy[index]  for index, element in enumerate(min_index)  ]
+print(dist,'dist')
+
+def distance_circ_to_rect(circ_coord,circ_radius, rect_coords,rect_width,rect_height):
+    delta = circ_coord - rect_coords
+    min_index_xy = [np.argmin(np.absolute(delta[i])) for i in range(len(delta))]# Tar fram närmaste x eller y koordinaten
+    displacement = [[delta[index, min_index_xy[index]] if min_index_xy[index] == 0 else 0, delta[index, min_index_xy[index]] if min_index_xy[index] == 1 else 0] for index, element in enumerate(min_index_xy)]
+    point_normal_coords = np.array(rect_coords + np.array(displacement)) # Position för normapunkten
+    normal_vec = circ_coord - point_normal_coords # Normalens vektor
+    normal_dist = np.array([np.linalg.norm(element) for element in normal_vec]) # Normal vektorns längd
+    normal_angle = np.array(np.arctan2(normal_vec[:,1], normal_vec[:,0]))  # Vinkeln för normalvektorn, är 0 pi/2 3pi/2, 2pi
+    actual_dist = normal_dist - (circ_radius + rect_width*np.cos(normal_angle) + rect_height*np.sin(normal_angle)) # Det avståndet som blir över
+    return actual_dist
+
+def distance_points_to_rect(point_coords, rect_coord, rect_width, rect_height):
+    delta = point_coords - rect_coord
+    min_index_xy = [np.argmin(np.absolute(delta[i])) for i in range(len(delta))]# Tar fram närmaste x eller y koordinaten
+    displacement = [[delta[index, min_index_xy[index]] if min_index_xy[index] == 0 else 0, delta[index, min_index_xy[index]] if min_index_xy[index] == 1 else 0] for index, element in enumerate(min_index_xy)]
+    point_normal_coords = np.array(rect_coord + np.array(displacement)) # Position för normapunkten
+    normal_vec = point_coords - point_normal_coords # Normalens vektor
+    normal_dist = np.array([np.linalg.norm(element) for element in normal_vec]) # Normal vektorns längd
+    normal_angle = np.array(np.arctan2(normal_vec[:,1], normal_vec[:,0]))  # Vinkeln för normalvektorn, är 0 pi/2 3pi/2, 2pi
+    actual_dist = np.absolute(normal_dist - (rect_width*np.cos(normal_angle) + rect_height*np.sin(normal_angle))) # Det avståndet som blir över
+    return actual_dist
