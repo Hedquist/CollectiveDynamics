@@ -32,11 +32,15 @@ half_FOV = FOV_angle / 2
 
 # Parameters for shark
 
+# Mutual parameters
+fish_shark_graphic_radius = 2
+fish_shark_ray_radius = 10
+
 # Physical parameters of the system
 simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
-fish_count = 50 # Number of particles
+fish_count = 1 # Number of particles
 fish_speed = 20
 
 x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
@@ -52,7 +56,7 @@ circ_obst_radius = []
 rect_obst_width = []
 rect_obst_height = []
 
-with open('Obstacles4', 'r') as filestream:
+with open('Environment5', 'r') as filestream:
     next(filestream)  # Skip first row
     for line in filestream:  # Read every row
         if line != "\n":
@@ -89,10 +93,8 @@ fish_direction_arrow_graphics = []
 
 # Ta fram hörnen till rektangulära hinder
 def calculate_rectangle_corner_coordinates(position, base, height):
-    x_c = position[0]
-    y_c = position[1]
-    h = float(height)
-    b = float(base)
+    x_c, y_c = position[0], position[1]
+    b,h = float(base), float(height)
 
     A = [x_c - b, y_c - h]
     B = [x_c + b, y_c - h]
@@ -164,7 +166,6 @@ def draw_fishes():
 def cast_rays():
     for j in range(fish_count):
         start_angle = fish_orientations[j] - half_FOV  # Startvinkel
-        start_angle_arc = start_angle  # Memorerar för j:te partikeln
         for ray in range(casted_rays):
             if visual_debug:
                 fish_canvas_rays_graphics[j].append(
@@ -218,16 +219,12 @@ def is_point_outside_rectangle(rectangle_corner_coords, point, outside):
     x = point[0]
     y = point[1]
 
-    x1 = rectangle_corner_coords[0][0]
-    y1 = rectangle_corner_coords[0][1]
-    x2 = rectangle_corner_coords[1][0]
-    y2 = rectangle_corner_coords[1][1]
-    x3 = rectangle_corner_coords[2][0]
-    y3 = rectangle_corner_coords[2][1]
-    x4 = rectangle_corner_coords[3][0]
-    y4 = rectangle_corner_coords[3][1]
+    x1, y1 = rectangle_corner_coords[0][0], rectangle_corner_coords[0][1]
+    x2, y2 = rectangle_corner_coords[1][0], rectangle_corner_coords[1][1]
+    x3, y3 = rectangle_corner_coords[2][0], rectangle_corner_coords[2][1]
+    x4, y4 = rectangle_corner_coords[3][0], rectangle_corner_coords[3][1]
 
-    A = (triangle_area(x1, y1, x2, y2, x3, y3) +  # Calculate area of rectangel
+    A = (triangle_area(x1, y1, x2, y2, x3, y3) +  # Calculate area of rektangel
          triangle_area(x1, y1, x4, y4, x3, y3))
     A1 = triangle_area(x, y, x1, y1, x2, y2)  # Calculate area of triangle PAB
     A2 = triangle_area(x, y, x2, y2, x3, y3)  # Calculate area of triangle PBC
@@ -236,12 +233,11 @@ def is_point_outside_rectangle(rectangle_corner_coords, point, outside):
 
     # Check if sum of A1, A2, A3 and A4 is same as A
     # 0.01 Felmarginal då datorn inte räknar exakt
-    if (outside):
-        return (A1 + A2 + A3 + A4 - 0.1 > A)
-    else:
-        return (A1 + A2 + A3 + A4 < A)
 
-def distance_circ_to_rect_boolean(circ_coord,circ_radius, rect_corners_coords):
+    return A1 + A2 + A3 + A4 - 0.1 > A if outside else A1 + A2 + A3 + A4 < A
+
+
+def distance_circ_to_rect_boolean(circ_coord, circ_radius, rect_corners_coords):
     R = circ_radius
     Xc, Yc = circ_coord[0], circ_coord[1]  # Fiskens koordinater
     X1, Y1 = rect_corners_coords[:,0,0], rect_corners_coords[:,0,1] # Ena hörnet
@@ -256,7 +252,7 @@ def distance_circ_to_rect_boolean(circ_coord,circ_radius, rect_corners_coords):
 
     return circle_inside_rectangular
 
-def distance_circ_to_rect(circ_coord,circ_radius,rect_corners_coords):
+def distance_circ_to_rect(circ_coord, circ_radius, rect_corners_coords):
     R = circ_radius
     Xc, Yc = circ_coord[0], circ_coord[1]  # Fiskens koordinater
     X1, Y1 = rect_corners_coords[0,0], rect_corners_coords[0,1] # Ena hörnet
@@ -268,35 +264,26 @@ def distance_circ_to_rect(circ_coord,circ_radius,rect_corners_coords):
     Dx = NearestX - Xc # Avståndet från närmsta punkten på rektangeln till fiskens centrum
     Dy = NearestY - Yc
 
-    dist = np.sqrt((np.absolute(Dx)-R)**2 + (np.absolute((Dy)-R))**2)
-
+    dist = np.absolute(np.sqrt(Dx ** 2 + Dy ** 2)-R)
     return dist
 
 
-
-
-
-def detect_obst_in_radius(fish_coord):
+def detect_obst_in_radius(agent_coord):
     obst_type_in_radius = [[], []]  # Lista med index för de hinder som detekterats innanför interaktionsradien
     detected = []
-    #rect_obst_in_radius = calculate_distance(rect_obst_coords, fish_coord) - rect_obst_width < fish_interaction_radius
-    rect_obst_in_radius = distance_circ_to_rect_boolean(fish_coord,fish_ray_radius,rect_obst_corner_coords)
-    circ_obst_in_radius = calculate_distance(circ_obst_coords, fish_coord) - circ_obst_radius < fish_ray_radius
+    rect_obst_in_radius = distance_circ_to_rect_boolean(agent_coord, fish_shark_ray_radius, rect_obst_corner_coords)
+    circ_obst_in_radius = calculate_distance(circ_obst_coords, agent_coord) - circ_obst_radius < fish_shark_ray_radius
     if True in rect_obst_in_radius:
         obst_type_in_radius[0].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
         detected.append(True)
-
     elif True in circ_obst_in_radius:
         obst_type_in_radius[1].extend([index for index, element in enumerate(circ_obst_in_radius) if element])
         detected.append(True)
 
-    # if True in detected:
-    #     print(obst_type_in_radius)
-    #     time.sleep(0.1)
     return [True in detected, obst_type_in_radius]
 
 
-def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
+def detect_closest_obst(ray_coords, agent_coord, obst_type_in_radius):
     n_rays = len(ray_coords)
     obst_type_detect = [[], []]  # Lista med vilken typ av hinder den känner av Korta listan
     obst_detect = [[], []]  # Lista med vilken typ plus alla ray Långa listan
@@ -308,17 +295,14 @@ def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
         for k in range(len(obst_type_in_radius[type])):
             obst_index = obst_type_in_radius[type][k]  # Hinder index
             if obst_type[type] == 'rect':
-                booleans = [is_point_outside_rectangle(rect_obst_corner_coords[obst_index], ray_coords[i], False) for i
-                            in range(n_rays)]
+                booleans = [is_point_outside_rectangle(rect_obst_corner_coords[obst_index], ray_coords[i], False)
+                            for i in range(n_rays)]
                 detect = True in booleans
                 if detect:
                     obst_detect[type].append(detect)
-                    # closest_ray_dist = np.min([np.linalg.norm(np.array(rect_obst_coords[obst_index])
-                    #                                           - np.array(ray_coords[index])) for index, element in
-                    #                            enumerate(booleans) if element])
-                    closest_ray_dist = distance_circ_to_rect(fish_coords[j],fish_graphic_radius,rect_obst_corner_coords[obst_index])
-                    list_obst_index_raydist_raybool[type].append([obst_index, closest_ray_dist, booleans])
-                    # Tar fram endast de avstånden som en ray är träffad, och minsta avstånden av dessa
+                    closest_dist = distance_circ_to_rect(agent_coord, fish_shark_graphic_radius,
+                                        rect_obst_corner_coords[obst_index]) if booleans[2] or booleans[3] else np.inf # Kollar på de mittersta strålarna
+                    list_obst_index_raydist_raybool[type].append([obst_index, closest_dist, booleans])  # Tar fram närmast avstånden om rays är träffad
                     a, b = common_ray_boolean, booleans  # Merga ihop boolean till boolean
                     common_ray_boolean = [a or b for a, b in zip(a, b)]
             elif obst_type[type] == 'circ':
@@ -327,21 +311,17 @@ def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
                 detect = True in booleans
                 if detect:
                     obst_detect[type].append(detect)
-                    closest_ray_dist = np.min([np.linalg.norm(np.array(circ_obst_coords[obst_index])
-                                                              - np.array(ray_coords[index])) for index, element in
-                                               enumerate(booleans) if element])
-                    list_obst_index_raydist_raybool[type].append([obst_index, closest_ray_dist, booleans])
-                    list_obst_index_raydist_raybool[type].append([obst_index, closest_ray_dist, booleans])
+                    closest_dist = np.absolute(np.linalg.norm(np.array(circ_obst_coords[obst_index]) -
+                                        np.array(agent_coord)) - fish_graphic_radius - circ_obst_radius[obst_index]) if booleans[2] or booleans[3] else np.inf
+                    list_obst_index_raydist_raybool[type].append([obst_index, closest_dist, booleans])
                     a, b = common_ray_boolean, booleans  # Merga ihop boolean till boolean
                     common_ray_boolean = [a or b for a, b in zip(a, b)]
         obst_type_detect[type] = True in obst_detect[type]
-        if obst_type_detect[type]:
-            closest_obst_all[type] = min(list_obst_index_raydist_raybool[type], key=lambda x: x[1])
-        else:
-            closest_obst_all[type] = [-1, np.inf, False]
+        closest_obst_all[type] = min(list_obst_index_raydist_raybool[type], key=lambda x: x[1]) if obst_type_detect[type] else [-1, np.inf, False]
+
     min_dist_type = min(closest_obst_all, key=lambda x: x[1])  # Ger den array med minsta avståndet i [[],[],[]]
     closest_obst_type = closest_obst_all.index(min_dist_type)
-    closest_obst_index = min_dist_type[0]
+    closest_obst_index = min_dist_type[0] if min_dist_type[0] != np.inf else -1
     ray_boolean = min_dist_type[2] if all(
         common_ray_boolean) else common_ray_boolean  # Om alla är träffade, tar den närmsta
     result = [obst_type[closest_obst_type], closest_obst_index, ray_boolean]
@@ -349,60 +329,49 @@ def detect_closest_obst(ray_coords, fish_coord, obst_type_in_radius):
 
 
 def avoid_obstacle(fish_coord,closest_type, closest_obst, ray_boolean):
-    closest_obst_distance = 0
-    if closest_type == 'circ':
-        closest_obst_distance = np.linalg.norm(circ_obst_coords[closest_obst] -
-                                               fish_coord) - circ_obst_radius[closest_obst] - fish_graphic_radius
-    # elif closest_type == 'rect':
-    #     closest_obst_distance = np.linalg.norm(rect_obst_coords[closest_obst] -
-    #                                            fish_coord) - rect_obst_width[closest_obst] - fish_graphic_radius
-    elif closest_type == 'rect':
-        closest_obst_distance = np.min(np.absolute(rect_obst_coords[closest_obst] -
-                                               fish_coord) - np.array([rect_obst_width[closest_obst],rect_obst_height[closest_obst]])\
-                                - fish_graphic_radius)
-
-    if not ray_boolean[int(len(ray_boolean) / 2 - 1)] and not ray_boolean[int(len(ray_boolean) / 2)]:
-        sign = 0
+    if closest_obst == -1:
+        return 0
     else:
-        if all(ray_boolean):
-            return np.pi
+        if closest_type == 'rect':
+            closest_obst_distance = distance_circ_to_rect(fish_coord,fish_graphic_radius,rect_obst_corner_coords[closest_obst])
+        elif closest_type == 'circ':
+            closest_obst_distance = np.linalg.norm(circ_obst_coords[closest_obst] -
+                                                   fish_coord) - circ_obst_radius[closest_obst] - fish_graphic_radius
+
+        if not ray_boolean[int(len(ray_boolean) / 2 - 1)] and not ray_boolean[int(len(ray_boolean) / 2)]:
+            sign = 0
         else:
-            i = 1
-            first_free_index = int(len(ray_boolean) / 2) - 1
-            while ray_boolean[first_free_index]:
-                first_free_index += i * (-1) ** (i - 1)
-                i += 1
-            sign = -1 if (first_free_index <= 2) else 1
+            if all(ray_boolean):
+                return np.pi
+            else:
+                i = 1
+                first_free_index = int(len(ray_boolean) / 2) - 1
+                while ray_boolean[first_free_index]:
+                    first_free_index += i * (-1) ** (i - 1)
+                    i += 1
+                sign = -1 if (first_free_index <= 2) else 1
 
-    angle_weight = np.pi / 4 / closest_obst_distance * sign # August får ändra
-    if np.abs(angle_weight) > np.pi/2:
-        angle_weight = np.pi/2*sign
-    return angle_weight
+        angle_weight = np.pi / 4 / closest_obst_distance * sign # August får ändra
+        print(closest_obst_distance)
+        print(np.rad2deg(angle_weight))
+        time.sleep(0.3)
+        if np.abs(angle_weight) > np.pi/2:
+            angle_weight = np.pi/8*sign
+        return angle_weight
 
-# def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
-#     return np.minimum(
-#         np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
-#                 (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
-#         np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
-#
-# def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
-#     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
-#             2 * canvas_length) - canvas_length
-#     coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
-#             2 * canvas_length) - canvas_length
-#     return coords
-
-# Har tagit bort modulo beräkningen
 def calculate_distance(coords, coord):  # Räknar ut avstånd mellan punkterna coords och punkten coord
-    return np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2)
+    return np.minimum(
+        np.sqrt(((coords[:, 0]) % (2 * canvas_length) - (coord[0]) % (2 * canvas_length)) ** 2 + (
+                (coords[:, 1]) % (2 * canvas_length) - (coord[1]) % (2 * canvas_length)) ** 2),
+        np.sqrt((coords[:, 0] - coord[0]) ** 2 + (coords[:, 1] - coord[1]) ** 2))
 
-# Har tagit bort modulo beräkningen
 def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
-    coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length)% (
-            2 * canvas_length)  - canvas_length
-    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length)% (
-            2 * canvas_length)  - canvas_length
+    coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
+            2 * canvas_length) - canvas_length
+    coords[:, 1] = (coords[:, 1] + speed * np.sin(orientations) * time_step + canvas_length) % (
+            2 * canvas_length) - canvas_length
     return coords
+
 
 # Kallar på de grafiska funktionerna
 cast_rays()
@@ -462,17 +431,14 @@ for t in range(simulation_iterations):
         weight_boolean_avoid = False
         weight_boolean_vicsek = True
 
-        detect_obst_in_radius_info = detect_obst_in_radius(fish_coords[j]) # [[True/False],[[index vägg],[index rekt],[index circ]]]
+        detect_obst_in_radius_info = detect_obst_in_radius(fish_coords[j]) # [[[index vägg],[index rekt],[index circ]]]
         obst_type_in_radius = detect_obst_in_radius_info[1] # De hindren i interaktionsradien
         if detect_obst_in_radius_info[0]:
             detect_info = detect_closest_obst(rays_coords[j], fish_coords[j],
                                               obst_type_in_radius)  # [[hindertyp],[hinderindex],[ray_boolean]]
-            closest_obst_type, closest_obst_index, ray_boolean = detect_info[0], detect_info[1], detect_info[
-                2]  # Tilldelar namn
-            avoid_info = avoid_obstacle(fish_coords[j], closest_obst_type, closest_obst_index,
-                                        ray_boolean) # [avoid_angle, closest_obst_dist]
-            avoid_angle = 0 if detect_info[1] == -1 else avoid_info
-            if np.abs(avoid_angle) > 0: # Om måste undvika hinder och hindret befinner sig innanför halava interaktionsradien
+            closest_obst_type, closest_obst_index, ray_boolean = detect_info[0], detect_info[1], detect_info[2]  # Tilldelar namn
+            avoid_angle = avoid_obstacle(fish_coords[j], closest_obst_type, closest_obst_index,ray_boolean) # avoid_angle
+            if np.abs(avoid_angle) > 0: # Prioriterar avoidance
                 weight_boolean_vicsek = False # Stänger av vicsek
                 weight_boolean_avoid = True
 
@@ -495,8 +461,6 @@ for t in range(simulation_iterations):
         for ind in np.where(overlapp)[0]:
             fish_coords[j,0] = fish_coords[j,0] + (circ_obst_distances[ind] - (fish_graphic_radius + circ_obst_radius[ind]) ) * np.cos(angle[ind])
             fish_coords[j,1] = fish_coords[j,1] + (circ_obst_distances[ind] - (fish_graphic_radius + circ_obst_radius[ind])) * np.sin(angle[ind])
-        # if True in overlapp:
-        #     weight_boolean_avoid = False
 
         # Overlap rectangular obstacles
         R = fish_graphic_radius
@@ -512,32 +476,18 @@ for t in range(simulation_iterations):
 
         rect_obst_distances = calculate_distance(rect_obst_coords, fish_coords[j])
         fish_inside_rect_obst = (Dx * Dx + Dy * Dy) <= R *R
-        # for ind in np.where(fish_inside_rect_obst)[0]:
-        #     delta = fish_coords[j] - rect_obst_coords[ind]
-        #     minIndex = np.argmin(np.absolute(delta)) # Tar fram närmaste x eller y koordinaten
-        #     point_normal = rect_obst_coords[ind] + np.array([ delta[minIndex] if minIndex == 0 else 0 , delta[minIndex] if minIndex == 1 else 0]) # Position för normapunkten
-        #     normal_vec = fish_coords[j] - point_normal # Normalens vektor
-        #     normal_distance = np.linalg.norm(normal_vec)
-        #     angle = np.arctan2(normal_vec[1], normal_vec[0])  # Directions of others array from the particle
-        #     fish_coords[j,0] = fish_coords[j,0] + np.absolute(normal_distance - (R + rect_obst_width[ind]) ) * np.cos(angle)
-        #     fish_coords[j,1] = fish_coords[j,1] + np.absolute(normal_distance  - (R + rect_obst_height[ind])) * np.sin(angle)
         for ind in np.where(fish_inside_rect_obst)[0]:
             normal_vec = fish_coords[j] - np.array([NearestX[ind],NearestY[ind]]) # Normalens vektor
             normal_distance = np.linalg.norm(normal_vec)
             angle = np.arctan2(normal_vec[1], normal_vec[0])  # Directions of others array from the particle
-            fish_coords[j,0] = fish_coords[j,0] + np.absolute(normal_distance - (R) ) * np.cos(angle)
-            fish_coords[j,1] = fish_coords[j,1] + np.absolute(normal_distance  - (R)) * np.sin(angle)
-        # if True in fish_inside_rect_obst:
-        #     weight_boolean_avoid = False
-            #time.sleep(0.1)
+            fish_coords[j,0] = fish_coords[j,0] + np.absolute(normal_distance - R ) * np.cos(angle)
+            fish_coords[j,1] = fish_coords[j,1] + np.absolute(normal_distance  - R) * np.sin(angle)
 
-        inter_fish_distances = calculate_distance(fish_coords, fish_coords[
-            j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
+        inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
-        fish_orientations[j] = weight_boolean_avoid * fish_orientations[j] + weight_boolean_vicsek * np.angle(
+        fish_orientations[j] =  weight_boolean_vicsek * (np.angle(
             np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) \
-                               + weight_boolean_vicsek * fish_noise * np.random.uniform(-1 / 2,
-                                                                                        1 / 2) + weight_boolean_avoid * avoid_angle
+                               +  fish_noise * np.random.uniform(-1 / 2,1 / 2)) + weight_boolean_avoid * (fish_orientations[j] +avoid_angle)
 
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame

@@ -8,7 +8,7 @@ circ_obst_radius = []
 rect_obst_width = []
 rect_obst_height = []
 
-with open('Obstacles4', 'r') as filestream:
+with open('Environment4', 'r') as filestream:
     next(filestream)  # Skip first row
     for line in filestream:  # Read every row
         if line != "\n":
@@ -112,3 +112,7 @@ def distance_points_to_rect(point_coords, rect_coord, rect_width, rect_height):
     normal_angle = np.array(np.arctan2(normal_vec[:,1], normal_vec[:,0]))  # Vinkeln för normalvektorn, är 0 pi/2 3pi/2, 2pi
     actual_dist = np.absolute(normal_dist - (rect_width*np.cos(normal_angle) + rect_height*np.sin(normal_angle))) # Det avståndet som blir över
     return actual_dist
+
+inf = np.inf
+
+print(np.inf == inf)
