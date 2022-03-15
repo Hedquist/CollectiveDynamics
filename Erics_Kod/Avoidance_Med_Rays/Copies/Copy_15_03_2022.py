@@ -40,20 +40,14 @@ fish_shark_ray_radius = 10
 simulation_iterations = 100000  # Simulation time
 time_step = 0.03  # Time step
 canvas_length = 100  # Size of box
-fish_count = 50 # Number of particles
+fish_count = 1 # Number of particles
 fish_speed = 20
-visual_debug = False
 
-if not visual_debug:
-    x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
-    y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
-    fish_coords = np.column_stack((x, y))
-    fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
-else:
-    x = np.array(np.ones(fish_count) * -50)
-    y = np.array(np.ones(fish_count) * 50)
-    fish_coords = np.column_stack((x, y))
-    fish_orientations = -np.ones(fish_count) * np.pi/4  # orientations
+x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
+y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
+fish_coords = np.column_stack((x, y))
+fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
+visual_debug = True
 
 circ_obst_coords = []
 rect_obst_coords = []
@@ -62,7 +56,7 @@ circ_obst_radius = []
 rect_obst_width = []
 rect_obst_height = []
 
-with open('Environments/Environment4', 'r') as filestream:
+with open('Environment4', 'r') as filestream:
     next(filestream)  # Skip first row
     for line in filestream:  # Read every row
         if line != "\n":
@@ -124,8 +118,8 @@ def generate_fish_not_inside_obstacle_coordinates():
             for k in range(circ_and_rect_obst_coords.shape[0]):
                 distance_to_obstacles.append(np.linalg.norm(fish_coords[j] - circ_and_rect_obst_coords[k]))
             if (np.min(distance_to_obstacles) < fish_interaction_radius):
-                fish_coords[j, 0] = np.random.rand() * 2 * canvas_length - canvas_length
-                fish_coords[j, 1] = np.random.rand() * 2 * canvas_length - canvas_length
+                fish_coords[j][0] = np.random.rand() * 2 * canvas_length - canvas_length
+                fish_coords[j][1] = np.random.rand() * 2 * canvas_length - canvas_length
             else:
                 break
 
@@ -135,28 +129,37 @@ def draw_fishes():
     for j in range(fish_count):  # Generate animated particles in Canvas
         # Convert to canvas coordinates
         fish_canvas_graphics.append(
-            canvas.create_oval((fish_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                               (fish_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                               (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                               (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+            canvas.create_oval((fish_coords[j][0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                               (fish_coords[j][1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                               (fish_coords[j][0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                               (fish_coords[j][1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                                outline=ccolor[0], fill=ccolor[0]))
         fish_direction_arrow_graphics.append(canvas.create_line((fish_coords[j][0] + fish_graphic_radius * np.cos(
             fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-            (fish_coords[j, 1] + fish_graphic_radius * np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-            (fish_coords[j, 0] + (fish_graphic_radius + fish_arrow_length) * np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-            (fish_coords[j, 1] + (fish_graphic_radius + fish_arrow_length) * np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2, arrow=LAST))
+                                                                (fish_coords[j][1] + fish_graphic_radius * np.sin(
+                                                                    fish_orientations[
+                                                                        j]) + canvas_length) * res / canvas_length / 2,
+                                                                (fish_coords[j][0] + (
+                                                                        fish_graphic_radius + fish_arrow_length) * np.cos(
+                                                                    fish_orientations[
+                                                                        j]) + canvas_length) * res / canvas_length / 2,
+                                                                (fish_coords[j][1] + (
+                                                                        fish_graphic_radius + fish_arrow_length) * np.sin(
+                                                                    fish_orientations[
+                                                                        j]) + canvas_length) * res / canvas_length / 2,
+                                                                arrow=LAST))
         if visual_debug:
             fish_interaction_radius_canvas_graphics.append(
-                canvas.create_oval((fish_coords[j, 0] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 1] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+                canvas.create_oval((fish_coords[j][0] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+                                   (fish_coords[j][1] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+                                   (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+                                   (fish_coords[j][1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
                                    outline=ccolor[2], width=1))
             fish_ray_radius_canvas_graphics.append(
-                canvas.create_oval((fish_coords[j, 0] - fish_ray_radius + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 1] - fish_ray_radius + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 0] + fish_ray_radius + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 1] + fish_ray_radius + canvas_length) * res / canvas_length / 2,
+                canvas.create_oval((fish_coords[j][0] - fish_ray_radius + canvas_length) * res / canvas_length / 2,
+                                   (fish_coords[j][1] - fish_ray_radius + canvas_length) * res / canvas_length / 2,
+                                   (fish_coords[j][0] + fish_ray_radius + canvas_length) * res / canvas_length / 2,
+                                   (fish_coords[j][1] + fish_ray_radius + canvas_length) * res / canvas_length / 2,
                                    outline=ccolor[2], width=1))
 
 # Ritar ut rays och lägger dess vinkel och spetsens koordinater i en lista
@@ -166,14 +169,14 @@ def cast_rays():
         for ray in range(casted_rays):
             if visual_debug:
                 fish_canvas_rays_graphics[j].append(
-                canvas.create_line((fish_coords[j, 0] + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 1] + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 0] + fish_ray_radius * np.cos(
-                                       start_angle) + canvas_length) * res / canvas_length / 2,
-                                   (fish_coords[j, 1] + fish_ray_radius * np.sin(
-                                       start_angle) + canvas_length) * res / canvas_length / 2, fill=ccolor[3]))
-            rays_coords[j].append([fish_coords[j, 0] + fish_ray_radius * np.cos(start_angle),
-                                   fish_coords[j, 1] + fish_ray_radius * np.sin(start_angle)])
+                    canvas.create_line((fish_coords[j][0] + canvas_length) * res / canvas_length / 2,
+                                       (fish_coords[j][1] + canvas_length) * res / canvas_length / 2,
+                                       (fish_coords[j][0] + fish_ray_radius * np.cos(
+                                           start_angle) + canvas_length) * res / canvas_length / 2,
+                                       (fish_coords[j][1] + fish_ray_radius * np.sin(
+                                           start_angle) + canvas_length) * res / canvas_length / 2, fill=ccolor[3]))
+            rays_coords[j].append([fish_coords[j][0] + fish_ray_radius * np.cos(start_angle),
+                                   fish_coords[j][1] + fish_ray_radius * np.sin(start_angle)])
             rays_angle_relative_velocity[j].append(start_angle)
             start_angle += step_angle  # Uppdaterar vinkel för ray
 
@@ -182,10 +185,10 @@ def cast_rays():
 def draw_circular_obstacles():
     for j in range(circ_obst_coords.shape[0]):
         circ_obst_canvas_graphics.append(
-            canvas.create_oval((circ_obst_coords[j, 0] - circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
-                               (circ_obst_coords[j, 1] - circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
-                               (circ_obst_coords[j, 0] + circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
-                               (circ_obst_coords[j, 1] + circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
+            canvas.create_oval((circ_obst_coords[j][0] - circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
+                               (circ_obst_coords[j][1] - circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
+                               (circ_obst_coords[j][0] + circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
+                               (circ_obst_coords[j][1] + circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
                                outline=ccolor[5], fill=ccolor[3]))
 
 
@@ -193,10 +196,10 @@ def draw_circular_obstacles():
 def draw_rectangular_obstacles():
     for j in range(rect_obst_coords.shape[0]):
         rect_obst_canvas_graphics.append(canvas.create_rectangle(
-            (rect_obst_coords[j, 0] + rect_obst_width[j] + canvas_length) * res / canvas_length / 2,
-            (rect_obst_coords[j, 1] + rect_obst_height[j] + canvas_length) * res / canvas_length / 2,
-            (rect_obst_coords[j, 0] - rect_obst_width[j] + canvas_length) * res / canvas_length / 2,
-            (rect_obst_coords[j, 1] - rect_obst_height[j] + canvas_length) * res / canvas_length / 2,
+            (rect_obst_coords[j][0] + rect_obst_width[j] + canvas_length) * res / canvas_length / 2,
+            (rect_obst_coords[j][1] + rect_obst_height[j] + canvas_length) * res / canvas_length / 2,
+            (rect_obst_coords[j][0] - rect_obst_width[j] + canvas_length) * res / canvas_length / 2,
+            (rect_obst_coords[j][1] - rect_obst_height[j] + canvas_length) * res / canvas_length / 2,
             outline=ccolor[5], fill=ccolor[4]))
 
 
@@ -216,10 +219,10 @@ def is_point_outside_rectangle(rectangle_corner_coords, point, outside):
     x = point[0]
     y = point[1]
 
-    x1, y1 = rectangle_corner_coords[0, 0], rectangle_corner_coords[0, 1]
-    x2, y2 = rectangle_corner_coords[1, 0], rectangle_corner_coords[1, 1]
-    x3, y3 = rectangle_corner_coords[2, 0], rectangle_corner_coords[2, 1]
-    x4, y4 = rectangle_corner_coords[3, 0], rectangle_corner_coords[3, 1]
+    x1, y1 = rectangle_corner_coords[0][0], rectangle_corner_coords[0][1]
+    x2, y2 = rectangle_corner_coords[1][0], rectangle_corner_coords[1][1]
+    x3, y3 = rectangle_corner_coords[2][0], rectangle_corner_coords[2][1]
+    x4, y4 = rectangle_corner_coords[3][0], rectangle_corner_coords[3][1]
 
     A = (triangle_area(x1, y1, x2, y2, x3, y3) +  # Calculate area of rektangel
          triangle_area(x1, y1, x4, y4, x3, y3))
@@ -285,7 +288,7 @@ def detect_closest_obst(ray_coords, agent_coord, obst_type_in_radius):
                 if detect:
                     obst_detect[type].append(detect)
                     closest_dist = calculate_distance_circ_to_rect(agent_coord, fish_shark_graphic_radius,
-                                        rect_obst_corner_coords[obst_index], False, True) if booleans[2] or booleans[3] else np.inf # Kollar på de mittersta strålarna
+                                                                   rect_obst_corner_coords[obst_index], False, True) if booleans[2] or booleans[3] else np.inf # Kollar på de mittersta strålarna
                     list_obst_index_raydist_raybool[type].append([obst_index, closest_dist, booleans])  # Tar fram närmast avstånden om rays är träffad
                     a, b = common_ray_boolean, booleans  # Merga ihop boolean till boolean
                     common_ray_boolean = [a or b for a, b in zip(a, b)]
@@ -296,7 +299,7 @@ def detect_closest_obst(ray_coords, agent_coord, obst_type_in_radius):
                 if detect:
                     obst_detect[type].append(detect)
                     closest_dist = np.absolute(np.linalg.norm(np.array(circ_obst_coords[obst_index]) -
-                                        agent_coord) - fish_graphic_radius - circ_obst_radius[obst_index]) if booleans[2] or booleans[3] else np.inf
+                                                              agent_coord) - fish_graphic_radius - circ_obst_radius[obst_index]) if booleans[2] or booleans[3] else np.inf
                     list_obst_index_raydist_raybool[type].append([obst_index, closest_dist, booleans])
                     a, b = common_ray_boolean, booleans  # Merga ihop boolean till boolean
                     common_ray_boolean = [a or b for a, b in zip(a, b)]
@@ -305,22 +308,36 @@ def detect_closest_obst(ray_coords, agent_coord, obst_type_in_radius):
 
     min_dist_type = min(closest_obst_all, key=lambda x: x[1])  # Ger den array med minsta avståndet i [[],[],[]]
     min_dist = min_dist_type[1]
+    closest_obst_type = closest_obst_all.index(min_dist_type)
+    closest_obst_index = min_dist_type[0] if min_dist_type[0] != np.inf else -1
     #ray_boolean = min_dist_type[2] if all(
-     #   common_ray_boolean) else common_ray_boolean  # Om alla är träffade, tar den närmsta
+    #   common_ray_boolean) else common_ray_boolean  # Om alla är träffade, tar den närmsta
     ray_boolean = common_ray_boolean
+    #result = [obst_type[closest_obst_type], closest_obst_index, ray_boolean, min_dist]
     result = [min_dist, ray_boolean]
-    # if True in obst_type_detect:
-    #     time.sleep(0.2)
-    #     print(result)
+    if True in obst_type_detect:
+        time.sleep(0.2)
+        print(result)
     return result
 
 
 def avoid_obstacle(closest_obst_distance, ray_boolean):
+    # if closest_obst == -1:
+    #     return 0
+    # else:
+    #     if closest_type == 'rect':
+    #         closest_obst_distance = calculate_distance_circ_to_rect(fish_coord, fish_graphic_radius, rect_obst_corner_coords[closest_obst], False, True)
+    #         print(closest_obst_distance)
+    #         print()
+    #     elif closest_type == 'circ':
+    #         closest_obst_distance = np.linalg.norm(circ_obst_coords[closest_obst] -
+    #                                                fish_coord) - circ_obst_radius[closest_obst] - fish_graphic_radius
+
     if not ray_boolean[int(len(ray_boolean) / 2 - 1)] and not ray_boolean[int(len(ray_boolean) / 2)]:
         sign = 0
     else:
         if all(ray_boolean):
-            return np.pi/2
+            return np.pi
         else:
             i = 1
             first_free_index = int(len(ray_boolean) / 2) - 1
@@ -331,7 +348,7 @@ def avoid_obstacle(closest_obst_distance, ray_boolean):
 
     angle_weight = np.pi / 4 / (closest_obst_distance +1)* sign # August får ändra
     if np.abs(angle_weight) > np.pi/2:
-        angle_weight = np.pi/4*sign
+        angle_weight = np.pi/8*sign
 
     return angle_weight
 
@@ -365,25 +382,25 @@ for t in range(simulation_iterations):
                       (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                       (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2)
         canvas.coords(fish_direction_arrow_graphics[j],
-                      (fish_coords[j, 0] + fish_graphic_radius * np.cos(
+                      (fish_coords[j][0] + fish_graphic_radius * np.cos(
                           fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                      (fish_coords[j, 1] + fish_graphic_radius * np.sin(
+                      (fish_coords[j][1] + fish_graphic_radius * np.sin(
                           fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                      (fish_coords[j, 0] + (fish_graphic_radius + fish_arrow_length) * np.cos(
+                      (fish_coords[j][0] + (fish_graphic_radius + fish_arrow_length) * np.cos(
                           fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                      (fish_coords[j, 1] + (fish_graphic_radius + fish_arrow_length) * np.sin(
+                      (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length) * np.sin(
                           fish_orientations[j]) + canvas_length) * res / canvas_length / 2)
         if visual_debug:
             canvas.coords(fish_interaction_radius_canvas_graphics[j],
-                  (fish_coords[j, 0] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                  (fish_coords[j, 1] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                  (fish_coords[j, 0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
-                  (fish_coords[j, 1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2)
+                          (fish_coords[j][0] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j][1] - fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j][0] + fish_interaction_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j][1] + fish_interaction_radius + canvas_length) * res / canvas_length / 2)
             canvas.coords(fish_ray_radius_canvas_graphics[j],
-                  (fish_coords[j, 0] - fish_ray_radius + canvas_length) * res / canvas_length / 2,
-                  (fish_coords[j, 1] - fish_ray_radius + canvas_length) * res / canvas_length / 2,
-                  (fish_coords[j, 0] + fish_ray_radius + canvas_length) * res / canvas_length / 2,
-                  (fish_coords[j, 1] + fish_ray_radius + canvas_length) * res / canvas_length / 2)
+                          (fish_coords[j][0] - fish_ray_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j][1] - fish_ray_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j][0] + fish_ray_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j][1] + fish_ray_radius + canvas_length) * res / canvas_length / 2)
 
         # Rays casting
         start_angle = fish_orientations[j] - half_FOV  # Startvinkel
@@ -391,14 +408,14 @@ for t in range(simulation_iterations):
         for ray in range(casted_rays):
             if visual_debug:
                 canvas.coords(fish_canvas_rays_graphics[j][ray],
-                              (fish_coords[j, 0] + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 1] + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 0] + fish_ray_radius * np.cos(
+                              (fish_coords[j][0] + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j][1] + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j][0] + fish_ray_radius * np.cos(
                                   start_angle) + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 1] + fish_ray_radius * np.sin(
+                              (fish_coords[j][1] + fish_ray_radius * np.sin(
                                   start_angle) + canvas_length) * res / canvas_length / 2)
-            rays_coords[j][ray] = [fish_coords[j, 0] + fish_ray_radius * np.cos(start_angle),
-                                   fish_coords[j, 1] + fish_ray_radius * np.sin(start_angle)]
+            rays_coords[j][ray] = [fish_coords[j][0] + fish_ray_radius * np.cos(start_angle),
+                                   fish_coords[j][1] + fish_ray_radius * np.sin(start_angle)]
             rays_angle_relative_velocity[j][ray] = start_angle
             start_angle += step_angle  # Uppdaterar vinkel för ray
 
@@ -412,6 +429,8 @@ for t in range(simulation_iterations):
         if detect_obst_in_radius_info[0]:
             detect_info = detect_closest_obst(rays_coords[j], fish_coords[j],
                                               obst_type_in_radius)  # [[hindertyp],[hinderindex],[ray_boolean]]
+            #closest_obst_type, closest_obst_index, ray_boolean = detect_info[0], detect_info[1], detect_info[2]  # Tilldelar namn
+            #avoid_angle = avoid_obstacle(fish_coords[j], closest_obst_type, closest_obst_index,ray_boolean) # avoid_angle
             closest_obst_distance, ray_boolean = detect_info[0], detect_info[1]  # Tilldelar namn
             avoid_angle = avoid_obstacle(closest_obst_distance,ray_boolean) if closest_obst_distance != np.inf else 0
             if np.abs(avoid_angle) > 0: # Prioriterar avoidance
@@ -450,19 +469,21 @@ for t in range(simulation_iterations):
         Dx = NearestX - Xc # Avståndet från närmsta punkten på rektangeln till fiskens centrum
         Dy = NearestY - Yc
 
+        rect_obst_distances = calculate_distance(rect_obst_coords, fish_coords[j])
         fish_inside_rect_obst = (Dx * Dx + Dy * Dy) <= R *R
         for ind in np.where(fish_inside_rect_obst)[0]:
             normal_vec = fish_coords[j] - np.array([NearestX[ind],NearestY[ind]]) # Normalens vektor
             normal_distance = np.linalg.norm(normal_vec)
+            print(normal_distance)
             angle = np.arctan2(normal_vec[1], normal_vec[0])  # Directions of others array from the particle
-            fish_coords[j,0] = fish_coords[j,0] + np.absolute(normal_distance - R) * np.cos(angle)
+            fish_coords[j,0] = fish_coords[j,0] + np.absolute(normal_distance - R ) * np.cos(angle)
             fish_coords[j,1] = fish_coords[j,1] + np.absolute(normal_distance  - R) * np.sin(angle)
 
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
         fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
         fish_orientations[j] =  weight_boolean_vicsek * (np.angle(
             np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) \
-                               +  fish_noise * np.random.uniform(-1 / 2,1 / 2)) + weight_boolean_avoid * (fish_orientations[j] +avoid_angle)
+                                                         +  fish_noise * np.random.uniform(-1 / 2,1 / 2)) + weight_boolean_avoid * (fish_orientations[j] +avoid_angle)
 
     tk.title('Iteration =' + str(t))
     tk.update()  # Update animation frame

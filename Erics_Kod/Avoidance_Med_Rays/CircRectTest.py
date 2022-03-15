@@ -8,7 +8,7 @@ circ_obst_radius = []
 rect_obst_width = []
 rect_obst_height = []
 
-with open('Environment4', 'r') as filestream:
+with open('Environments/Environment4', 'r') as filestream:
     next(filestream)  # Skip first row
     for line in filestream:  # Read every row
         if line != "\n":
@@ -113,6 +113,32 @@ def distance_points_to_rect(point_coords, rect_coord, rect_width, rect_height):
     actual_dist = np.absolute(normal_dist - (rect_width*np.cos(normal_angle) + rect_height*np.sin(normal_angle))) # Det avståndet som blir över
     return actual_dist
 
-inf = np.inf
+def distance_circ_to_rect_boolean(circ_coord, circ_radius, rect_corners_coords):
+    R = circ_radius
+    Xc, Yc = circ_coord[0], circ_coord[1]  # Fiskens koordinater
+    X1, Y1 = rect_corners_coords[:,0,0], rect_corners_coords[:,0,1] # Ena hörnet
+    X2, Y2 = rect_corners_coords[:,3,0],rect_corners_coords[:,3,1] # Andra hörnet
 
-print(np.inf == inf)
+    NearestX = np.maximum(X1, np.minimum(Xc, X2)) # Tar fram de närmsta punkten
+    NearestY = np.maximum(Y1, np.minimum(Yc, Y2))
+
+    Dx = NearestX - Xc # Avståndet från närmsta punkten på rektangeln till fiskens centrum
+    Dy = NearestY - Yc
+    circle_inside_rectangular = (Dx * Dx + Dy * Dy) <= R *R
+
+    return circle_inside_rectangular
+
+def distance_circ_to_rect(circ_coord, circ_radius, rect_corners_coords):
+    R = circ_radius
+    Xc, Yc = circ_coord[0], circ_coord[1]  # Fiskens koordinater
+    X1, Y1 = rect_corners_coords[0,0], rect_corners_coords[0,1] # Ena hörnet
+    X2, Y2 = rect_corners_coords[3,0],rect_corners_coords[3,1] # Andra hörnet
+
+    NearestX = np.maximum(X1, np.minimum(Xc, X2)) # Tar fram de närmsta punkten
+    NearestY = np.maximum(Y1, np.minimum(Yc, Y2))
+
+    Dx = NearestX - Xc # Avståndet från närmsta punkten på rektangeln till fiskens centrum
+    Dy = NearestY - Yc
+
+    dist = np.absolute(np.sqrt(Dx ** 2 + Dy ** 2)-R)
+    return dist
