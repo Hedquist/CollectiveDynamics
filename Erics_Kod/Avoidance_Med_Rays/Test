@@ -107,3 +107,6 @@ print(minIndex,'minIndex')
 print(delta[minIndex])
 point_normal = rect_obst_coords + [delta[minIndex]*(minIndex == 0) , delta[minIndex]*(minIndex == 1)]
 print(point_normal, 'point_normal')
+arr = np.array([0,1])
+print(arr1[[0,1], 0])
+print([5] + [6])
