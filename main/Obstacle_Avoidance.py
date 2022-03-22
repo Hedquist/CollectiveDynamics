@@ -90,9 +90,8 @@ rect_obst_height = []
 #     circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
 
 
-def load_obstacles(obst_type, obstacle_count, obstacle_radius):
+def load_obstacles(obst_type, side_count, obstacle_radius):
     if obst_type == 'circles':
-        side_count = int(np.sqrt(obstacle_count))
         obst_spacing = canvas_length*2/side_count
         i = obst_spacing/2 - canvas_length
         j = obst_spacing/2 - canvas_length
@@ -108,7 +107,6 @@ def load_obstacles(obst_type, obstacle_count, obstacle_radius):
         rect_obst_width.append(1)
         rect_obst_height.append(1)
     if obst_type == 'rectangles':
-        side_count = int(np.sqrt(obstacle_count))
         obst_spacing = canvas_length*2/side_count
         i = obst_spacing/2 - canvas_length
         j = obst_spacing/2 - canvas_length
