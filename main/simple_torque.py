@@ -6,18 +6,6 @@ from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull
 import time
 from shapely.geometry import Polygon
 
-visuals_on = False
-if visuals_on:
-    res = 500  # Resolution of the animation
-    tk = Tk()
-    tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3)))
-    tk.configure(background='white')
-
-    canvas = Canvas(tk, bd=2, bg='white')  # Generate animation window
-    tk.attributes('-topmost', 0)
-    canvas.place(x=res / 20, y=res / 20, height=res, width=res)
-    ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
-
 # Variabler
 fish_count = 50  # Antal fiskar
 canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
@@ -25,7 +13,7 @@ fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 1  # Hastighet fiskar
 time_step = 1  # Storlek tidssteg
-simulation_iterations = 4000  # Antalet iterationer simulationen kör
+simulation_iterations = 1000  # Antalet iterationer simulationen kör
 fish_noise = 0.2  # Brus i vinkel
 murder_radius = 5  # Hajen äter fiskar inom denna radie
 

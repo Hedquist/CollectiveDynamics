@@ -6,11 +6,11 @@ import time
 import simple_torque as st
 
 start = time.time()
-num_of_points= 5
+num_of_points= 101
 N = 3
 
-fish_turning_speed = np.linspace(0.4, 0.6, num_of_points)  # Fiskarnas turning speed
-shark_turning_speed = np.linspace(0.4, 0.6, num_of_points)  # Hajarnas turning speed
+fish_turning_speed = np.linspace(0, 1, num_of_points)  # Fiskarnas turning speed
+shark_turning_speed = np.linspace(0, 1, num_of_points)  # Hajarnas turning speed
 fish_eaten_matrix = np.zeros((num_of_points, num_of_points))  # Allokera minne
 
 i = 0
