@@ -67,7 +67,7 @@ circ_obst_radius = []
 rect_obst_width = []
 rect_obst_height = []
 
-with open('Environments/Environment6', 'r') as filestream:
+with open('Environments/Environment', 'r') as filestream:
     next(filestream)  # Skip first row
     for line in filestream:  # Read every row
         if line != "\n":

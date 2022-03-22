@@ -1,6 +1,0 @@
-# Circ:(x,y,radius), Rect:(x,y,width,height), Canvas length = 100
-0,0,15, -50,-50,10,10
-0,50,15, 50,-50,10,10
-0,-50,15, 50,50,10,10
-50,0,15, -50,50,10,10
--50,0,15, None,None,None,None
