@@ -26,8 +26,8 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 100  # Antal fiskar
-fish_graphic_radius = 2  # Radie av ritad cirkel
+fish_count = 10  # Antal fiskar
+fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
 fish_noise = 0.1  # Brus i vinkel
@@ -120,6 +120,19 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish):
                                             distance_to_fish / shark_speed * shark_fish_relative_speed * 0.9)
     return predicted_fish_coords[0]
 
+def volume_extraction(coords, radius):
+    distances = scipy.spatial.distance.cdist(coords, coords)
+    overlap = distances < 2*radius
+    for i in range(len(distances)):
+        overlap[i,i] = False
+    overlap[np.tril_indices(len(distances), 1)] = False
+    index1 = np.where(overlap == True)[0]
+    index2 = np.where(overlap == True)[1]
+    for j in range(len(index1)):
+        coords[i][0] = coords[i][0] + (distances[index1[j], index2[j]] - 2*radius)*np.cos(get_direction(fish_coords[index2[j]], fish_coords[index1[j]]))/2
+        coords[i][1] = coords[i][1] + (distances[index1[j], index2[j]] - 2 * radius) * np.sin(get_direction(fish_coords[index2[j]], fish_coords[index1[j]]))/2
+    return coords
+
 
 if visuals_on:
     for j in range(shark_count):  # Skapar cirklar för hajar
@@ -145,6 +158,21 @@ for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations, time_step)  # Uppdatera hajposition
     fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
+
+    distances = scipy.spatial.distance.cdist(fish_coords, fish_coords)
+    overlap = distances < 2*fish_graphic_radius
+    for i in range(len(distances)):
+        overlap[i, i] = False
+    overlap[np.tril_indices(len(distances), 1)] = False
+    while np.any(overlap):
+        fish_coords = volume_extraction(fish_coords, fish_graphic_radius)
+        distances = scipy.spatial.distance.cdist(fish_coords, fish_coords)
+        overlap = distances < 2*fish_graphic_radius
+        for i in range(len(distances)):
+            overlap[i, i] = False
+        overlap[np.tril_indices(len(distances), 1)] = False
+
+
     # Bestäm närmsta fisk
     shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
     closest_fish = np.zeros(shark_count, dtype=int)
