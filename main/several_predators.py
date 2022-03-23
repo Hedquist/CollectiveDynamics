@@ -26,7 +26,7 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 100  # Antal fiskar
+fish_count = 200  # Antal fiskar
 fish_graphic_radius = 2  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -38,7 +38,7 @@ shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 shark_count = 5  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
-murder_radius = 2  # Hajen äter fiskar inom denna radie
+murder_radius = 4  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
 
@@ -152,6 +152,21 @@ for t in range(simulation_iterations):
         shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
             j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
         closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
+        # # Overlapp sharks
+        shark_distances = calculate_distance(shark_coords, shark_coords[j])
+        angle = np.arctan2(shark_coords[:, 1] - shark_coords[j, 1],
+                           shark_coords[:, 0] - shark_coords[j, 0])  # Directions of others array from the particle
+        overlap = shark_distances < (2 * shark_graphic_radius)  # Applying
+        overlap[j] = False  # area extraction
+        for ind in np.where(overlap)[0]:
+            shark_coords[j, 0] = shark_coords[j, 0] + (shark_distances[ind] - 2 * shark_graphic_radius) * np.cos(
+                angle[ind]) / 2
+            shark_coords[j, 1] = shark_coords[j, 1] + (shark_distances[ind] - 2 * shark_graphic_radius) * np.sin(
+                angle[ind]) / 2
+            shark_coords[ind] = shark_coords[ind] - (shark_distances[ind] - 2 * shark_graphic_radius) * np.cos(
+                angle[ind]) / 2
+            shark_coords[ind] = shark_coords[ind] - (shark_distances[ind] - 2 * shark_graphic_radius) * np.sin(
+                angle[ind]) / 2
     if visuals_on:
         for j in range(shark_count):
             # Updating animation coordinates haj
