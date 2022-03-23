@@ -26,7 +26,7 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 1  # Antal fiskar
+fish_count = 100  # Antal fiskar
 fish_graphic_radius = 2  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -35,7 +35,7 @@ fish_noise = 0.1  # Brus i vinkel
 shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 
 # Haj
-shark_count = 2  # Antal hajar
+shark_count = 5  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
 murder_radius = 2  # Hajen äter fiskar inom denna radie
@@ -63,8 +63,6 @@ shark_coords = np.column_stack((shark_x, shark_y))  # Array med alla hajars x- o
 shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
 shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
-tmp = scipy.spatial.distance.cdist(fish_coords, shark_coords)
-print(tmp, tmp.shape)
 
 
 def update_position(coords, speed, orientations, time_step):  # Uppdaterar en partikels position
