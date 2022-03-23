@@ -89,7 +89,7 @@ rect_obst_height = []
 #                 rect_obst_height.append(float(currentline[6]))
 #     circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
 
-
+# Generar hinder
 def load_obstacles(obst_type, side_count, obstacle_radius):
     if obst_type == 'circles':
         obst_spacing = canvas_length*2/side_count
@@ -119,21 +119,21 @@ def load_obstacles(obst_type, side_count, obstacle_radius):
             j = obst_spacing/2 - canvas_length
             i += obst_spacing
 
-        circ_obst_coords.append([canvas_length*2, canvas_length*2])
-        circ_obst_radius.append(1)
+        # circ_obst_coords.append([canvas_length*2, canvas_length*2])
+        # circ_obst_radius.append(1)
 
 
-load_obstacles('rectangles', 16, 8)
+load_obstacles('rectangles', 2, 8) # Genererar hinder
 circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
 
 circ_obst_radius = np.array(circ_obst_radius)
 rect_obst_width = np.array(rect_obst_width)
 rect_obst_height = np.array(rect_obst_height)
 
-obst_type = ['rect', 'circ']  #
+obst_type = ['rectangle', 'circle']  #
 obst_coords = [rect_obst_coords, circ_obst_coords]  #
 rect_obst_corner_coords = []
-circ_and_rect_obst_coords = np.concatenate((circ_obst_coords, rect_obst_coords))
+#circ_and_rect_obst_coords = np.concatenate((circ_obst_coords, rect_obst_coords))
 
 # Canvas grafik fisk
 fish_canvas_graphics = []
@@ -172,17 +172,17 @@ rect_obst_corner_coords = np.array(rect_obst_corner_coords)
 
 
 # Funktion för att fisken startposition inte hamnar i ett hinder
-def generate_fish_not_inside_obstacle_coordinates():
-    for j in range(fish_count):
-        while (True):  # Check if the obstacle is within agent
-            distance_to_obstacles = []
-            for k in range(circ_and_rect_obst_coords.shape[0]):
-                distance_to_obstacles.append(np.linalg.norm(fish_coords[j] - circ_and_rect_obst_coords[k]))
-            if (np.min(distance_to_obstacles) < fish_interaction_radius):
-                fish_coords[j, 0] = np.random.rand() * 2 * canvas_length - canvas_length
-                fish_coords[j, 1] = np.random.rand() * 2 * canvas_length - canvas_length
-            else:
-                break
+# def generate_fish_not_inside_obstacle_coordinates():
+#     for j in range(fish_count):
+#         while (True):  # Check if the obstacle is within agent
+#             distance_to_obstacles = []
+#             for k in range(circ_and_rect_obst_coords.shape[0]):
+#                 distance_to_obstacles.append(np.linalg.norm(fish_coords[j] - circ_and_rect_obst_coords[k]))
+#             if (np.min(distance_to_obstacles) < fish_interaction_radius):
+#                 fish_coords[j, 0] = np.random.rand() * 2 * canvas_length - canvas_length
+#                 fish_coords[j, 1] = np.random.rand() * 2 * canvas_length - canvas_length
+#             else:
+#                 break
 
 
 # Ritar ut fiskar och dess interaktionsradie
@@ -330,14 +330,16 @@ def calculate_distance_circ_to_rect(circ_coord, circ_radius, rect_corners_coords
 def detect_obst_in_radius(agent_coord, radius):
     obst_type_in_radius = [[], []]  # Lista med index för de hinder som detekterats innanför interaktionsradien
     detected = []
-    rect_obst_in_radius = calculate_distance_circ_to_rect(agent_coord, radius, rect_obst_corner_coords, True, False)[0]
-    circ_obst_in_radius = calculate_distance(circ_obst_coords, agent_coord) - circ_obst_radius < radius
-    if True in rect_obst_in_radius:
-        obst_type_in_radius[0].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
-        detected.append(True)
-    elif True in circ_obst_in_radius:
-        obst_type_in_radius[1].extend([index for index, element in enumerate(circ_obst_in_radius) if element])
-        detected.append(True)
+    if np.size(rect_obst_corner_coords) != 0:
+        rect_obst_in_radius = calculate_distance_circ_to_rect(agent_coord, radius, rect_obst_corner_coords, True, False)[0]
+        if True in rect_obst_in_radius:
+            obst_type_in_radius[0].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
+            detected.append(True)
+    if np.size(circ_obst_coords) != 0:
+        circ_obst_in_radius = calculate_distance(circ_obst_coords, agent_coord) - circ_obst_radius < radius
+        if True in circ_obst_in_radius:
+            obst_type_in_radius[1].extend([index for index, element in enumerate(circ_obst_in_radius) if element])
+            detected.append(True)
     return [True in detected, obst_type_in_radius]
 
 
@@ -351,7 +353,7 @@ def detect_closest_obst(ray_coords, agent_coord, obst_type_in_radius, agent_grap
     for type in range(len(obst_type)):
         for k in range(len(obst_type_in_radius[type])):
             obst_index = obst_type_in_radius[type][k]  # Hinder index
-            if obst_type[type] == 'rect':
+            if obst_type[type] == 'rectangle':
                 booleans = [is_point_outside_rectangle(rect_obst_corner_coords[obst_index], ray_coords[i], False)
                             for i in range(n_rays)]
                 detect = True in booleans
@@ -364,7 +366,7 @@ def detect_closest_obst(ray_coords, agent_coord, obst_type_in_radius, agent_grap
                         [obst_index, closest_dist, booleans])  # Tar fram närmast avstånden om rays är träffad
                     a, b = common_ray_boolean, booleans  # Merga ihop boolean till boolean
                     common_ray_boolean = [a or b for a, b in zip(a, b)]
-            elif obst_type[type] == 'circ':
+            elif obst_type[type] == 'circle':
                 booleans = [
                     is_point_inside_circle(circ_obst_coords[obst_index], ray_coords[i], circ_obst_radius[obst_index])
                     for
@@ -461,10 +463,19 @@ def murder_fish_orientations(dead_fish_index):
     new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
     return new_fish_orientations
 
+# Skapar ett canvas textobjekt för global alignemnt coefficent
+global_alignment_canvas_text = canvas.create_text(100, 20, text=1 / fish_count * np.linalg.norm(
+    [np.sum(np.cos(fish_orientations)),
+     np.sum(np.sin(fish_orientations))]))
+
+# Skapar ett canvas textobjekt för clustering coefficent
+clustering_coeff_canvas_text = canvas.create_text(100, 40,
+                                                  text=calculate_cluster_coeff(fish_coords, fish_interaction_radius,
+                                                                               fish_count))
 
 # Kallar på de grafiska funktionerna
 cast_rays()
-generate_fish_not_inside_obstacle_coordinates()
+#generate_fish_not_inside_obstacle_coordinates()
 draw_fishes()
 draw_shark()
 draw_circular_obstacles()
@@ -473,8 +484,7 @@ draw_rectangular_obstacles()
 for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
-    shark_fish_distances = calculate_distance(fish_coords, shark_coords[
-        0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+    shark_fish_distances = calculate_distance(fish_coords, shark_coords[0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
     closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
 
     # Haj loop
@@ -519,30 +529,32 @@ for t in range(simulation_iterations):
         circ_obst_detect_ind = detect_obst_in_radius_info[1][1]
 
         # Overlapp circular obstacles shark
-        circ_obst_distances = calculate_distance(circ_obst_coords[circ_obst_detect_ind], shark_coords[j])
-        angle = np.arctan2(circ_obst_coords[circ_obst_detect_ind, 1] - shark_coords[j, 1],
-                           circ_obst_coords[circ_obst_detect_ind, 0] - shark_coords[
-                               j, 0])  # Directions of others array from the particle
-        overlap = circ_obst_distances < (shark_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
+        if np.size(circ_obst_coords) != 0:
+            circ_obst_distances = calculate_distance(circ_obst_coords[circ_obst_detect_ind], shark_coords[j])
+            angle = np.arctan2(circ_obst_coords[circ_obst_detect_ind, 1] - shark_coords[j, 1],
+                               circ_obst_coords[circ_obst_detect_ind, 0] - shark_coords[
+                                   j, 0])  # Directions of others array from the particle
+            overlap = circ_obst_distances < (shark_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
 
-        for ind in np.where(overlap)[0]:
-            shark_coords[j, 0] = shark_coords[j, 0] + (circ_obst_distances[ind] - (
-                    shark_graphic_radius + circ_obst_radius[circ_obst_detect_ind[ind]])) * np.cos(angle[ind])
-            shark_coords[j, 1] = shark_coords[j, 1] + (circ_obst_distances[ind] - (
-                    shark_graphic_radius + circ_obst_radius[circ_obst_detect_ind[ind]])) * np.sin(angle[ind])
+            for ind in np.where(overlap)[0]:
+                shark_coords[j, 0] = shark_coords[j, 0] + (circ_obst_distances[ind] - (
+                        shark_graphic_radius + circ_obst_radius[circ_obst_detect_ind[ind]])) * np.cos(angle[ind])
+                shark_coords[j, 1] = shark_coords[j, 1] + (circ_obst_distances[ind] - (
+                        shark_graphic_radius + circ_obst_radius[circ_obst_detect_ind[ind]])) * np.sin(angle[ind])
 
         # Overlap rectangular obstacles shark
-        rect_obst_overlap_info = calculate_distance_circ_to_rect(shark_coords[j], shark_graphic_radius,
-                                                                 rect_obst_corner_coords[rect_obst_detect_ind], True,
-                                                                 False)
-        shark_inside_rect_obst = rect_obst_overlap_info[0]
-        Dx, Dy = rect_obst_overlap_info[1], rect_obst_overlap_info[
-            2]  # Avstånd mellan närmaste punkt på rektangen till cirklens centrum
-        for ind in np.where(shark_inside_rect_obst)[0]:
-            angle = np.arctan2(Dy[ind], Dx[ind])  # Directions of others array from the particle
-            normal_distance = np.sqrt(Dx[ind] ** 2 + Dy[ind] ** 2) - shark_graphic_radius
-            shark_coords[j, 0] = shark_coords[j, 0] + np.absolute(normal_distance) * np.cos(angle)
-            shark_coords[j, 1] = shark_coords[j, 1] + np.absolute(normal_distance) * np.sin(angle)
+        if np.size(rect_obst_coords) != 0:
+            rect_obst_overlap_info = calculate_distance_circ_to_rect(shark_coords[j], shark_graphic_radius,
+                                                                     rect_obst_corner_coords[rect_obst_detect_ind], True,
+                                                                     False)
+            shark_inside_rect_obst = rect_obst_overlap_info[0]
+            Dx, Dy = rect_obst_overlap_info[1], rect_obst_overlap_info[
+                2]  # Avstånd mellan närmaste punkt på rektangen till cirklens centrum
+            for ind in np.where(shark_inside_rect_obst)[0]:
+                angle = np.arctan2(Dy[ind], Dx[ind])  # Directions of others array from the particle
+                normal_distance = np.sqrt(Dx[ind] ** 2 + Dy[ind] ** 2) - shark_graphic_radius
+                shark_coords[j, 0] = shark_coords[j, 0] + np.absolute(normal_distance) * np.cos(angle)
+                shark_coords[j, 1] = shark_coords[j, 1] + np.absolute(normal_distance) * np.sin(angle)
 
     # Fisk loop
     for j in range(len(fish_coords)):
@@ -609,30 +621,32 @@ for t in range(simulation_iterations):
             circ_obst_detect_ind = detect_obst_in_radius_info[1][1]
 
             # Overlapp circular obstacles
-            circ_obst_distances = calculate_distance(circ_obst_coords[circ_obst_detect_ind], fish_coords[j])
-            angle = np.arctan2(circ_obst_coords[circ_obst_detect_ind, 1] - fish_coords[j, 1],
-                               circ_obst_coords[circ_obst_detect_ind, 0] - fish_coords[
-                                   j, 0])  # Directions of others array from the particle
-            overlap = circ_obst_distances < (fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
+            if np.size(circ_obst_coords) != 0:
+                circ_obst_distances = calculate_distance(circ_obst_coords[circ_obst_detect_ind], fish_coords[j])
+                angle = np.arctan2(circ_obst_coords[circ_obst_detect_ind, 1] - fish_coords[j, 1],
+                                   circ_obst_coords[circ_obst_detect_ind, 0] - fish_coords[
+                                       j, 0])  # Directions of others array from the particle
+                overlap = circ_obst_distances < (fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
 
-            for ind in np.where(overlap)[0]:
-                fish_coords[j, 0] = fish_coords[j, 0] + (circ_obst_distances[ind] - (
-                        fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind[ind]])) * np.cos(angle[ind])
-                fish_coords[j, 1] = fish_coords[j, 1] + (circ_obst_distances[ind] - (
-                        fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind[ind]])) * np.sin(angle[ind])
+                for ind in np.where(overlap)[0]:
+                    fish_coords[j, 0] = fish_coords[j, 0] + (circ_obst_distances[ind] - (
+                            fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind[ind]])) * np.cos(angle[ind])
+                    fish_coords[j, 1] = fish_coords[j, 1] + (circ_obst_distances[ind] - (
+                            fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind[ind]])) * np.sin(angle[ind])
 
             # Overlap rectangular obstacles
-            rect_obst_overlap_info = calculate_distance_circ_to_rect(fish_coords[j], fish_graphic_radius,
-                                                                     rect_obst_corner_coords[rect_obst_detect_ind],
-                                                                     True, False)
-            fish_inside_rect_obst = rect_obst_overlap_info[0]
-            Dx, Dy = rect_obst_overlap_info[1], rect_obst_overlap_info[
-                2]  # Avstånd mellan närmaste punkt på rektangen till cirklens centrum
-            for ind in np.where(fish_inside_rect_obst)[0]:
-                angle = np.arctan2(Dy[ind], Dx[ind])  # Directions of others array from the particle
-                normal_distance = np.sqrt(Dx[ind] ** 2 + Dy[ind] ** 2) - fish_shark_graphic_radius
-                fish_coords[j, 0] = fish_coords[j, 0] + np.absolute(normal_distance) * np.cos(angle)
-                fish_coords[j, 1] = fish_coords[j, 1] + np.absolute(normal_distance) * np.sin(angle)
+            if np.size(rect_obst_coords) != 0:
+                rect_obst_overlap_info = calculate_distance_circ_to_rect(fish_coords[j], fish_graphic_radius,
+                                                                         rect_obst_corner_coords[rect_obst_detect_ind],
+                                                                         True, False)
+                fish_inside_rect_obst = rect_obst_overlap_info[0]
+                Dx, Dy = rect_obst_overlap_info[1], rect_obst_overlap_info[
+                    2]  # Avstånd mellan närmaste punkt på rektangen till cirklens centrum
+                for ind in np.where(fish_inside_rect_obst)[0]:
+                    angle = np.arctan2(Dy[ind], Dx[ind])  # Directions of others array from the particle
+                    normal_distance = np.sqrt(Dx[ind] ** 2 + Dy[ind] ** 2) - fish_shark_graphic_radius
+                    fish_coords[j, 0] = fish_coords[j, 0] + np.absolute(normal_distance) * np.cos(angle)
+                    fish_coords[j, 1] = fish_coords[j, 1] + np.absolute(normal_distance) * np.sin(angle)
 
         if j == closest_fish:
             canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
