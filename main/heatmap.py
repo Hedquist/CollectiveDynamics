@@ -40,10 +40,10 @@ if flag:
     print('Total time:', int(duration[0]), 'm,', round(duration[1], 1), 's')
 else:
     fish_eaten_matrix = np.load('fish_eaten_matrix.npy')
+
 heatmap = plt.imshow(fish_eaten_matrix, interpolation='spline16', origin='lower')
 plt.xlabel('Fish turning speed')
 plt.ylabel('Shark turning speed')
 cbar = plt.colorbar(heatmap)
-cbar.set_label('Average fish eaten', rotation=270)
-plt.legend('Average fish eaten', loc='upper right')
+cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
