@@ -162,6 +162,21 @@ for t in range(simulation_iterations):
                           (shark_coords[
                                j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2, )
     for j in range(len(fish_coords)):
+        # # Overlapp fishes
+        fish_distances = calculate_distance(fish_coords, fish_coords[j])
+        angle = np.arctan2(fish_coords[:, 1] - fish_coords[j, 1],
+                           fish_coords[:, 0] - fish_coords[j, 0])  # Directions of others array from the particle
+        overlap = fish_distances < (2 * fish_graphic_radius)  # Applying
+        overlap[j] = False  # area extraction
+        for ind in np.where(overlap)[0]:
+            fish_coords[j, 0] = fish_coords[j, 0] + (fish_distances[ind] - 2 * fish_graphic_radius) * np.cos(
+                angle[ind]) / 2
+            fish_coords[j, 1] = fish_coords[j, 1] + (fish_distances[ind] - 2 * fish_graphic_radius) * np.sin(
+                angle[ind]) / 2
+            fish_coords[ind] = fish_coords[ind] - (fish_distances[ind] - 2 * fish_graphic_radius) * np.cos(
+                angle[ind]) / 2
+            fish_coords[ind] = fish_coords[ind] - (fish_distances[ind] - 2 * fish_graphic_radius) * np.sin(
+                angle[ind]) / 2
         if visuals_on:
             # Updating animation coordinates fisk
             canvas.coords(fish_canvas_graphics[j],
