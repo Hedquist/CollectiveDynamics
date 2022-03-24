@@ -7,6 +7,9 @@ import scipy
 import time
 from shapely.geometry import Polygon
 from timeit import default_timer as timer
+a = np.array([2,3])
+counts = np.bincount(a)
+print(np.argmax(counts))
 
 start = timer()  # Timer startas
 visuals_on = True  # Välj om simulationen ska visas eller ej.
@@ -179,8 +182,10 @@ for t in range(simulation_iterations):
     shark_see_fish = shark_fish_distances < shark_interaction_radius
     #print(np.array(shark_see_shark[:, 0]))
     for j in range(shark_count):
-        print(np.multiply(np.transpose([shark_see_shark[j, :]]), shark_fish_distances))
+        #print(np.multiply(np.transpose([shark_see_shark[j, :]]), shark_fish_distances))
         sum_shark_fish_distance = np.multiply(np.transpose([shark_see_shark[j, :]]), shark_fish_distances)
+        test = shark_see_fish * sum_shark_fish_distance
+        #print(test)
         #print(sum_shark_fish_distance)
 
     for j in range(len(closest_fish)):
