@@ -24,10 +24,10 @@ if visuals_on:
 canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 time_step = 1  # Storlek tidssteg
 simulation_iterations = 4000  # Antalet iterationer simulationen kör
-wait_time = 0.01  # Väntetiden mellan varje iteration
+wait_time = 0.05  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 5  # Antal fiskar
+fish_count = 100  # Antal fiskar
 fish_graphic_radius = 2  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -36,11 +36,12 @@ fish_noise = 0.1  # Brus i vinkel
 shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 
 # Haj
-shark_count = 10  # Antal hajar
+shark_count = 5  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
-shark_fish_relative_interaction = 4 # Hur mycket längre hajen "ser" jämfört med fisken
+shark_fish_relative_interaction = 4.0 # Hur mycket längre hajen "ser" jämfört med fisken
 shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction # Hajens interaktions radie
+shark_avoidance_radius = np.zeros(shark_count) # Undviker andra hajar inom denna radie
 murder_radius = 4  # Hajen äter fiskar inom denna radie
 fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
 fish_eaten_count = 0  # Antal fiskar ätna
@@ -148,6 +149,7 @@ for t in range(simulation_iterations):
     fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
     shark_coords = update_position(shark_coords, shark_speed, shark_orientations, time_step)  # Uppdatera hajposition
     fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
+    shark_orientations_old = np.copy(shark_orientations)  # Spara gamla orientations för Vicsek
     # Bestäm närmsta fisk
     shark_fish_distances = np.zeros((shark_count, len(fish_coords))) # Initiera matris för haj till fisk avstånd
     closest_fish = np.zeros(shark_count, dtype=int) # Initiera array med alla hajars target fish
@@ -257,12 +259,23 @@ for t in range(simulation_iterations):
                 -1 / 2, 1 / 2)
     #   Shark direction härifrån
     for i in range(shark_count):
-        if closest_fish[i] > -1: # Det finns en fisk att jaga
+        print(calculate_distance(np.array([shark_coords[i]]), fish_coords[closest_fish[i]])[0])
+        shark_avoidance_radius[i] = np.min([shark_interaction_radius*0.8, calculate_distance(np.array([shark_coords[i]]), fish_coords[closest_fish[i]])[0]])
+        shark_avoid_shark = shark_shark_distances[i] < shark_avoidance_radius[i]
+        shark_avoid_shark[i] = False
+        if any(shark_avoid_shark):
+            avoidance = 0
+            for j in range(shark_count):
+                avoidance = avoidance + shark_avoid_shark[j] * get_direction(shark_coords[j], shark_coords[i])
+                shark_orientations[i] = avoidance / sum(shark_avoid_shark)
+        elif closest_fish[i] > -1: # Det finns en fisk att jaga
             predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
                                                     shark_fish_distances[i, closest_fish[i]])
             shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
         else: # Annars fortsätt samma riktning + brus
-            shark_orientations[i] = shark_orientations[i] + fish_noise * np.random.uniform(
+            shark_orientations[i] = np.angle(
+                np.sum(np.exp(
+                    shark_orientations_old[shark_see_shark[i]] * 1j))) + fish_noise * np.random.uniform(
                 -1 / 2, 1 / 2)
 
     # Kollar om närmaste fisk är inom murder radien
