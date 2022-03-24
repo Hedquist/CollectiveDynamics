@@ -167,6 +167,9 @@ for t in range(simulation_iterations):
                 angle[ind]) / 2
             shark_coords[ind] = shark_coords[ind] - (shark_distances[ind] - 2 * shark_graphic_radius) * np.sin(
                 angle[ind]) / 2
+    sum_shark_fish_distances = np.sum(shark_fish_distances,axis=0).tolist()
+    for j in range(len(closest_fish)):
+        closest_fish[j] = np.argmin(sum_shark_fish_distances)
     if visuals_on:
         for j in range(shark_count):
             # Updating animation coordinates haj
@@ -192,6 +195,8 @@ for t in range(simulation_iterations):
                 angle[ind]) / 2
             fish_coords[ind] = fish_coords[ind] - (fish_distances[ind] - 2 * fish_graphic_radius) * np.sin(
                 angle[ind]) / 2
+
+
         if visuals_on:
             # Updating animation coordinates fisk
             canvas.coords(fish_canvas_graphics[j],
