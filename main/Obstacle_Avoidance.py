@@ -89,36 +89,36 @@ rect_obst_height = []
 #     circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
 
 
-def load_obstacles(obst_type, side_count, obstacle_radius):
-    if obst_type == 'circles':
-        obst_spacing = canvas_length*2/side_count
-        i = obst_spacing/2 - canvas_length
-        j = obst_spacing/2 - canvas_length
+def load_obstacles(obst_type_1, side_count, obstacle_radius):
+    if obst_type_1 == 'circles':
+        obst_spacing = canvas_length * 2 / side_count
+        i = obst_spacing / 2 - canvas_length
+        j = obst_spacing / 2 - canvas_length
         while i < canvas_length:
             while j < canvas_length:
                 circ_obst_coords.append([i, j])
                 circ_obst_radius.append(obstacle_radius)
                 j += obst_spacing
-            j = obst_spacing/2 - canvas_length
+            j = obst_spacing / 2 - canvas_length
             i += obst_spacing
 
-        rect_obst_coords.append([canvas_length*2, canvas_length*2])
+        rect_obst_coords.append([canvas_length * 2, canvas_length * 2])
         rect_obst_width.append(1)
         rect_obst_height.append(1)
-    if obst_type == 'rectangles':
-        obst_spacing = canvas_length*2/side_count
-        i = obst_spacing/2 - canvas_length
-        j = obst_spacing/2 - canvas_length
+    if obst_type_1 == 'rectangles':
+        obst_spacing = canvas_length * 2 / side_count
+        i = obst_spacing / 2 - canvas_length
+        j = obst_spacing / 2 - canvas_length
         while i < canvas_length:
             while j < canvas_length:
                 rect_obst_coords.append([i, j])
                 rect_obst_width.append(obstacle_radius)
                 rect_obst_height.append(obstacle_radius)
                 j += obst_spacing
-            j = obst_spacing/2 - canvas_length
+            j = obst_spacing / 2 - canvas_length
             i += obst_spacing
 
-        circ_obst_coords.append([canvas_length*2, canvas_length*2])
+        circ_obst_coords.append([canvas_length * 2, canvas_length * 2])
         circ_obst_radius.append(1)
 
 
@@ -463,14 +463,15 @@ def murder_fish_orientations(dead_fish_index):
 
 # Kallar på de grafiska funktionerna
 cast_rays()
-generate_fish_not_inside_obstacle_coordinates()
+# generate_fish_not_inside_obstacle_coordinates()
 draw_fishes()
 draw_shark()
 draw_circular_obstacles()
 draw_rectangular_obstacles()
 
-def main(obst_type, obst_radius, obst_count):
-    load_obstacles(obst_type, obst_count, obst_radius)
+
+def main(obst_type_nagot_annat, obst_radius, obst_count):
+    load_obstacles(obst_type_nagot_annat, obst_count, obst_radius)
     fish_eaten_count = 0  # Antal fiskar ätna
 
     for t in range(simulation_iterations):
@@ -536,7 +537,8 @@ def main(obst_type, obst_radius, obst_count):
 
             # Overlap rectangular obstacles shark
             rect_obst_overlap_info = calculate_distance_circ_to_rect(shark_coords[j], shark_graphic_radius,
-                                                                     rect_obst_corner_coords[rect_obst_detect_ind], True,
+                                                                     rect_obst_corner_coords[rect_obst_detect_ind],
+                                                                     True,
                                                                      False)
             shark_inside_rect_obst = rect_obst_overlap_info[0]
             Dx, Dy = rect_obst_overlap_info[1], rect_obst_overlap_info[
@@ -616,7 +618,8 @@ def main(obst_type, obst_radius, obst_count):
                 angle = np.arctan2(circ_obst_coords[circ_obst_detect_ind, 1] - fish_coords[j, 1],
                                    circ_obst_coords[circ_obst_detect_ind, 0] - fish_coords[
                                        j, 0])  # Directions of others array from the particle
-                overlap = circ_obst_distances < (fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
+                overlap = circ_obst_distances < (
+                            fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
 
                 for ind in np.where(overlap)[0]:
                     fish_coords[j, 0] = fish_coords[j, 0] + (circ_obst_distances[ind] - (
@@ -688,6 +691,7 @@ def main(obst_type, obst_radius, obst_count):
         tk.update()  # Update animation frame
         time.sleep(0.001)  # Wait between loops
     return fish_eaten_count
+
 
 # fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
 # plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta

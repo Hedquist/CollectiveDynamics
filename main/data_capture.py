@@ -10,6 +10,6 @@ obstacle_radius = 5
 fish_eaten_array = np.zeros(np.obstacle_count_array.size())
 
 for i in range(1):
-    fish_eaten_array[i] = oa.main(obstacle_count_array[i], obstacle_type, obstacle_radius)
+    fish_eaten_array[i] = oa.main('circles', 8, 3)
 
 plt.plot(obstacle_count_array, fish_eaten_array)
