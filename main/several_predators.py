@@ -26,7 +26,7 @@ simulation_iterations = 4000  # Antalet iterationer simulationen kör
 wait_time = 0.01  # Väntetiden mellan varje iteration
 
 # Fisk
-fish_count = 300  # Antal fiskar
+fish_count = 200  # Antal fiskar
 fish_graphic_radius = 2  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
@@ -35,7 +35,7 @@ fish_noise = 0.1  # Brus i vinkel
 shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 
 # Haj
-shark_count = 10  # Antal hajar
+shark_count = 20  # Antal hajar
 shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
 shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
@@ -119,7 +119,7 @@ def murder_fish_orientations(dead_fish_index):
     return new_fish_orientations
 
 
-def predict_position(fish_coord, fish_orientation, distance_to_fish):
+def predict_position(fish_coord, fish_orientation, distance_to_fish): #
     predicted_fish_coords = update_position(np.array([fish_coord]), fish_speed, fish_orientation,
                                             distance_to_fish / shark_speed * shark_fish_relative_speed * 0.9)
     return predicted_fish_coords[0]
@@ -250,8 +250,8 @@ for t in range(simulation_iterations):
             avoidance = 0
             for i in range(shark_count):
                 if shark_near_fish[i]:
-                    avoidance = get_direction(shark_coords[i], fish_coords[j]) + avoidance
-            fish_orientations[j] = avoidance / sum(shark_near_fish)
+                    avoidance = np.exp(get_direction(shark_coords[i], fish_coords[j])*1j) + avoidance
+            fish_orientations[j] = np.angle(avoidance)
         else:  # Annars Vicsek-modellen
             fish_orientations[j] = np.angle(
                 np.sum(np.exp(
@@ -268,8 +268,8 @@ for t in range(simulation_iterations):
         if any(shark_avoid_shark):  # Om nära en annan haj
             avoidance = 0
             for j in range(shark_count): # Undvik de hajar du är nära. Medelrikning från de hajarna
-                avoidance = avoidance + shark_avoid_shark[j] * get_direction(shark_coords[j], shark_coords[i])
-                shark_orientations[i] = avoidance / sum(shark_avoid_shark)
+                avoidance = avoidance + shark_avoid_shark[j] * np.exp(get_direction(shark_coords[j], shark_coords[i]) * 1j)
+                shark_orientations[i] = np.angle(avoidance)
         elif closest_fish[i] > -1:  # Det finns en fisk att jaga och inga hajar att undvika
             predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
                                                     shark_fish_distances[i, closest_fish[i]])
