@@ -22,7 +22,7 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
     ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
     # Systemets parameter
-    simulation_iterations = 100 # Simulation time
+    simulation_iterations = 100000  # Simulation time
     time_step = 0.03  # Time step
     canvas_length = 100  # Size of box
     visual_debug = False
@@ -76,6 +76,21 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
     rect_obst_width = []
     rect_obst_height = []
 
+
+    # with open('Environment', 'r') as filestream:
+    #     next(filestream)  # Skip first row
+    #     for line in filestream:  # Read every row
+    #         if line != "\n":
+    #             currentline = line.split(',')
+    #             if ('None' not in currentline[:3]):
+    #                 circ_obst_coords.append([float(currentline[0]), float(currentline[1])])
+    #                 circ_obst_radius.append(float(currentline[2]))
+    #             if ('None' not in currentline[3:]):
+    #                 rect_obst_coords.append([float(currentline[3]), float(currentline[4])])
+    #                 rect_obst_width.append(float(currentline[5]))
+    #                 rect_obst_height.append(float(currentline[6]))
+    #     circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
+
     # Generar hinder
     def load_obstacles(obst_type, side_count, obstacle_radius):
         if obst_type == 'circles':
@@ -106,8 +121,12 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
                 j = obst_spacing/2 - canvas_length
                 i += obst_spacing
 
+            # circ_obst_coords.append([canvas_length*2, canvas_length*2])
+            # circ_obst_radius.append(1)
+
 
     load_obstacles(obst_type_main, obst_radius_main, obst_count_main) # Genererar hinder
+
     circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
 
     circ_obst_radius = np.array(circ_obst_radius)
@@ -115,7 +134,9 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
     rect_obst_height = np.array(rect_obst_height)
 
     obst_type = ['rectangle', 'circle']  #
+    obst_coords = [rect_obst_coords, circ_obst_coords]  #
     rect_obst_corner_coords = []
+    #circ_and_rect_obst_coords = np.concatenate((circ_obst_coords, rect_obst_coords))
 
     # Canvas grafik fisk
     fish_canvas_graphics = []
@@ -151,6 +172,20 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
         rect_obst_corner_coords.append(
             calculate_rectangle_corner_coordinates(rect_obst_coords[i], rect_obst_width[i], rect_obst_height[i]))
     rect_obst_corner_coords = np.array(rect_obst_corner_coords)
+
+
+    # Funktion för att fisken startposition inte hamnar i ett hinder
+    # def generate_fish_not_inside_obstacle_coordinates():
+    #     for j in range(fish_count):
+    #         while (True):  # Check if the obstacle is within agent
+    #             distance_to_obstacles = []
+    #             for k in range(circ_and_rect_obst_coords.shape[0]):
+    #                 distance_to_obstacles.append(np.linalg.norm(fish_coords[j] - circ_and_rect_obst_coords[k]))
+    #             if (np.min(distance_to_obstacles) < fish_interaction_radius):
+    #                 fish_coords[j, 0] = np.random.rand() * 2 * canvas_length - canvas_length
+    #                 fish_coords[j, 1] = np.random.rand() * 2 * canvas_length - canvas_length
+    #             else:
+    #                 break
 
 
     # Ritar ut fiskar och dess interaktionsradie
@@ -633,11 +668,11 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
                                                                                                  1 / 2)) + weight_boolean_avoid * (
                                                fish_orientations[j] + fish_avoid_angle)
 
-            #Haj undvik hinder, annars jaga fisk
-            shark_orientations[0] = shark_orientations[0] + shark_avoid_angle if np.absolute(shark_avoid_angle) > 0 \
-                else get_direction(shark_coords[0], fish_coords[closest_fish])
+            # Haj undvik hinder, annars jaga fisk
+            # shark_orientations[0] = shark_orientations[0] + shark_avoid_angle if np.absolute(shark_avoid_angle) > 0 \
+            #     else get_direction(shark_coords[0], fish_coords[closest_fish])
 
-            #shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
+            shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
         # # Beräknar Global Alignment
         # global_alignment_coeff = 1 / fish_count * np.linalg.norm(
@@ -665,7 +700,7 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
 
         tk.title('Iteration =' + str(t))
         tk.update()  # Update animation frame
-        #time.sleep(0.001)  # Wait between loops
+        time.sleep(0.001)  # Wait between loops
 
     # fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
     # plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
@@ -674,5 +709,3 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
     # plt.show()
     #Tk.mainloop(canvas)  # Release animation handle (close window to finish)
     return fish_eaten_count
-
-main('circles', 4,8.9)
