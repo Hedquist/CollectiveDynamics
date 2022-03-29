@@ -9,7 +9,7 @@ from itertools import chain
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull
 from shapely.geometry import Polygon
 
-def main(obst_type_main, obst_radius_main, obst_count_main):
+def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
 
     res = 600  # Resolution of the animation
     tk = Tk()
@@ -77,37 +77,56 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
     rect_obst_height = []
 
     # Generar hinder
-    def load_obstacles(obst_type, side_count, obstacle_radius):
-        if obst_type == 'circles':
-            obst_spacing = canvas_length*2/side_count
-            i = obst_spacing/2 - canvas_length
-            j = obst_spacing/2 - canvas_length
-            while i < canvas_length:
-                while j < canvas_length:
-                    circ_obst_coords.append([i, j])
-                    circ_obst_radius.append(obstacle_radius)
-                    j += obst_spacing
-                j = obst_spacing/2 - canvas_length
-                i += obst_spacing
+    # def load_obstacles(obst_type, side_count, obstacle_radius):
+    #     if obst_type == 'circles':
+    #         obst_spacing = canvas_length*2/side_count
+    #         i = obst_spacing/2 - canvas_length
+    #         j = obst_spacing/2 - canvas_length
+    #         while i < canvas_length:
+    #             while j < canvas_length:
+    #                 circ_obst_coords.append([i, j])
+    #                 circ_obst_radius.append(obstacle_radius)
+    #                 j += obst_spacing
+    #             j = obst_spacing/2 - canvas_length
+    #             i += obst_spacing
+    #
+    #         rect_obst_coords.append([canvas_length*2, canvas_length*2])
+    #         rect_obst_width.append(1)
+    #         rect_obst_height.append(1)
+    #     if obst_type == 'rectangles':
+    #         obst_spacing = canvas_length*2/side_count
+    #         i = obst_spacing/2 - canvas_length
+    #         j = obst_spacing/2 - canvas_length
+    #         while i < canvas_length:
+    #             while j < canvas_length:
+    #                 rect_obst_coords.append([i, j])
+    #                 rect_obst_width.append(obstacle_radius)
+    #                 rect_obst_height.append(obstacle_radius)
+    #                 j += obst_spacing
+    #             j = obst_spacing/2 - canvas_length
+    #             i += obst_spacing
 
-            rect_obst_coords.append([canvas_length*2, canvas_length*2])
-            rect_obst_width.append(1)
-            rect_obst_height.append(1)
-        if obst_type == 'rectangles':
-            obst_spacing = canvas_length*2/side_count
-            i = obst_spacing/2 - canvas_length
-            j = obst_spacing/2 - canvas_length
-            while i < canvas_length:
-                while j < canvas_length:
-                    rect_obst_coords.append([i, j])
-                    rect_obst_width.append(obstacle_radius)
-                    rect_obst_height.append(obstacle_radius)
-                    j += obst_spacing
-                j = obst_spacing/2 - canvas_length
-                i += obst_spacing
+    def load_obstacles(obstacle_type, num_row, num_col, obstacle_size, displacement):
+        horisontal_space = 2 * canvas_length / (num_col + 1)  # Mellanrum i horisentell led
+        vertical_space = 2 * canvas_length / (num_row + 1)  # Mellanrum i vertikalled
+        start_vertical = - canvas_length + vertical_space  # Start i vertikalled, högst upp till vänster
+        for i in range(num_row):  # För varje rad
+            start_horisontal = - canvas_length + 3 / 2 * horisontal_space if displacement and i % 2 != 0 \
+                else - canvas_length + 2 * canvas_length / (
+                        num_col + 1)  # Förskjuts om True annars vanlig start vi horisontell led
+            for j in range(
+                    num_col - 1 if displacement and i % 2 != 0 else num_col):  # För varje kolonn, minska antalet om displacement
+                if obstacle_type == 'circles':
+                    circ_obst_coords.append([start_horisontal, start_vertical])
+                    circ_obst_radius.append(obstacle_size)
+                elif obstacle_type == 'rectangles':
+                    rect_obst_coords.append([start_horisontal, start_vertical])
+                    rect_obst_width.append(obstacle_size)
+                    rect_obst_height.append(obstacle_size)
+                start_horisontal += horisontal_space  # Lägg till avståndet
+            start_vertical += vertical_space  # Gå till nästa rad
 
-
-    load_obstacles(obst_type_main, obst_radius_main, obst_count_main) # Genererar hinder
+    load_obstacles(obst_type_main, row_main, col_main, obst_size_main, displacement_main) # Genererar hinder
     circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
 
     circ_obst_radius = np.array(circ_obst_radius)
@@ -675,4 +694,3 @@ def main(obst_type_main, obst_radius_main, obst_count_main):
     #Tk.mainloop(canvas)  # Release animation handle (close window to finish)
     return fish_eaten_count
 
-main('circles', 4,8.9)
