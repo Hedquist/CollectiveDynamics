@@ -31,7 +31,7 @@ if flag:
         for obst_rad in obstacle_radius:
             res = 0.0
             for k in range(num_times_run):
-                temp = oa.main('circles', obst_count,obst_rad)
+                temp = oa.main('circles', obst_count, obst_count,obst_rad, True)
                 res += temp  # Anropa simulationen med olika turning speed
             res /= num_times_run
             fish_eaten_matrix[j, i] = res  # Medelvärde av antal ätna fiskar
