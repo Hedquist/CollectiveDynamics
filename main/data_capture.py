@@ -15,8 +15,8 @@ start = time.time()
 obstacle_count = [i for i in range(start_obst_count,end_obst_count+1)] # Ger start till end
 obstacle_radius = [i for i in range(start_obst_radius,end_obst_radius+1)] # Ger start till end
 num_of_points = len(obstacle_count)
-print(obstacle_count,'óbstacle count')
-print(obstacle_radius, 'óbstacle radius')
+print(obstacle_count,'obstacle count')
+print(obstacle_radius, 'obstacle radius')
 
 
 fish_eaten_matrix = np.zeros((len(obstacle_count), len(obstacle_radius)))
