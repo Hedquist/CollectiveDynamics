@@ -7,9 +7,9 @@ obstacle_type = 'circles'
 num_times_run = 2
 
 start_obst_count = 3
-end_obst_count = 4
+end_obst_count = 6
 start_obst_radius = 5
-end_obst_radius = 6
+end_obst_radius = 8
 
 start = time.time()
 obstacle_count = [i for i in range(start_obst_count,end_obst_count+1)] # Ger start till end
@@ -23,7 +23,7 @@ fish_eaten_matrix = np.zeros((len(obstacle_count), len(obstacle_radius)))
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
-flag = False
+flag = True
 if flag:
     print('Simulation initiated')
     for obst_count in obstacle_count:
@@ -65,4 +65,6 @@ plt.xlabel('Obstacle count')
 plt.ylabel('Obstacle size')
 plt.xticks(np.arange(start_obst_count, end_obst_count+1, step=1))  # Set label locations.
 plt.yticks(np.arange(start_obst_radius, end_obst_radius+1, step=1))  # Set label locations.
+cbar = plt.colorbar(ax1)
+cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()

@@ -22,7 +22,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
     ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
     # Systemets parameter
-    simulation_iterations = 100 # Simulation time
+    simulation_iterations = 1000 # Simulation time
     time_step = 0.03  # Time step
     canvas_length = 100  # Size of box
     visual_debug = False
@@ -668,7 +668,6 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
         if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
             if calculate_distance(shark_coords, fish_coords[closest_fish])[0] < murder_radius:
                 last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
-
                 canvas.delete(fish_canvas_graphics[last_index])  # Tar bort fisken
                 canvas.delete(fish_direction_arrow_graphics[last_index])  # Tar bort fiskens pil
                 fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
@@ -684,13 +683,14 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
 
         tk.title('Iteration =' + str(t))
         tk.update()  # Update animation frame
-        #time.sleep(0.001)  # Wait between loops
 
-    # fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
-    # plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
-    # plt.xlabel('Tid')
-    # plt.ylabel('Antal fiskar ätna')
-    # plt.show()
+    fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
+    plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+    plt.xlabel('Tid')
+    plt.ylabel('Antal fiskar ätna')
+    plt.show()
     #Tk.mainloop(canvas)  # Release animation handle (close window to finish)
+    Tk.destroy(tk)
     return fish_eaten_count
 
+main('circles', 7, 7, 6, True)
