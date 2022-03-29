@@ -22,7 +22,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
     ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
     # Systemets parameter
-    simulation_iterations = 1000 # Simulation time
+    simulation_iterations = 500 # Simulation time
     time_step = 0.03  # Time step
     canvas_length = 100  # Size of box
     visual_debug = False
