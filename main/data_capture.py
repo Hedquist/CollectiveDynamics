@@ -52,8 +52,8 @@ else:
 
 print(fish_eaten_matrix, 'final fish eaten matrix')
 heatmap = plt.imshow(fish_eaten_matrix, interpolation='spline16', origin='lower')
-plt.xlabel('Fish turning speed')
-plt.ylabel('Shark turning speed')
+plt.xlabel('Obstacle count')
+plt.ylabel('Obstacle size')
 cbar = plt.colorbar(heatmap)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
