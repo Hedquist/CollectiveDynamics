@@ -23,7 +23,7 @@ fish_eaten_matrix = np.zeros((len(obstacle_count), len(obstacle_radius)))
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
-flag = True
+flag = False
 if flag:
     print('Simulation initiated')
     for obst_count in obstacle_count:
@@ -56,4 +56,13 @@ plt.xlabel('Obstacle count')
 plt.ylabel('Obstacle size')
 cbar = plt.colorbar(heatmap)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
+plt.show()
+
+x_, y_ = np.meshgrid(obstacle_count, obstacle_radius)
+fig = plt.figure()
+ax1 = plt.pcolormesh(x_,y_,fish_eaten_matrix)
+plt.xlabel('Obstacle count')
+plt.ylabel('Obstacle size')
+plt.xticks(np.arange(start_obst_count, end_obst_count+1, step=1))  # Set label locations.
+plt.yticks(np.arange(start_obst_radius, end_obst_radius+1, step=1))  # Set label locations.
 plt.show()
