@@ -6,10 +6,10 @@ import Obstacle_Avoidance as oa
 obstacle_type = 'circles'
 num_times_run = 2
 
-start_obst_count = 3
-end_obst_count = 6
-start_obst_radius = 5
-end_obst_radius = 8
+start_obst_count = 5
+end_obst_count = 7
+start_obst_radius = 12
+end_obst_radius = 14
 
 start = time.time()
 obstacle_count = [i for i in range(start_obst_count,end_obst_count+1)] # Ger start till end

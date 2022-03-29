@@ -107,13 +107,12 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
     #             i += obst_spacing
 
     def load_obstacles(obstacle_type, num_row, num_col, obstacle_size, displacement):
-        horisontal_space = 2 * canvas_length / (num_col + 1)  # Mellanrum i horisentell led
-        vertical_space = 2 * canvas_length / (num_row + 1)  # Mellanrum i vertikalled
-        start_vertical = - canvas_length + vertical_space  # Start i vertikalled, högst upp till vänster
+        horisontal_space = 2 * canvas_length / (num_col)  # Mellanrum i horisentell led
+        vertical_space = 2 * canvas_length / (num_row)  # Mellanrum i vertikalled
+        start_vertical = - canvas_length + vertical_space/2  # Start i vertikalled, högst upp till vänster
         for i in range(num_row):  # För varje rad
-            start_horisontal = - canvas_length + 3 / 2 * horisontal_space if displacement and i % 2 != 0 \
-                else - canvas_length + 2 * canvas_length / (
-                        num_col + 1)  # Förskjuts om True annars vanlig start vi horisontell led
+            start_horisontal = - canvas_length + horisontal_space if displacement and i % 2 != 0 \
+                else - canvas_length + horisontal_space / 2  # Förskjuts om True annars vanlig start vi horisontell led
             for j in range(
                     num_col - 1 if displacement and i % 2 != 0 else num_col):  # För varje kolonn, minska antalet om displacement
                 if obstacle_type == 'circles':
@@ -684,13 +683,13 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
         tk.title('Iteration =' + str(t))
         tk.update()  # Update animation frame
 
-    fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
-    plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
-    plt.xlabel('Tid')
-    plt.ylabel('Antal fiskar ätna')
-    plt.show()
+    # fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
+    # plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+    # plt.xlabel('Tid')
+    # plt.ylabel('Antal fiskar ätna')
+    # plt.show()
     #Tk.mainloop(canvas)  # Release animation handle (close window to finish)
     Tk.destroy(tk)
     return fish_eaten_count
 
-main('circles', 7, 7, 6, True)
+#main('circles', 7, 7, 6, True)
