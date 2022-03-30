@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from tkinter import *
 from scipy.spatial import *
@@ -87,7 +89,11 @@ def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i 
 
 
 def torque_turn(desired_orientation, current_orientation, turn_speed):
-    relative_orientation = current_orientation - desired_orientation  # makes calculation easier
+    v = np.array([np.cos(desired_orientation), np.sin(desired_orientation)])
+    w = np.array([np.cos(current_orientation), np.sin(current_orientation)])
+    A = np.cross(v, w)
+    relative_orientation = math.asin(np.linalg.norm(A)) * np.sign(A)
+
     if relative_orientation == 0:
         return desired_orientation  # if desired angle is equal to current angle, do nothing
     elif relative_orientation > 0:
