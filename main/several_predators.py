@@ -379,7 +379,8 @@ def main():
     plt.xlabel('Tid')
     plt.ylabel('% av fiskar ätna')
     print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
-    plt.show()
+    #plt.show()
+    fish_eaten_this_sim.append(np.array(fish_eaten_count))
     if visuals_on:
         tk.mainloop()
 if __name__ == 'main':
