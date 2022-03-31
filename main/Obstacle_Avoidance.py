@@ -692,4 +692,4 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
     Tk.destroy(tk)
     return fish_eaten_count
 
-main('circles', 7, 7, 6, True)
+main('circles', 8, 8, 16, True)

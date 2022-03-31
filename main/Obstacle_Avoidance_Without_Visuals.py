@@ -358,7 +358,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
         shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
         shark_fish_distances = calculate_distance(fish_coords, shark_coords[0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
         closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
-        print(t)
+        # print(t)
         # Haj loop
         for j in range(shark_count):
             # Updating animation coordinates haj
@@ -530,10 +530,10 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
 
 
     fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
-    plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
-    plt.xlabel('Tid')
-    plt.ylabel('Antal fiskar ätna')
-    plt.show()
+    # plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+    # plt.xlabel('Tid')
+    # plt.ylabel('Antal fiskar ätna')
+    # plt.show()
     return fish_eaten_count
 
-main('circles', 7, 7, 6, True)
+# main('circles', 7, 7, 6, True)

@@ -1,16 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import Obstacle_Avoidance as oa
+#import Obstacle_Avoidance as oa
 import Obstacle_Avoidance_Without_Visuals as oa_without_visuals
 
 obstacle_type = 'circles'
-num_times_run = 2
+num_times_run = 3
 
 start_obst_count = 3
-end_obst_count = 6
-start_obst_radius = 10
-end_obst_radius = 13
+end_obst_count = 8
+start_obst_radius = 9
+end_obst_radius = 14
 
 start = time.time()
 obstacle_count = [i for i in range(start_obst_count,end_obst_count+1)] # Ger start till end
@@ -33,6 +33,7 @@ if flag:
             res = 0.0
             for k in range(num_times_run):
                 temp = oa_without_visuals.main('circles', obst_count, obst_count,obst_rad, True)
+                print('Fiskar ätna:  ', temp)
                 res += temp  # Anropa simulationen med olika turning speed
             res /= num_times_run
             fish_eaten_matrix[j, i] = res  # Medelvärde av antal ätna fiskar
