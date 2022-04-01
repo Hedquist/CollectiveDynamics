@@ -128,7 +128,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 
 def main():
     start = timer()  # Timer startas
-    visuals_on = True  # Välj om simulationen ska visas eller ej.
+    visuals_on = False  # Välj om simulationen ska visas eller ej.
     if visuals_on:
         res = 500  # Resolution of the animation
         tk = Tk()
@@ -164,6 +164,7 @@ def main():
     murder_radius = 4  # Hajen äter fiskar inom denna radie
     fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
     fish_eaten_count = 0  # Antal fiskar ätna
+    fish_eaten_this_sim = []
 
     # Start koordinater fiskar
     fish_coords_file = 'fish_coords_initial.npy'
@@ -366,6 +367,7 @@ def main():
                     fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
         else:
             break
+        fish_eaten_this_sim.append(np.array(fish_eaten_count))
         # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
         # canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
         # canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
@@ -380,7 +382,8 @@ def main():
     plt.ylabel('% av fiskar ätna')
     print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
     #plt.show()
-    fish_eaten_this_sim.append(np.array(fish_eaten_count))
+
+    np.save('fish_eaten_this_sim.npy', fish_eaten_this_sim)
     if visuals_on:
         tk.mainloop()
 if __name__ == 'main':
