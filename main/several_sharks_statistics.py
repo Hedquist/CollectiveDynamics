@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import several_predators as sp
 
-n = 3  # Antal observationer
+n = 5  # Antal observationer
 simulation_iterations = sp.simulation_iterations
 t = np.linspace(0, sp.simulation_iterations*sp.time_step, sp.simulation_iterations)
 fish_eaten_all_sim = []

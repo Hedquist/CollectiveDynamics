@@ -8,58 +8,14 @@ import time
 from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
-start = timer()  # Timer startas
-visuals_on = True  # Välj om simulationen ska visas eller ej.
-
-# Variabler
 canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
+simulation_iterations = 1000  # Antalet iterationer simulationen kör
 time_step = 1  # Storlek tidssteg
-simulation_iterations = 100  # Antalet iterationer simulationen kör
-wait_time = 0.01  # Väntetiden mellan varje iteration
 
-# Fisk
-fish_count = 200  # Antal fiskar
-fish_graphic_radius = 2  # Radie av ritad cirkel
-fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 2  # Hastighet fiskar
-fish_noise = 0.1  # Brus i vinkel
-
 shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 
-# Haj
-shark_count = 20  # Antal hajar
-shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
-shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
-shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction  # Hajens interaktions radie
-shark_relative_avoidance_radius = 0.8 # Andel av interaktionsradie som avoidance radie ska vara
-shark_avoidance_radius = np.zeros(shark_count)  # Undviker andra hajar inom denna radie
-murder_radius = 4  # Hajen äter fiskar inom denna radie
-fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
-fish_eaten_count = 0  # Antal fiskar ätna
-
-# Start koordinater fiskar
-fish_coords_file = 'fish_coords_initial.npy'
-fish_orientations_file = 'fish_orientations_initial.npy'
-if True:
-    x = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # x coordinates
-    y = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # y coordinates
-    fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
-    fish_coords = np.column_stack((x, y))
-    np.save(fish_coords_file, fish_coords)
-    np.save(fish_orientations_file, fish_orientations)
-else:
-    fish_coords = np.load(fish_coords_file)  # Array med alla fiskars x- och y-koord
-    fish_orientations = np.load(fish_orientations_file)  # Array med alla fiskars riktning
-
-# Startkoordinater hajar
-shark_x = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # shark x coordinates
-shark_y = np.random.rand(shark_count) * 2 * canvas_length - canvas_length  # shark y coordinates
-shark_coords = np.column_stack((shark_x, shark_y))  # Array med alla hajars x- och y-koord
-shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
-fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
-shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
-
 
 
 def update_position(coords, speed, orientations, time_step):  # Uppdaterar en partikels position
@@ -102,12 +58,12 @@ def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Clu
 '''
 
 
-def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
+def murder_fish_coords(dead_fish_index, fish_coords):  # Tar bort fisk som blivit uppäten
     new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
     return new_fish_coords
 
 
-def murder_fish_orientations(dead_fish_index):
+def murder_fish_orientations(dead_fish_index, fish_orientations):
     new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
     return new_fish_orientations
 
@@ -120,7 +76,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 
 def main():
     start = timer()  # Timer startas
-    visuals_on = True  # Välj om simulationen ska visas eller ej.
+    visuals_on = False  # Välj om simulationen ska visas eller ej.
     if visuals_on:
         res = 500  # Resolution of the animation
         tk = Tk()
@@ -131,24 +87,18 @@ def main():
         canvas.place(x=res / 20, y=res / 20, height=res, width=res)
         ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
     # Variabler
-    canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
-    time_step = 1  # Storlek tidssteg
-    simulation_iterations = 100  # Antalet iterationer simulationen kör
     wait_time = 0.01  # Väntetiden mellan varje iteration
 
     # Fisk
     fish_count = 200  # Antal fiskar
     fish_graphic_radius = 2  # Radie av ritad cirkel
     fish_interaction_radius = 10  # Interraktionsradie för fisk
-    fish_speed = 2  # Hastighet fiskar
     fish_noise = 0.1  # Brus i vinkel
 
-    shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 
     # Haj
     shark_count = 20  # Antal hajar
     shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
-    shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
     shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
     shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction  # Hajens interaktions radie
     shark_relative_avoidance_radius = 0.8 # Andel av interaktionsradie som avoidance radie ska vara
@@ -353,8 +303,8 @@ def main():
                     last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
                     if visuals_on:
                         canvas.delete(fish_canvas_graphics[last_index])  # Ta bort sista fisk-cirkeln i array
-                    fish_coords = murder_fish_coords(closest_fish[j])  # Tar bort index i koordinaterna
-                    fish_orientations = murder_fish_orientations(closest_fish[j])  # Tar bort index i orientations
+                    fish_coords = murder_fish_coords(closest_fish[j], fish_coords)  # Tar bort index i koordinaterna
+                    fish_orientations = murder_fish_orientations(closest_fish[j], fish_orientations)  # Tar bort index i orientations
                     fish_eaten_count += 1 / fish_count * 100  # Lägg till en äten fisk
                     fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
         else:
