@@ -6,15 +6,15 @@ import time
 import simple_torque as st
 
 start = time.time()
-num_of_points = 7  # Amount of points in each array, main point of running time adjustment
+num_of_points = 20  # Amount of points in each array, main point of running time adjustment
 N = 3
 
-fish_turning_speed = np.linspace(0, 1, num_of_points)  # Fiskarnas turning speed
-shark_turning_speed = np.linspace(0, 1, num_of_points)  # Hajarnas turning speed
+fish_turning_speed = np.linspace(0, 0.1, num_of_points)  # Fiskarnas turning speed
+shark_turning_speed = np.linspace(0, 0.1, num_of_points)  # Hajarnas turning speed
 fish_eaten_matrix = np.zeros((num_of_points, num_of_points))  # Allokera minne
 
 i = 0
-flag = True
+flag = False
 if flag:
     print('Simulation initiated')
     for fts in fish_turning_speed:
@@ -41,7 +41,10 @@ if flag:
 else:
     fish_eaten_matrix = np.load('fish_eaten_matrix.npy')
 
-heatmap = plt.imshow(fish_eaten_matrix, interpolation='spline16', origin='lower')
+x_, y_ = np.meshgrid(fish_turning_speed, shark_turning_speed)
+fig = plt.figure()
+ax1 = plt.pcolormesh(x_,y_,fish_eaten_matrix)
+heatmap = plt.imshow(fish_eaten_matrix, origin='lower')
 plt.xlabel('Fish turning speed')
 plt.ylabel('Shark turning speed')
 cbar = plt.colorbar(heatmap)
