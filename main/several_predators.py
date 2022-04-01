@@ -10,15 +10,7 @@ from timeit import default_timer as timer
 
 start = timer()  # Timer startas
 visuals_on = True  # Välj om simulationen ska visas eller ej.
-if visuals_on:
-    res = 500  # Resolution of the animation
-    tk = Tk()
-    tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3)))
-    tk.configure(background='white')
-    canvas = Canvas(tk, bd=2, bg='white')  # Generate animation window
-    tk.attributes('-topmost', 0)
-    canvas.place(x=res / 20, y=res / 20, height=res, width=res)
-    ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
+
 # Variabler
 canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 time_step = 1  # Storlek tidssteg
