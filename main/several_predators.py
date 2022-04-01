@@ -128,7 +128,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 
 def main():
     start = timer()  # Timer startas
-    visuals_on = False  # Välj om simulationen ska visas eller ej.
+    visuals_on = True  # Välj om simulationen ska visas eller ej.
     if visuals_on:
         res = 500  # Resolution of the animation
         tk = Tk()
