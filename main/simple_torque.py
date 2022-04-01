@@ -57,16 +57,17 @@ def torque_turn(desired_orientation, current_orientation, turn_speed):
     w = np.array([np.cos(current_orientation), np.sin(current_orientation)])
     A = np.cross(v, w)
     relative_orientation = math.asin(np.linalg.norm(A)) * np.sign(A)
-
-    if relative_orientation == 0:
+    if A == 0 and math.fabs(np.dot(v, w) + 1) <= 1e-3:
+        relative_orientation = np.pi
+    if math.fabs(relative_orientation) <= turn_speed * np.pi and np.dot(v, w) >= (turn_speed * (-2) + 1):
         return desired_orientation  # if desired angle is equal to current angle, do nothing
-    elif relative_orientation > 0:
-        calc = current_orientation - (np.pi * turn_speed)  # turn speed of 1 means you can turn pi radians per tick,
-        new_orientation = np.maximum(calc, desired_orientation)  # turn speed of 0 means no turning
-    else:
-        calc = current_orientation + (np.pi * turn_speed)
-        new_orientation = np.minimum(calc, desired_orientation)  # This line prevents "overturning"
-    return new_orientation
+
+    calc = current_orientation - (np.pi * turn_speed) * np.sign(relative_orientation) # turn speed of 1 means you can turn pi radians per tick,
+    if calc > 2 * np.pi:
+        calc -= 2 * np.pi
+    elif calc < 0:
+        calc += 2 * np.pi
+    return calc
 
 
 # uses torque_turn to update orientation array according to desired_orientation
