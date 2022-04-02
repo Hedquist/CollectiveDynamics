@@ -5,12 +5,12 @@ import time
 import Obstacle_Avoidance_Without_Visuals as oa_without_visuals
 
 obstacle_type = 'circles'
-num_times_run = 2
+num_times_run = 3
 
-start_obst_count = 4
-end_obst_count = 5
-start_obst_radius = 11
-end_obst_radius = 12
+start_obst_count = 3
+end_obst_count = 8
+start_obst_radius = 9
+end_obst_radius = 14
 
 start = time.time()
 obstacle_count = [i for i in range(start_obst_count,end_obst_count+1)] # Ger start till end
@@ -33,6 +33,7 @@ if flag:
             res = 0.0
             for k in range(num_times_run):
                 temp = oa_without_visuals.main('circles', obst_count, obst_count,obst_rad, True)
+                print('Fiskar ätna:  ', temp)
                 res += temp  # Anropa simulationen med olika turning speed
             res /= num_times_run
             fish_eaten_matrix[j, i] = res  # Medelvärde av antal ätna fiskar
@@ -51,7 +52,6 @@ if flag:
 else:
     fish_eaten_matrix = np.load('fish_eaten_matrix.npy')
 
-plt.figure()
 print(fish_eaten_matrix, 'final fish eaten matrix')
 heatmap = plt.imshow(fish_eaten_matrix, interpolation='spline16', origin='lower')
 plt.xlabel('Obstacle count')
@@ -60,7 +60,6 @@ cbar = plt.colorbar(heatmap)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
 
-plt.figure()
 x_, y_ = np.meshgrid(obstacle_count, obstacle_radius)
 fig = plt.figure()
 ax1 = plt.pcolormesh(x_,y_,fish_eaten_matrix)
