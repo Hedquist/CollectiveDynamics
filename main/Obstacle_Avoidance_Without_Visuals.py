@@ -22,7 +22,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
     # ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
     # Systemets parameter
-    simulation_iterations = 1000 # Simulation time
+    simulation_iterations = 500 # Simulation time
     time_step = 0.03  # Time step
     canvas_length = 100  # Size of box
     visual_debug = False
@@ -358,7 +358,6 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
         shark_coords = update_position(shark_coords, shark_speed, shark_orientations)  # Uppdatera hajposition
         shark_fish_distances = calculate_distance(fish_coords, shark_coords[0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
         closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
-        print(t)
         # Haj loop
         for j in range(shark_count):
             # Updating animation coordinates haj
@@ -502,11 +501,11 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
                                                                                                  1 / 2)) + weight_boolean_avoid * (
                                                fish_orientations[j] + fish_avoid_angle)
 
-            #Haj undvik hinder, annars jaga fisk
-            shark_orientations[0] = shark_orientations[0] + shark_avoid_angle if np.absolute(shark_avoid_angle) > 0 \
-                else get_direction(shark_coords[0], fish_coords[closest_fish])
+        #Haj undvik hinder, annars jaga fisk
+        shark_orientations[0] = shark_orientations[0] + shark_avoid_angle if np.absolute(shark_avoid_angle) > 0 \
+            else get_direction(shark_coords[0], fish_coords[closest_fish])
 
-            #shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
+        #shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
         # # Beräknar Global Alignment
         # global_alignment_coeff = 1 / fish_count * np.linalg.norm(
@@ -529,11 +528,11 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
         # canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
 
 
-    fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
-    plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
-    plt.xlabel('Tid')
-    plt.ylabel('Antal fiskar ätna')
-    plt.show()
+    #fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
+    #plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+    #plt.xlabel('Tid')
+    #plt.ylabel('Antal fiskar ätna')
+    #plt.show()
     return fish_eaten_count
 
-main('circles', 7, 7, 6, True)
+#main('circles', 4, 4, 7, True)

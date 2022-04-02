@@ -1,16 +1,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import Obstacle_Avoidance as oa
+#import Obstacle_Avoidance as oa
 import Obstacle_Avoidance_Without_Visuals as oa_without_visuals
 
 obstacle_type = 'circles'
 num_times_run = 2
 
-start_obst_count = 3
-end_obst_count = 6
-start_obst_radius = 10
-end_obst_radius = 13
+start_obst_count = 4
+end_obst_count = 5
+start_obst_radius = 11
+end_obst_radius = 12
 
 start = time.time()
 obstacle_count = [i for i in range(start_obst_count,end_obst_count+1)] # Ger start till end
@@ -51,6 +51,7 @@ if flag:
 else:
     fish_eaten_matrix = np.load('fish_eaten_matrix.npy')
 
+plt.figure()
 print(fish_eaten_matrix, 'final fish eaten matrix')
 heatmap = plt.imshow(fish_eaten_matrix, interpolation='spline16', origin='lower')
 plt.xlabel('Obstacle count')
@@ -59,6 +60,7 @@ cbar = plt.colorbar(heatmap)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
 
+plt.figure()
 x_, y_ = np.meshgrid(obstacle_count, obstacle_radius)
 fig = plt.figure()
 ax1 = plt.pcolormesh(x_,y_,fish_eaten_matrix)

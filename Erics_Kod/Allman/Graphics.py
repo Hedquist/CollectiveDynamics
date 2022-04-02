@@ -37,8 +37,8 @@ canvas_length = 100 # Size of box
 fish_speed = 20  # Particle velocity
 fish_count = 1# Number of particles
 
-x=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
-y=np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
+x=np.array(0.5*np.ones(fish_count) * 2 * canvas_length - canvas_length)
+y=np.array(0.5*np.ones(fish_count) * 2 * canvas_length - canvas_length)
 fish_coords = np.column_stack((x, y))
 fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
 
@@ -101,8 +101,7 @@ def draw_fishes():
                                                        (fish_coords[j][1] + fish_graphic_radius *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                        (fish_coords[j][0] +  (fish_graphic_radius + fish_arrow_length ) *np.cos(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                        (fish_coords[j][1] + (fish_graphic_radius + fish_arrow_length ) *np.sin(fish_orientations[j]) + canvas_length) * res / canvas_length / 2,arrow=LAST ))# x0,y0 - x1,y1
-        fish_number_graphics.append(canvas.create_text((fish_coords[j][0]+canvas_length)* res / canvas_length / 2
-                                                       , (fish_coords[j][1]+canvas_length)* res / canvas_length / 2,fill="black",font="Times 30 bold",text=str(j)))
+
 # Ritar ut rays och lägger dess vinkel och spetsens koordinater i en lista
 def cast_rays():
 
