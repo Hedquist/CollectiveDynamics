@@ -9,14 +9,16 @@ from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
 canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
-simulation_iterations = 1000  # Antalet iterationer simulationen kör
+simulation_iterations = 100  # Antalet iterationer simulationen kör
 time_step = 1  # Storlek tidssteg
 
 fish_speed = 2  # Hastighet fiskar
 shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
 
 shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
+shark_count = 20  # Antal hajar
 
+seed = 0 # Seed som ändras i several_sharks_statistics.py
 
 def update_position(coords, speed, orientations, time_step):  # Uppdaterar en partikels position
     coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
@@ -75,6 +77,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 
 
 def main():
+    np.random.seed(seed)    # Använd seedet
     start = timer()  # Timer startas
     visuals_on = False  # Välj om simulationen ska visas eller ej.
     if visuals_on:
@@ -97,7 +100,6 @@ def main():
 
 
     # Haj
-    shark_count = 20  # Antal hajar
     shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
     shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
     shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction  # Hajens interaktions radie
