@@ -47,6 +47,8 @@ ax1 = plt.pcolormesh(x_,y_,fish_eaten_matrix)
 heatmap = plt.imshow(fish_eaten_matrix, origin='lower')
 plt.xlabel('Fish turning speed')
 plt.ylabel('Shark turning speed')
+plt.xticks(np.arange(0, num_of_points, step=4), [round(fish_turning_speed[i], 4) for i in range(0, len(fish_turning_speed), 4)])  # Set label locations.
+plt.yticks(np.arange(0, num_of_points, step=4), [round(shark_turning_speed[i], 4) for i in range(0, len(shark_turning_speed), 4)])  # Set label locations.
 cbar = plt.colorbar(heatmap)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
