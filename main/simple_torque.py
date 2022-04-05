@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from tkinter import *
 from scipy.spatial import *
@@ -17,8 +19,8 @@ canvas.place(x=res / 20, y=res / 20, height=res, width=res)
 ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
 
 # Variabler
-fish_count = 50  # Antal fiskar
-canvas_length = 100  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
+fish_count = 200  # Antal fiskar
+canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
 fish_graphic_radius = 4  # Radie av ritad cirkel
 fish_interaction_radius = 10  # Interraktionsradie för fisk
 fish_speed = 1  # Hastighet fiskar
@@ -33,7 +35,7 @@ fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev
 fish_eaten_count = 0    # Antal fiskar ätna
 
 fish_turn_speed = 0.015
-shark_turn_speed = 0.05
+shark_turn_speed = 0.005
 omega_max = np.pi / time_step  # Maximala vinkelhastigheten för fiskar och hajar
 
 # Start koordinater fiskar
@@ -87,16 +89,21 @@ def get_direction(coord1, coord2):  # Ger riktningen från coord1 till coord2 i 
 
 
 def torque_turn(desired_orientation, current_orientation, turn_speed):
-    relative_orientation = current_orientation - desired_orientation  # makes calculation easier
-    if relative_orientation == 0:
+    v = np.array([np.cos(desired_orientation), np.sin(desired_orientation)])
+    w = np.array([np.cos(current_orientation), np.sin(current_orientation)])
+    A = np.cross(v, w)
+    relative_orientation = math.asin(np.linalg.norm(A)) * np.sign(A)
+    if A == 0 and math.fabs(np.dot(v, w) + 1) <= 1e-3:
+        relative_orientation = np.pi
+    if math.fabs(relative_orientation) <= turn_speed * np.pi and np.dot(v, w) >= (turn_speed * (-2) + 1):
         return desired_orientation  # if desired angle is equal to current angle, do nothing
-    elif relative_orientation > 0:
-        calc = current_orientation - (np.pi * turn_speed)  # turn speed of 1 means you can turn pi radians per tick,
-        new_orientation = np.maximum(calc, desired_orientation)  # turn speed of 0 means no turning
-    else:
-        calc = current_orientation + (np.pi * turn_speed)
-        new_orientation = np.minimum(calc, desired_orientation)  # This line prevents "overturning"
-    return new_orientation
+
+    calc = current_orientation - (np.pi * turn_speed) * np.sign(relative_orientation) # turn speed of 1 means you can turn pi radians per tick,
+    if calc > 2 * np.pi:
+        calc -= 2 * np.pi
+    elif calc < 0:
+        calc += 2 * np.pi
+    return calc
 
 
 # uses torque_turn to update orientation array according to desired_orientation
