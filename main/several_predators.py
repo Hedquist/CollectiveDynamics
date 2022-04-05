@@ -319,7 +319,7 @@ def main():
             tk.title('Iteration =' + str(t))
             tk.update()  # Update animation frame
             time.sleep(wait_time)  # Wait between loops
-    plt.plot(fish_eaten_this_sim, np.linspace(1,simulation_iterations,simulation_iterations))  # Plotta
+    plt.plot(np.linspace(1,simulation_iterations,simulation_iterations), fish_eaten_this_sim)  # Plotta
     plt.xlabel('Tid')
     plt.ylabel('% av fiskar ätna')
     print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
