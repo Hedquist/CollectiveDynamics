@@ -79,7 +79,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 def main():
     np.random.seed(seed)    # Använd seedet
     start = timer()  # Timer startas
-    visuals_on = False  # Välj om simulationen ska visas eller ej.
+    visuals_on = True  # Välj om simulationen ska visas eller ej.
     if visuals_on:
         res = 500  # Resolution of the animation
         tk = Tk()
@@ -94,18 +94,18 @@ def main():
 
     # Fisk
     fish_count = 200  # Antal fiskar
-    fish_graphic_radius = 2  # Radie av ritad cirkel
+    fish_graphic_radius = 3  # Radie av ritad cirkel
     fish_interaction_radius = 10  # Interraktionsradie för fisk
     fish_noise = 0.1  # Brus i vinkel
 
 
     # Haj
-    shark_graphic_radius = 4  # Radie av ritad cirkel för hajar
+    shark_graphic_radius = 3  # Radie av ritad cirkel för hajar
     shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
     shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction  # Hajens interaktions radie
     shark_relative_avoidance_radius = 0.8 # Andel av interaktionsradie som avoidance radie ska vara
     shark_avoidance_radius = np.zeros(shark_count)  # Undviker andra hajar inom denna radie
-    murder_radius = 4  # Hajen äter fiskar inom denna radie
+    murder_radius = 6  # Hajen äter fiskar inom denna radie
     fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
     fish_eaten_count = 0  # Antal fiskar ätna
     fish_eaten_this_sim = []
@@ -308,7 +308,6 @@ def main():
                     fish_coords = murder_fish_coords(closest_fish[j], fish_coords)  # Tar bort index i koordinaterna
                     fish_orientations = murder_fish_orientations(closest_fish[j], fish_orientations)  # Tar bort index i orientations
                     fish_eaten_count += 1 / fish_count * 100  # Lägg till en äten fisk
-                    fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
         else:
             break
         fish_eaten_this_sim.append(np.array(fish_eaten_count))
@@ -320,8 +319,7 @@ def main():
             tk.title('Iteration =' + str(t))
             tk.update()  # Update animation frame
             time.sleep(wait_time)  # Wait between loops
-    fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
-    plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+    plt.plot(fish_eaten_this_sim, np.linspace(1,simulation_iterations,simulation_iterations))  # Plotta
     plt.xlabel('Tid')
     plt.ylabel('% av fiskar ätna')
     print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog

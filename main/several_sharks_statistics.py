@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import several_predators as sp
 
-n = 5  # Antal observationer
+n = 2  # Antal observationer
 simulation_iterations = sp.simulation_iterations # Hämta antalet iterationer i simulationen
 fish_eaten_all_sim = []
 for i in range(n):
