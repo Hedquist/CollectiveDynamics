@@ -7,15 +7,15 @@ import time
 from timeit import default_timer as timer
 
 # Systemets parameter
-simulation_iterations = 250 # Simulation time
+simulation_iterations = 500 # Simulation time
 time_step = 0.1  # Time step
 canvas_length = 100  # Size of box
 
 
-def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, seed):
+def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
     start = timer()  # Timer startas
     visuals_on = True
-    rng = np.random.default_rng(seed)
+    #rng = np.random.default_rng(seed)
 
     if visuals_on:
         res = 600  # Resolution of the animation
@@ -39,7 +39,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
     fish_interaction_radius = fish_graphic_radius +  3* BL  # Interaction radius
     fish_ray_radius = fish_interaction_radius/2 # Strållängd
     fish_noise = 0.1  # Diffusional noise constant
-    fish_count = 150  # Antal fiskar
+    fish_count = 500  # Antal fiskar
     fish_speed = 3*BL  # Fiskens fart
 
     # Haj parametrar
@@ -52,21 +52,21 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
     fish_eaten_count = 0  # Antal fiskar ätna
 
     # Fiskens koordinater
-    x = np.array(rng.random(fish_count) * 2 * canvas_length - canvas_length)
-    y = np.array(rng.random(fish_count) * 2 * canvas_length - canvas_length)
+    x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
+    y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
     fish_coords = np.column_stack((x, y))
-    fish_orientations = rng.random(fish_count) * 2 * np.pi  # orientations
+    fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
 
     # Startkoordinater hajar
     shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
-    shark_orientations = rng.random(shark_count) * 2 * np.pi  # Array med alla hajars riktning
+    shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
     # Spawn fishes outside sharks murder radius
     spawn_dist = np.linalg.norm(shark_coords - fish_coords, axis=1)
     indices = np.where(spawn_dist < fish_interaction_radius + murder_radius)[0]
     for i in indices:
         while np.linalg.norm(shark_coords- fish_coords[i], axis=1) < fish_interaction_radius + murder_radius :
-            fish_coords[i] = [canvas_length*(rng.random() * 2 - 1), canvas_length * (rng.random() * 2 - 1)]
+            fish_coords[i] = [canvas_length*(np.random.rand() * 2 - 1), canvas_length * (np.random.rand() * 2 - 1)]
 
     # Rayscasting
     casted_rays = 6
@@ -138,7 +138,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
 
 
 
-# Ta fram hörnen till rektangulära hinder
+    # Ta fram hörnen till rektangulära hinder
     def calculate_rectangle_corner_coordinates(position, base, height):
         x_c, y_c = position[0], position[1]
         b, h = float(base), float(height)
@@ -612,13 +612,13 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
             else:
                 fish_orientations[j] = weight_boolean_vicsek * (np.angle(
                     np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) \
-                                                                + fish_noise * rng.uniform(-1 / 2,
-                                                                                                 1 / 2)) + weight_boolean_avoid * (
+                                                                + fish_noise * np.random.uniform(-1 / 2,
+                                                                                           1 / 2)) + weight_boolean_avoid * (
                                                fish_orientations[j] + fish_avoid_angle)
 
         #Haj undvik hinder, annars jaga fisk
         shark_orientations[0] = shark_orientations[0] + shark_avoid_angle if np.absolute(shark_avoid_angle) > 0 \
-           else get_direction(shark_coords[0], fish_coords[closest_fish])
+            else get_direction(shark_coords[0], fish_coords[closest_fish])
         #shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
         # Kollar om närmaste fisk är inom murder radien
@@ -655,3 +655,4 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         Tk.destroy(tk) # Destroy window
     return fish_eaten_count
 
+main('circles', 8, 8, 8, True)

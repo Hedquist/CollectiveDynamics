@@ -6,6 +6,8 @@ import Obstacle_Avoidance_Without_Visuals as oa_without_visuals
 
 obstacle_type = 'circles'
 num_times_run = 3
+seed = [n + 200 for n in range(num_times_run)]
+
 
 start_obst_count = 3
 end_obst_count = 8
@@ -32,7 +34,7 @@ if flag:
         for obst_rad in obstacle_radius:
             res = 0.0
             for k in range(num_times_run):
-                temp = oa_without_visuals.main('circles', obst_count, obst_count,obst_rad, True)
+                temp = oa_without_visuals.main('circles', obst_count, obst_count,obst_rad, True, seed[k])
                 print('Fiskar ätna:  ', temp)
                 res += temp  # Anropa simulationen med olika turning speed
             res /= num_times_run

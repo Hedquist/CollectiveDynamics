@@ -95,23 +95,31 @@ def draw_rectangular_obstacles():
 
     box_canvas_graphics.append(canvas.create_rectangle(5, 10,res-5,res-5,outline='black', fill=None, width=5))
 
-def load_obstacles(obstacle_type, num_row, num_col, obstacle_size, displacement):
-    horisontal_space = 2 * canvas_length/(num_col+1) # Mellanrum i horisentell led
-    vertical_space = 2 * canvas_length/(num_row+1) # Mellanrum i vertikalled
-    start_vertical = - canvas_length + vertical_space # Start i vertikalled, högst upp till vänster
-    for i in range(num_row): # För varje rad
-        start_horisontal = - canvas_length + 3/2*horisontal_space if displacement and i % 2 != 0 \
-            else- canvas_length + 2*canvas_length/(num_col+1) # Förskjuts om True annars vanlig start vi horisontell led
-        for j in range(num_col - 1 if displacement and i%2 != 0 else num_col): # För varje kolonn, minska antalet om displacement
+def load_obstacles(obstacle_type, num_row, num_col, obstacle_size, horisontal_displacement, vertical_displacement):
+    if num_row != 0:
+        horisontal_space = 2 * canvas_length / (num_col)  # Mellanrum i horisentell led
+    if num_col != 0:
+        vertical_space = 2 * canvas_length / (num_row)  # Mellanrum i vertikalled
+        start_vertical = - canvas_length + vertical_space/2  # Start i vertikalled, högst upp till vänster
+    for i in range(num_row):  # För varje rad
+        start_horisontal = - canvas_length + horisontal_space if horisontal_displacement and i % 2 != 0 \
+            else - canvas_length + horisontal_space / 2  # Förskjuts om True annars vanlig start vi horisontell led
+        for j in range(
+                num_col - 1 if horisontal_displacement and i % 2 != 0 else num_col):  # För varje kolonn, minska antalet om displacement
+            if vertical_displacement:
+                temp_vertical = start_vertical + vertical_space/4 if j % 2 != 0 else start_vertical - vertical_space/4
+            if not vertical_displacement:
+                temp_vertical = start_vertical
+
             if obstacle_type == 'circles':
-                circ_obst_coords.append([start_horisontal, start_vertical])
+                circ_obst_coords.append([start_horisontal,temp_vertical])
                 circ_obst_radius.append(obstacle_size)
             elif obstacle_type == 'rectangles':
-                rect_obst_coords.append([start_horisontal, start_vertical])
+                rect_obst_coords.append([start_horisontal, temp_vertical])
                 rect_obst_width.append(obstacle_size)
                 rect_obst_height.append(obstacle_size)
-            start_horisontal += horisontal_space # Lägg till avståndet
-        start_vertical += vertical_space # Gå till nästa rad
+            start_horisontal += horisontal_space  # Lägg till avståndet
+        start_vertical += vertical_space  # Gå till nästa rad
 
 def load_circular_obstacles(num_row, num_col, obstacle_radius, displacement):
     horisontal_space = 2 * canvas_length/(num_col+1) # Mellanrum i horisentell led
@@ -144,7 +152,7 @@ num_of_obstacles = 5
 obstacle_size = 5
 #load_circular_obstacles(num_of_obstacles,num_of_obstacles,5, True)
 #load_rectangular_obstacles(num_of_obstacles,num_of_obstacles+1,5,5,True)
-load_obstacles('rectangles', num_of_obstacles, num_of_obstacles, obstacle_size, True)
+load_obstacles('rectangles', num_of_obstacles, num_of_obstacles, obstacle_size, True, True)
 
 circ_obst_coords, rect_obst_coords = np.array(circ_obst_coords), np.array(rect_obst_coords)
 
