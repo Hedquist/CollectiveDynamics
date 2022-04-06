@@ -207,25 +207,26 @@ for t in range(simulation_iterations):
                           (fish_coords[
                                j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
 
-        if j == closest_fish:
-            canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
-        else:
-            canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
+            if j == closest_fish:
+                canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
+            else:
+                canvas.itemconfig(fish_canvas_graphics[j], fill='#0994da')
 
+    for j in range(len(fish_coords)):
         inter_fish_distances = calculate_distance(fish_coords, fish_coords[
             j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
 
-        fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
+    fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
 
-        if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
-            fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
-        else:  # Annars Vicsek-modellen
-            fish_desired_orientations[j] = np.angle(
-                np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
-                -1 / 2, 1 / 2)
+    if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
+        fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
+    else:  # Annars Vicsek-modellen
+        fish_desired_orientations[j] = np.angle(
+            np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
+            -1 / 2, 1 / 2)
 
-        #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
-        shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
+    #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
+    shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
     # Beräknar Global Alignment
     global_alignment_coeff = 1 / fish_count * np.linalg.norm(
