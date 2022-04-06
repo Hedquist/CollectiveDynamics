@@ -22,7 +22,7 @@ if flag:
         for sts in shark_turning_speed:
             res = 0.0
             for k in range(N):
-                temp = st.main(fts, sts)
+                temp = st.main(fts, sts, False)
                 res += temp  # Anropa simulationen med olika turning speed
             res /= N
             fish_eaten_matrix[j, i] = res  # Medelvärde av antal ätna fiskar
