@@ -79,7 +79,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 def main():
     np.random.seed(seed)    # Använd seedet
     start = timer()  # Timer startas
-    visuals_on = True  # Välj om simulationen ska visas eller ej.
+    visuals_on = False  # Välj om simulationen ska visas eller ej.
     if visuals_on:
         res = 500  # Resolution of the animation
         tk = Tk()
@@ -95,7 +95,7 @@ def main():
     # Fisk
     fish_count = 200  # Antal fiskar
     fish_graphic_radius = 3  # Radie av ritad cirkel
-    fish_interaction_radius = 10  # Interraktionsradie för fisk
+    fish_interaction_radius = 20  # Interraktionsradie för fisk
     fish_noise = 0.1  # Brus i vinkel
 
 
@@ -321,7 +321,7 @@ def main():
             time.sleep(wait_time)  # Wait between loops
     plt.plot(np.linspace(1,simulation_iterations,simulation_iterations), fish_eaten_this_sim)  # Plotta
     plt.xlabel('Tid')
-    plt.ylabel('% av fiskar ätna')
+    #plt.ylabel('% av fiskar ätna')
     print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
     #plt.show()
 
