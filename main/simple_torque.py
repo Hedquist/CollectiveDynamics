@@ -219,8 +219,9 @@ def main(fish_turn_speed, shark_turn_speed, visuals):
                     np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                     -1 / 2, 1 / 2)
 
-            #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
-            shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
+            if shark_fish_distances[closest_fish] <= shark_interaction_radius:
+                #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
+                shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
         # Beräknar Global Alignment
         global_alignment_coeff = 1 / fish_count * np.linalg.norm(
