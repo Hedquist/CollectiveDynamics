@@ -177,6 +177,19 @@ def main(fish_turn_speed, shark_turn_speed, visuals):
         shark_fish_distances = calculate_distance(fish_coords, shark_coords[
             0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
+        distances = scipy.spatial.distance.cdist(fish_coords, fish_coords)
+        overlap = distances < 2 * fish_graphic_radius
+        for i in range(len(distances)):
+            overlap[i, i] = False
+        overlap[np.tril_indices(len(distances), 1)] = False
+        while np.any(overlap):
+            fish_coords = volume_extraction(fish_coords, fish_graphic_radius)
+            distances = scipy.spatial.distance.cdist(fish_coords, fish_coords)
+            overlap = distances < 2 * fish_graphic_radius
+            for i in range(len(distances)):
+                overlap[i, i] = False
+            overlap[np.tril_indices(len(distances), 1)] = False
+
         closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
 
         # print(closest_fish)
@@ -263,6 +276,19 @@ def main(fish_turn_speed, shark_turn_speed, visuals):
     if visuals_on:
         tk.mainloop()
     # end main()
+
+def volume_extraction(coords, radius):
+    distances = scipy.spatial.distance.cdist(coords, coords)
+    overlap = distances < 2*radius
+    for i in range(len(distances)):
+        overlap[i,i] = False
+    overlap[np.tril_indices(len(distances), 1)] = False
+    index1 = np.where(overlap == True)[0]
+    index2 = np.where(overlap == True)[1]
+    for j in range(len(index1)):
+        coords[i][0] = coords[i][0] + (distances[index1[j], index2[j]] - 2*radius)*np.cos(get_direction(fish_coords[index2[j]], fish_coords[index1[j]]))/2
+        coords[i][1] = coords[i][1] + (distances[index1[j], index2[j]] - 2 * radius) * np.sin(get_direction(fish_coords[index2[j]], fish_coords[index1[j]]))/2
+    return coords
 
 
 if __name__ == "__main__":
