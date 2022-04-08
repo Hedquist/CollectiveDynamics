@@ -191,18 +191,22 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
         shark_fish_distances = calculate_distance(fish_coords, shark_coords[
             0])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
 
-        distances = scipy.spatial.distance.cdist(fish_coords, fish_coords)
-        overlap = distances < 2 * fish_graphic_radius
-        for i in range(len(distances)):
-            overlap[i, i] = False
-        overlap[np.tril_indices(len(distances), 1)] = False
-        while np.any(overlap):
-            fish_coords = volume_extraction(fish_coords, fish_graphic_radius)
-            distances = scipy.spatial.distance.cdist(fish_coords, fish_coords)
-            overlap = distances < 2 * fish_graphic_radius
-            for i in range(len(distances)):
-                overlap[i, i] = False
-            overlap[np.tril_indices(len(distances), 1)] = False
+        for j in range(len(fish_coords)):
+            # # Overlapp fishes
+            fish_distances = calculate_distance(fish_coords, fish_coords[j])
+            angle = np.arctan2(fish_coords[:, 1] - fish_coords[j, 1],
+                               fish_coords[:, 0] - fish_coords[j, 0])  # Directions of others array from the particle
+            overlap = fish_distances < (2 * fish_graphic_radius)  # Applying
+            overlap[j] = False  # area extraction
+            for ind in np.where(overlap)[0]:
+                fish_coords[j, 0] = fish_coords[j, 0] + (fish_distances[ind] - 2 * fish_graphic_radius) * np.cos(
+                    angle[ind]) / 2
+                fish_coords[j, 1] = fish_coords[j, 1] + (fish_distances[ind] - 2 * fish_graphic_radius) * np.sin(
+                    angle[ind]) / 2
+                fish_coords[ind] = fish_coords[ind] - (fish_distances[ind] - 2 * fish_graphic_radius) * np.cos(
+                    angle[ind]) / 2
+                fish_coords[ind] = fish_coords[ind] - (fish_distances[ind] - 2 * fish_graphic_radius) * np.sin(
+                    angle[ind]) / 2
 
         closest_fish = np.argmin(shark_fish_distances)  # Index av fisk närmst haj
 
