@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from tkinter import *
+import scipy
 from scipy.spatial import *
 import matplotlib.pyplot as plt
 from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull
@@ -140,6 +141,21 @@ def main(fish_turn_speed, shark_turn_speed, visuals):
         new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
         return new_fish_orientations
 
+    def volume_extraction(coords, radius):
+        distances = scipy.spatial.distance.cdist(coords, coords)
+        overlap = distances < 2 * radius
+        for i in range(len(distances)):
+            overlap[i, i] = False
+        overlap[np.tril_indices(len(distances), 1)] = False
+        index1 = np.where(overlap == True)[0]
+        index2 = np.where(overlap == True)[1]
+        for j in range(len(index1)):
+            coords[i][0] = coords[i][0] + (distances[index1[j], index2[j]] - 2 * radius) * np.cos(
+                get_direction(fish_coords[index2[j]], fish_coords[index1[j]])) / 2
+            coords[i][1] = coords[i][1] + (distances[index1[j], index2[j]] - 2 * radius) * np.sin(
+                get_direction(fish_coords[index2[j]], fish_coords[index1[j]])) / 2
+        return coords
+
     if visuals_on:
         for j in range(shark_count):  # Skapar cirklar för hajar
             shark_canvas_graphics.append(
@@ -277,18 +293,6 @@ def main(fish_turn_speed, shark_turn_speed, visuals):
         tk.mainloop()
     # end main()
 
-def volume_extraction(coords, radius):
-    distances = scipy.spatial.distance.cdist(coords, coords)
-    overlap = distances < 2*radius
-    for i in range(len(distances)):
-        overlap[i,i] = False
-    overlap[np.tril_indices(len(distances), 1)] = False
-    index1 = np.where(overlap == True)[0]
-    index2 = np.where(overlap == True)[1]
-    for j in range(len(index1)):
-        coords[i][0] = coords[i][0] + (distances[index1[j], index2[j]] - 2*radius)*np.cos(get_direction(fish_coords[index2[j]], fish_coords[index1[j]]))/2
-        coords[i][1] = coords[i][1] + (distances[index1[j], index2[j]] - 2 * radius) * np.sin(get_direction(fish_coords[index2[j]], fish_coords[index1[j]]))/2
-    return coords
 
 
 if __name__ == "__main__":
