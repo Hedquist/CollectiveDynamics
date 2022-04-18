@@ -7,7 +7,7 @@ import time
 from timeit import default_timer as timer
 
 # Systemets parameter
-simulation_iterations = 250  # Simulation time
+simulation_iterations = 1000  # Simulation time
 time_step = 0.1  # Time step
 canvas_length = 100  # Size of box
 
@@ -37,7 +37,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
     fish_interaction_radius = fish_graphic_radius + 3 * BL  # Interaction radius
     fish_ray_radius = fish_interaction_radius / 2  # Strållängd
     fish_noise = 0.1  # Diffusional noise constant
-    fish_count = 150  # Antal fiskar
+    fish_count = 100  # Antal fiskar
     fish_speed = 3 * BL  # Fiskens fart
 
     # Haj parametrar
@@ -295,7 +295,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         detected = []
         if np.size(rect_obst_corner_coords) != 0:
             rect_obst_in_radius = \
-            calculate_distance_circ_to_rect(agent_coord, radius, rect_obst_corner_coords, True, False)[0]
+                calculate_distance_circ_to_rect(agent_coord, radius, rect_obst_corner_coords, True, False)[0]
             if True in rect_obst_in_radius:
                 obst_type_in_radius[0].extend([index for index, element in enumerate(rect_obst_in_radius) if element])
                 detected.append(True)
@@ -475,7 +475,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                                    circ_obst_coords[circ_obst_detect_ind, 0] - shark_coords[
                                        j, 0])  # Directions of others array from the particle
                 overlap = circ_obst_distances < (
-                            shark_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
+                        shark_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
 
                 for ind in np.where(overlap)[0]:
                     shark_coords[j, 0] = shark_coords[j, 0] + (circ_obst_distances[ind] - (
@@ -569,7 +569,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                                        circ_obst_coords[circ_obst_detect_ind, 0] - fish_coords[
                                            j, 0])  # Directions of others array from the particle
                     overlap = circ_obst_distances < (
-                                fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
+                            fish_graphic_radius + circ_obst_radius[circ_obst_detect_ind])  # Applying
 
                     for ind in np.where(overlap)[0]:
                         fish_coords[j, 0] = fish_coords[j, 0] + (circ_obst_distances[ind] - (
@@ -610,10 +610,10 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                                                fish_orientations[j] + fish_avoid_angle)
 
         # Haj undvik hinder, annars jaga fisk
-        if np.absolute(shark_avoid_angle) > 0 :
-                shark_orientations[0] = shark_orientations[0] + shark_avoid_angle
+        if np.absolute(shark_avoid_angle) > 0:
+            shark_orientations[0] = shark_orientations[0] + shark_avoid_angle
         elif shark_fish_distances[closest_fish] < fish_interaction_radius * 4:
-                shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
+            shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
         # shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
@@ -637,11 +637,13 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
             tk.title('Iteration =' + str(t))
             tk.update()  # Update animation frame
 
-    fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
-    plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
-    plt.xlabel('Tid')
-    plt.ylabel('Antal fiskar ätna')
-    plt.show()
+    if fish_eaten_count > 1:
+        fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
+        plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+        plt.xlabel('Tid')
+        plt.ylabel('Antal fiskar ätna')
+        plt.show()
+
     print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
     np.save('fish_eaten_this_sim.npy', fish_eaten_this_sim)
 
@@ -649,3 +651,6 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         # Tk.mainloop(canvas)  # Release animation handle (close window to finish)
         Tk.destroy(tk)  # Destroy window
     return fish_eaten_count
+
+
+#main('circles', 3, 3, 3, True, 10)
