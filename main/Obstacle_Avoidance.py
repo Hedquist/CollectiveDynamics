@@ -40,15 +40,15 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
 
     # Fiskars parameter
     fish_graphic_radius = BL  # Radius of agent
-    fish_interaction_radius = 10  # Interaction radius
-    fish_ray_radius = fish_interaction_radius/2 # Strållängd
+    fish_interaction_radius = 25  # Interaction radius
+    fish_ray_radius = 2*BL # Strållängd
     fish_noise = 0.1  # Diffusional noise constant
     fish_count = 200  # Antal fiskar
     fish_speed = 2  # Fiskens fart
 
     # Haj parametrar
     shark_graphic_radius = BL
-    shark_ray_radius = fish_ray_radius + (shark_graphic_radius - fish_graphic_radius)
+    shark_ray_radius = fish_ray_radius
     shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
     shark_speed = 0.9 * fish_speed  # Hajens fart
     murder_radius = 2 * shark_graphic_radius  # Hajen äter fiskar inom denna radie
@@ -647,4 +647,3 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         Tk.destroy(tk) # Destroy window
     return fish_eaten_count
 
-# main('circles', 8,8,15, True, seed=1)

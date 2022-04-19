@@ -5,13 +5,13 @@ import time
 from timeit import default_timer as timer
 import Obstacle_Avoidance as oa
 
-num_times_run = 3  # Antal observationer
-seed = [n + 100 for n in range(num_times_run)]
+num_times_run = 1  # Antal observationer
+seed = [n for n in range(num_times_run)]
 
 simulation_iterations = oa.simulation_iterations
 t = np.linspace(0, simulation_iterations-1 , simulation_iterations)
 fish_eaten_all_sim = []
-new_simulation = False
+new_simulation = True
 
 if new_simulation:
     start = timer()
