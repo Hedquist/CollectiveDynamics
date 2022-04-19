@@ -31,7 +31,7 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
     # Fisk
     fish_count = 200  # Antal fiskar
     fish_graphic_radius = 3  # Radie av ritad cirkel
-    fish_interaction_radius = 10  # Interraktionsradie för fisk
+    fish_interaction_radius = 25  # Interraktionsradie för fisk
     fish_speed = 2  # Hastighet fiskar
     fish_noise = 0.1  # Brus i vinkel
 
@@ -241,18 +241,18 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
             inter_fish_distances = calculate_distance(fish_coords, fish_coords[
                 j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
 
-        fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
+            fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
 
-        if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
-            fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
-        else:  # Annars Vicsek-modellen
-            fish_desired_orientations[j] = np.angle(
-                np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
-                -1 / 2, 1 / 2)
+            if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
+                fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
+            else:  # Annars Vicsek-modellen
+                fish_desired_orientations[j] = np.angle(
+                    np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
+                    -1 / 2, 1 / 2)
 
-        if shark_fish_distances[closest_fish] <= shark_interaction_radius:
-            #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
-            shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
+            if shark_fish_distances[closest_fish] <= shark_interaction_radius:
+                #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
+                shark_desired_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
         if visuals_on:
             # Beräknar Global Alignment
@@ -298,4 +298,4 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
 
 
 if __name__ == "__main__":
-    main(0.05, 0.075, True)
+    main(1, 1, True)
