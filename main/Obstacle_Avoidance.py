@@ -7,7 +7,7 @@ import time
 from timeit import default_timer as timer
 
 # Systemets parameter
-simulation_iterations = 500 # Simulation time
+simulation_iterations = 1000 # Simulation time
 time_step = 1  # Time step
 canvas_length = 200  # Size of box
 
@@ -618,8 +618,10 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                                        weight_boolean_avoid * (fish_orientations[j] + fish_avoid_angle)
 
         #Haj undvik hinder, annars jaga fisk
-        shark_orientations[0] = shark_orientations[0] + shark_avoid_angle + fish_noise * rng.uniform(-1 / 2, 1 / 2) if np.absolute(shark_avoid_angle) > 0 \
-           else get_direction(shark_coords[0], fish_coords[closest_fish]) + fish_noise * rng.uniform(-1 / 2, 1 / 2)
+        if np.absolute(shark_avoid_angle) > 0:
+            shark_orientations[0] = shark_orientations[0] + shark_avoid_angle + fish_noise * rng.uniform(-1/2, 1/2)
+        elif shark_fish_distances[closest_fish] < fish_interaction_radius * 4:
+            shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish]) + fish_noise * rng.uniform(-1/2, 1/2)
         #shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
 
         # Kollar om närmaste fisk är inom murder radien
@@ -645,4 +647,4 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         Tk.destroy(tk) # Destroy window
     return fish_eaten_count
 
-main('circles', 8,8,8, True, seed=1)
+main('circles', 8,8,15, True, seed=1)
