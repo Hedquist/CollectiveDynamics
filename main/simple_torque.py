@@ -9,8 +9,10 @@ import time
 from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
+seed = 0
 
 def main(fish_turn_speed, shark_turn_speed, visuals_on):
+    rng = np.random.default_rng(seed=seed) # Random Number Generator with fixed seed
     start = timer()  # Timer startas
     if visuals_on:
         res = 500  # Resolution of the animation
@@ -53,9 +55,9 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
     fish_coords_file = 'fish_coords_initial.npy'
     fish_orientations_file = 'fish_orientations_initial.npy'
     if True:
-        x = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # x coordinates
-        y = np.random.rand(fish_count) * 2 * canvas_length - canvas_length  # y coordinates
-        fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
+        x = rng.uniform(-canvas_length, canvas_length, fish_count) # x coordinates
+        y = rng.uniform(-canvas_length, canvas_length, fish_count)  # y coordinates
+        fish_orientations = rng.uniform(0, 2*np.pi, fish_count)  # orientations
         fish_coords = np.column_stack((x, y))
         np.save(fish_coords_file, fish_coords)
         np.save(fish_orientations_file, fish_orientations)
@@ -67,7 +69,7 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
 
     # Startkoordinater hajar
     shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
-    shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
+    shark_orientations = rng.uniform(0, 2*np.pi, shark_count) # Array med alla hajars riktning
     shark_desired_orientations = shark_orientations.copy()  # Array med alla hajars önskade riktning
     fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
     shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
@@ -247,7 +249,7 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
                 fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
             else:  # Annars Vicsek-modellen
                 fish_desired_orientations[j] = np.angle(
-                    np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
+                    np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * rng.uniform(
                     -1 / 2, 1 / 2)
 
             if shark_fish_distances[closest_fish] <= shark_interaction_radius:
