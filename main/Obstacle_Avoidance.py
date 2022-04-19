@@ -13,7 +13,7 @@ canvas_length = 200  # Size of box
 
 
 def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, seed):
-    visuals_on = True
+    visuals_on = False
     rng = np.random.default_rng(seed)
 
     if visuals_on:
@@ -647,4 +647,4 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         Tk.destroy(tk) # Destroy window
     return fish_eaten_count
 
-main('circles', 8,8,15, True, seed=1)
+# main('circles', 8,8,15, True, seed=1)

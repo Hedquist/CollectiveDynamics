@@ -4,18 +4,18 @@ import time
 import Obstacle_Avoidance as oa
 
 obstacle_type = 'circles'
-num_times_run = 3
+num_times_run = 10
 seed = [n + 200 for n in range(num_times_run)]
 
 
-start_obst_count = 3
+start_obst_count = 1
 end_obst_count = 8
-start_obst_radius = 9
-end_obst_radius = 14
+start_obst_radius = 7
+end_obst_radius = 28
 
 start = time.time()
-obstacle_count = [i for i in range(start_obst_count,end_obst_count+1)] # Ger start till end
-obstacle_radius = [i for i in range(start_obst_radius,end_obst_radius+1)] # Ger start till end
+obstacle_count = np.linspace(start_obst_count, end_obst_count, 8) # Ger start till end
+obstacle_radius = np.linspace(start_obst_radius, end_obst_radius, 8) # Ger start till end
 num_of_points = len(obstacle_count)
 print(obstacle_count,'obstacle count')
 print(obstacle_radius, 'obstacle radius')
@@ -25,7 +25,7 @@ fish_eaten_matrix = np.zeros((len(obstacle_count), len(obstacle_radius)))
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
-new_simulation = False
+new_simulation = True
 if new_simulation:
     print('Simulation initiated')
     for obst_count in obstacle_count:
