@@ -9,10 +9,13 @@ import time
 from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
-seed = 0
+# Systemets parametrar
+canvas_length = 200
+time_step = 1
+simulation_iterations = 1000
 
-def main(fish_turn_speed, shark_turn_speed, visuals_on):
-    rng = np.random.default_rng(seed=seed) # Random Number Generator with fixed seed
+def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
+    rng = np.random.default_rng(seed) # Random Number Generator with fixed seed
     start = timer()  # Timer startas
     if visuals_on:
         res = 500  # Resolution of the animation
@@ -23,12 +26,6 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
         tk.attributes('-topmost', 0)
         canvas.place(x=res / 20, y=res / 20, height=res, width=res)
         ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
-
-    # Variabler
-    canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
-    time_step = 1  # Storlek tidssteg
-    simulation_iterations = 1000  # Antalet iterationer simulationen kör
-    wait_time = 0.01  # Väntetiden mellan varje iteration
 
     # Fisk
     fish_count = 200  # Antal fiskar
@@ -300,4 +297,4 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on):
 
 
 if __name__ == "__main__":
-    main(1, 1, True)
+    main(1, 1, True, 0)
