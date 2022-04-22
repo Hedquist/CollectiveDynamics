@@ -98,7 +98,7 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
         w = np.array([np.cos(current_orientation), np.sin(current_orientation)])
         A = np.cross(v, w)
         relative_orientation = math.asin(np.linalg.norm(A)) * np.sign(A)
-        if A == 0 and math.fabs(np.dot(v, w) + 1) <= 1e-3:
+        if math.fabs(A) <= 1e-3 and math.fabs(np.dot(v, w) + 1) <= 1e-3:
             relative_orientation = np.pi
         if math.fabs(relative_orientation) <= turn_speed * np.pi and np.dot(v, w) >= (turn_speed * (-2) + 1):
             return desired_orientation  # if desired angle is equal to current angle, do nothing
