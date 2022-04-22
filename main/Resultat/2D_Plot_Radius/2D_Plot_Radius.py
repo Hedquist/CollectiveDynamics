@@ -45,7 +45,7 @@ if new_simulation:
     duration = divmod(time.time() - start, 60)
     print('Total time:', int(duration[0]), 'm,', round(duration[1], 1), 's')
 else:
-    fish_eaten_matrix = np.load('../../fish_eaten_matrix.npy')
+    fish_eaten_matrix = np.load('Resultat/2D_Plot_Radius/fish_eaten_matrix_2DPlot_radius.npy')
 
 print(fish_eaten_matrix)
 
