@@ -14,8 +14,9 @@ canvas_length = 200
 time_step = 1
 simulation_iterations = 1000
 
+
 def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
-    rng = np.random.default_rng(seed) # Random Number Generator with fixed seed
+    rng = np.random.default_rng(seed)  # Random Number Generator with fixed seed
     start = timer()  # Timer startas
     if visuals_on:
         res = 500  # Resolution of the animation
@@ -110,7 +111,7 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
     fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
     shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
-
+    # fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
     def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
         coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
                 2 * canvas_length) - canvas_length
@@ -143,7 +144,8 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
         if math.fabs(relative_orientation) <= turn_speed * np.pi and np.dot(v, w) >= (turn_speed * (-2) + 1):
             return desired_orientation  # if desired angle is equal to current angle, do nothing
 
-        calc = current_orientation - (np.pi * turn_speed) * np.sign(relative_orientation) # turn speed of 1 means you can turn pi radians per tick,
+        # turn speed of 1 means you can turn pi radians per tick,
+        calc = current_orientation - (np.pi * turn_speed) * np.sign(relative_orientation)
         if calc > 2 * np.pi:
             calc -= 2 * np.pi
         elif calc < 0:
@@ -326,8 +328,8 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
             time.sleep(0.01)  # Wait between loops
 
     if __name__ == "__main__":
-        fish_eaten = np.array(fish_eaten) # Gör om till array för att kunna plotta
-        plt.plot(fish_eaten[:, 1], fish_eaten[:, 0]) # Plotta
+        fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
+        plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
         plt.xlabel('Tid')
         plt.ylabel('Antal fiskar ätna')
         plt.show()
