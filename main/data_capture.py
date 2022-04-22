@@ -8,14 +8,14 @@ num_times_run = 100
 seed = [n for n in range(num_times_run)]
 
 
-start_obst_count = 1
+start_obst_count = 5
 end_obst_count = 8
-start_obst_radius = 7
+start_obst_radius = 19
 end_obst_radius = 28
 
 start = time.time()
-obstacle_count = np.linspace(start_obst_count, end_obst_count, 8, dtype=int) # Ger start till end
-obstacle_radius = np.linspace(start_obst_radius, end_obst_radius, 8) # Ger start till end
+obstacle_count = np.linspace(start_obst_count, end_obst_count, 4, dtype=int) # Ger start till end
+obstacle_radius = np.linspace(start_obst_radius, end_obst_radius, 4) # Ger start till end
 num_of_points = len(obstacle_count)
 print(obstacle_count,'obstacle count')
 print(obstacle_radius, 'obstacle radius')
@@ -25,7 +25,7 @@ fish_eaten_matrix = np.zeros((len(obstacle_count), len(obstacle_radius)))
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
-new_simulation = True
+new_simulation = False
 if new_simulation:
     print('Simulation initiated')
     for obst_count in obstacle_count:
@@ -63,13 +63,15 @@ cbar = plt.colorbar(heatmap)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
 
+obstacle_count = np.linspace(start_obst_count-1, end_obst_count, 5, dtype=int) # Ger start till end
+obstacle_radius = np.linspace(start_obst_radius-1, end_obst_radius, 5) # Ger start till end
 x_, y_ = np.meshgrid(obstacle_count, obstacle_radius)
 fig = plt.figure()
 ax1 = plt.pcolormesh(x_,y_,fish_eaten_matrix)
 plt.xlabel('Obstacle count')
 plt.ylabel('Obstacle size')
 plt.xticks(np.arange(start_obst_count, end_obst_count+1, step=1))  # Set label locations.
-plt.yticks(np.arange(start_obst_radius, end_obst_radius+1, step=1))  # Set label locations.
+plt.yticks(np.arange(start_obst_radius, end_obst_radius+1, step=3))  # Set label locations.
 cbar = plt.colorbar(ax1)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
