@@ -45,7 +45,7 @@ if new_simulation:
     duration = divmod(time.time() - start, 60)
     print('Total time:', int(duration[0]), 'm,', round(duration[1], 1), 's')
 else:
-    fish_eaten_matrix = np.load('Resultat/2D_Plot_Radius/fish_eaten_matrix_2DPlot_radius.npy')
+    fish_eaten_matrix = np.load('fish_eaten_matrix_2DPlot_radius.npy')
 
 print(fish_eaten_matrix)
 
@@ -53,14 +53,16 @@ fish_eaten_mean = np.mean(np.array(fish_eaten_matrix), axis=1)
 print(fish_eaten_mean)
 fish_eaten_std = np.std(np.array(fish_eaten_matrix), axis=1)  # Beräkna standardavvikelsen längs rader
 fig, ax = plt.subplots(num = 'Meand and std')
-markers, caps, bars = ax.errorbar(obstacle_radius, fish_eaten_mean, yerr=fish_eaten_std, fmt='b-')
-[bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
-[cap.set_alpha(0.3) for cap in caps]
+markers, caps, bars = ax.errorbar(obstacle_radius, fish_eaten_mean, yerr=fish_eaten_std, fmt='bo')
+plt.xlabel('Radien på hinder')
+plt.ylabel('Medelvärde av antal fångade bytesdjur')
+[bar.set_alpha(0.5) for bar in bars]  # Gör errorbars mer genomskinliga
+[cap.set_alpha(0.5) for cap in caps]
 
-#plt.figure('All sim graph')
-#for i in range(np.shape(fish_eaten_matrix)[0]):
-#    plt.plot(obstacle_radius , np.array(fish_eaten_matrix[i,:]))  # Plotta
-#plt.xlabel('Radie på hindren')
-#plt.ylabel('Medelantalet fångade byten')
+plt.figure('All sim graph')
+for i in range(np.shape(fish_eaten_matrix)[0]):
+   plt.plot(obstacle_radius , np.array(fish_eaten_matrix[:,i]))  # Plotta
+plt.xlabel('Radie på hindren')
+plt.ylabel('Medelantalet fångade byten')
 plt.show()
 
