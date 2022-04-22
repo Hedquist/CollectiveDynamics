@@ -8,8 +8,8 @@ num_times_run = 100
 seed = [n for n in range(num_times_run)]
 
 
-start_obst_count = 1
-end_obst_count = 4
+start_obst_count = 5
+end_obst_count = 8
 start_obst_radius = 19
 end_obst_radius = 28
 
