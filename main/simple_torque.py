@@ -27,49 +27,89 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
         canvas.place(x=res / 20, y=res / 20, height=res, width=res)
         ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
 
-    # Fisk
+    # Mutual parameters
+    BL = 3  # Mutual unit
+    arrow_length = BL  # Pillängd
+
+    # Fiskars parameter
+    fish_graphic_radius = BL  # Radius of agent
+    fish_interaction_radius = 25  # Interaction radius
+    fish_noise = 0.1  # Diffusional noise constant
     fish_count = 200  # Antal fiskar
-    fish_graphic_radius = 3  # Radie av ritad cirkel
-    fish_interaction_radius = 25  # Interraktionsradie för fisk
-    fish_speed = 2  # Hastighet fiskar
-    fish_noise = 0.1  # Brus i vinkel
+    fish_speed = 2  # Fiskens fart
 
-    shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
-
-    # Haj
-    shark_count = 1  # Antal hajar
-    shark_graphic_radius = fish_graphic_radius  # Radie av ritad cirkel för hajar
+    # Haj parametrar
+    shark_graphic_radius = BL
     shark_interaction_radius = 4 * fish_interaction_radius
-    shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
-    murder_radius = 2*shark_graphic_radius  # Hajen äter fiskar inom denna radie
+    shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
+    shark_speed = 0.9 * fish_speed  # Hajens fart
+    murder_radius = 2 * shark_graphic_radius  # Hajen äter fiskar inom denna radie
     fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
     fish_eaten_count = 0  # Antal fiskar ätna
 
-    fish_turn_speed = fish_turn_speed
-    shark_turn_speed = shark_turn_speed
-
-    # Start koordinater fiskar
-    fish_coords_file = 'fish_coords_initial.npy'
-    fish_orientations_file = 'fish_orientations_initial.npy'
-    if True:
-        x = rng.uniform(-canvas_length, canvas_length, fish_count) # x coordinates
-        y = rng.uniform(-canvas_length, canvas_length, fish_count)  # y coordinates
-        fish_orientations = rng.uniform(0, 2*np.pi, fish_count)  # orientations
-        fish_coords = np.column_stack((x, y))
-        np.save(fish_coords_file, fish_coords)
-        np.save(fish_orientations_file, fish_orientations)
-    else:
-        fish_coords = np.load(fish_coords_file)  # Array med alla fiskars x- och y-koord
-        fish_orientations = np.load(fish_orientations_file)  # Array med alla fiskars riktning
-
+    # Fiskens koordinater
+    x = np.array(rng.random(fish_count) * 2 * canvas_length - canvas_length)
+    y = np.array(rng.random(fish_count) * 2 * canvas_length - canvas_length)
+    fish_coords = np.column_stack((x, y))
+    fish_orientations = rng.random(fish_count) * 2 * np.pi  # orientations
     fish_desired_orientations = fish_orientations.copy()  # Array med alla fiskars önskade riktning
 
     # Startkoordinater hajar
     shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
-    shark_orientations = rng.uniform(0, 2*np.pi, shark_count) # Array med alla hajars riktning
+    shark_orientations = rng.random(shark_count) * 2 * np.pi  # Array med alla hajars riktning
     shark_desired_orientations = shark_orientations.copy()  # Array med alla hajars önskade riktning
+
+    # Spawn fishes outside sharks murder radius
+    spawn_dist = np.linalg.norm(shark_coords - fish_coords, axis=1)
+    indices = np.where(spawn_dist < fish_interaction_radius + murder_radius)[0]
+    for i in indices:
+        while np.linalg.norm(shark_coords - fish_coords[i], axis=1) < fish_interaction_radius + murder_radius:
+            fish_coords[i] = [canvas_length * (rng.random() * 2 - 1), canvas_length * (rng.random() * 2 - 1)]
+
+    # # Fisk
+    # fish_count = 200  # Antal fiskar
+    # fish_graphic_radius = 3  # Radie av ritad cirkel
+    # fish_interaction_radius = 25  # Interraktionsradie för fisk
+    # fish_speed = 2  # Hastighet fiskar
+    # fish_noise = 0.1  # Brus i vinkel
+    #
+    # shark_fish_relative_speed = 0.9  # Relativ hastighet mellan haj och fisk
+    #
+    # # Haj
+    # shark_count = 1  # Antal hajar
+    # shark_graphic_radius = fish_graphic_radius  # Radie av ritad cirkel för hajar
+    # shark_interaction_radius = 4 * fish_interaction_radius
+    # shark_speed = fish_speed * shark_fish_relative_speed  # Hajens fart
+    # murder_radius = 2*shark_graphic_radius  # Hajen äter fiskar inom denna radie
+    # fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
+    # fish_eaten_count = 0  # Antal fiskar ätna
+    #
+    # fish_turn_speed = fish_turn_speed
+    # shark_turn_speed = shark_turn_speed
+    #
+    # # Start koordinater fiskar
+    # fish_coords_file = 'fish_coords_initial.npy'
+    # fish_orientations_file = 'fish_orientations_initial.npy'
+    # if True:
+    #     x = rng.uniform(-canvas_length, canvas_length, fish_count) # x coordinates
+    #     y = rng.uniform(-canvas_length, canvas_length, fish_count)  # y coordinates
+    #     fish_orientations = rng.uniform(0, 2*np.pi, fish_count)  # orientations
+    #     fish_coords = np.column_stack((x, y))
+    #     np.save(fish_coords_file, fish_coords)
+    #     np.save(fish_orientations_file, fish_orientations)
+    # else:
+    #     fish_coords = np.load(fish_coords_file)  # Array med alla fiskars x- och y-koord
+    #     fish_orientations = np.load(fish_orientations_file)  # Array med alla fiskars riktning
+    #
+    # fish_desired_orientations = fish_orientations.copy()  # Array med alla fiskars önskade riktning
+    #
+    # # Startkoordinater hajar
+    # shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
+    # shark_orientations = rng.uniform(0, 2*np.pi, shark_count) # Array med alla hajars riktning
+    # shark_desired_orientations = shark_orientations.copy()  # Array med alla hajars önskade riktning
     fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
     shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
+
 
     def update_position(coords, speed, orientations):  # Uppdaterar en partikels position
         coords[:, 0] = (coords[:, 0] + speed * np.cos(orientations) * time_step + canvas_length) % (
@@ -297,4 +337,4 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
 
 
 if __name__ == "__main__":
-    main(1, 1, True, 0)
+    main(0.035, 0.05, True, 0)
