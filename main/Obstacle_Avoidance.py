@@ -647,3 +647,4 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         Tk.destroy(tk) # Destroy window
     return fish_eaten_count
 
+#main('circles', 8, 8,28, True, 1)
