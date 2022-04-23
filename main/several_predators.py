@@ -9,7 +9,7 @@ from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
 canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
-simulation_iterations = 100  # Antalet iterationer simulationen kör
+simulation_iterations = 1000  # Antalet iterationer simulationen kör
 time_step = 1  # Storlek tidssteg
 
 fish_speed = 2  # Hastighet fiskar
@@ -95,7 +95,7 @@ def main():
     # Fisk
     fish_count = 200  # Antal fiskar
     fish_graphic_radius = 3  # Radie av ritad cirkel
-    fish_interaction_radius = 20  # Interraktionsradie för fisk
+    fish_interaction_radius = 25  # Interraktionsradie för fisk
     fish_noise = 0.1  # Brus i vinkel
 
 
@@ -132,6 +132,24 @@ def main():
     fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
     shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
 
+    # Se till att hajar inte spawnat på fisk
+    shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
+    for j in range(shark_count):
+        shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
+            j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+    shark_on_fish = shark_fish_distances < murder_radius
+
+    while shark_on_fish.any():
+        shark_on_fish_index = np.where(shark_on_fish)[0]
+        for ind in shark_on_fish_index:
+            shark_coords[ind][0] = np.random.random() * 2 * canvas_length - canvas_length
+            shark_coords[ind][1] = np.random.random() * 2 * canvas_length - canvas_length
+        for j in range(shark_count):
+            shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
+                j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+        shark_on_fish = shark_fish_distances < murder_radius
+
+
     if visuals_on:
         for j in range(shark_count):  # Skapar cirklar för hajar
             shark_canvas_graphics.append(
@@ -153,8 +171,7 @@ def main():
                                                     text=len(fish_coords))
     # Loop för allt som ska ske varje tidssteg i simulationen
     for t in range(simulation_iterations):
-        fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
-        shark_coords = update_position(shark_coords, shark_speed, shark_orientations, time_step)  # Uppdatera hajposition
+
         fish_orientations_old = np.copy(fish_orientations)  # Spara gamla orientations för Vicsek
         shark_orientations_old = np.copy(shark_orientations)  # Spara gamla orientations för Vicsek
         # Bestäm närmsta fisk
@@ -286,7 +303,9 @@ def main():
                     np.sum(np.exp(
                         shark_orientations_old[shark_see_shark[i]] * 1j))) + fish_noise * np.random.uniform(
                     -1 / 2, 1 / 2)
-
+        fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
+        shark_coords = update_position(shark_coords, shark_speed, shark_orientations,
+                                       time_step)  # Uppdatera hajposition
         # Kollar om närmaste fisk är inom murder radien
         shark_closest_fish_distances = np.zeros(shark_count)  # Avstånd från varje haj till dess närmsta fisk
         # Haj äter fisk
