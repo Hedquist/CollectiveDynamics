@@ -1,39 +1,38 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-import Obstacle_Avoidance as oa
+import simple_torque as st
 
-obstacle_type = 'circles'
 num_times_run = 100
 seed = [n for n in range(num_times_run)]
 
 
-start_obst_count = 5
-end_obst_count = 8
-start_obst_radius = 19
-end_obst_radius = 28
+start_fish_turn = 0
+end_fish_turn = 0.5
+start_shark_turn = 0
+end_shark_turn = 0.5
 
 start = time.time()
-obstacle_count = np.linspace(start_obst_count, end_obst_count, 4, dtype=int) # Ger start till end
-obstacle_radius = np.linspace(start_obst_radius, end_obst_radius, 4) # Ger start till end
-num_of_points = len(obstacle_count)
-print(obstacle_count,'obstacle count')
-print(obstacle_radius, 'obstacle radius')
+fish_turn = np.linspace(start_fish_turn, end_fish_turn, 4, dtype=int) # Ger start till end
+shark_turn = np.linspace(start_shark_turn, end_shark_turn, 4) # Ger start till end
+num_of_points = len(fish_turn)
+print(fish_turn, 'obstacle count')
+print(shark_turn, 'obstacle radius')
 
 
-fish_eaten_matrix = np.zeros((len(obstacle_count), len(obstacle_radius)))
+fish_eaten_matrix = np.zeros((len(fish_turn), len(shark_turn)))
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
 new_simulation = False
 if new_simulation:
     print('Simulation initiated')
-    for obst_count in obstacle_count:
+    for fts in fish_turn:
         j = 0
-        for obst_rad in obstacle_radius:
+        for sts in shark_turn:
             res = 0.0
             for k in range(num_times_run):
-                temp = oa.main('circles', obst_count, obst_count,obst_rad, True, seed[k])
+                temp = st.main(fts, sts, False, seed[k])
                 print('Fiskar ätna:  ', temp)
                 res += temp  # Anropa simulationen med olika turning speed
             res /= num_times_run
@@ -57,19 +56,19 @@ else:
 
 print(fish_eaten_matrix, 'final fish eaten matrix')
 heatmap = plt.imshow(fish_eaten_matrix, interpolation='spline16', origin='lower')
-plt.xlabel('Obstacle count')
-plt.ylabel('Obstacle size')
+plt.xlabel('Fish turn speed')
+plt.ylabel('Shark turn speed')
 cbar = plt.colorbar(heatmap)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
 
-obstacle_count = np.linspace(start_obst_count-1, end_obst_count, 5, dtype=int) # Ger start till end
-obstacle_radius = np.linspace(start_obst_radius-1, end_obst_radius, 5) # Ger start till end
-x_, y_ = np.meshgrid(obstacle_count, obstacle_radius)
+fish_turn = np.linspace(start_obst_count - 1, end_obst_count, 5, dtype=int) # Ger start till end
+shark_turn = np.linspace(start_obst_radius - 1, end_obst_radius, 5) # Ger start till end
+x_, y_ = np.meshgrid(fish_turn, shark_turn)
 fig = plt.figure()
 ax1 = plt.pcolormesh(x_,y_,fish_eaten_matrix)
-plt.xlabel('Obstacle count')
-plt.ylabel('Obstacle size')
+plt.xlabel('Fish turn speed')
+plt.ylabel('Shark turn speed')
 plt.xticks(np.arange(start_obst_count, end_obst_count+1, step=1))  # Set label locations.
 plt.yticks(np.arange(start_obst_radius, end_obst_radius+1, step=3))  # Set label locations.
 cbar = plt.colorbar(ax1)
