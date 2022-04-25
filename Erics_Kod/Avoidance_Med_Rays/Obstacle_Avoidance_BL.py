@@ -1,75 +1,64 @@
+import cdist as cdist
 import numpy as np
 import matplotlib.pyplot as plt
 from tkinter import *
 from tkinter import ttk
 from scipy.spatial.distance import *
 import time
-from timeit import default_timer as timer
+from itertools import chain
+from scipy.spatial import Voronoi, voronoi_plot_2d, ConvexHull
+from shapely.geometry import Polygon
 
-# Systemets parameter
-simulation_iterations = 1000 # Simulation time
-time_step = 1  # Time step
-canvas_length = 200  # Size of box
+def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main):
 
+    res = 600  # Resolution of the animation
+    tk = Tk()
+    tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3)))  # Set height x width window
+    tk.configure(background='white')
 
-def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, seed):
-    visuals_on = False
-    rng = np.random.default_rng(seed)
+    canvas = Canvas(tk, bd=2)  # Generate animation window
+    tk.attributes('-topmost', 0)
+    canvas.place(x=res / 20, y=res / 20, height=res, width=res)  # Place canvas with origin in x och y
+    ccolor = ['#17888E', '#C1D02B', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F']
 
-    if visuals_on:
-        res = 600  # Resolution of the animation
-        tk = Tk()
-        tk.geometry(str(int(res * 1.1)) + 'x' + str(int(res * 1.3)))  # Set height x width window
-        tk.configure(background='white')
-
-        canvas = Canvas(tk, bd=2)  # Generate animation window
-        tk.attributes('-topmost', 0)
-        canvas.place(x=res / 20, y=res / 20, height=res, width=res)  # Place canvas with origin in x och y
-
-        # Färger
-        fish_color = '#2E86C1'
-        shark_color = '#f0650c'
-        closest_fish_color = '#9E00C9'
-        black = '#000000'
-
-
+    # Systemets parameter
+    simulation_iterations = 500 # Simulation time
+    time_step = 0.1  # Time step
+    canvas_length = 100  # Size of box
+    visual_debug = False
 
     # Mutual parameters
-    BL = 3 # Mutual unit
+    BL = 2 # Mutual unit
+    fish_shark_graphic_radius = 4*BL
+    fish_shark_ray_radius = 7*BL
     arrow_length = BL  # Pillängd
 
     # Fiskars parameter
     fish_graphic_radius = BL  # Radius of agent
-    fish_interaction_radius = 25  # Interaction radius
-    fish_ray_radius = 2*BL # Strållängd
+    fish_interaction_radius = fish_graphic_radius +  5* BL  # Interaction radius
+    fish_ray_radius = fish_interaction_radius/2 # Strållängd
     fish_noise = 0.1  # Diffusional noise constant
-    fish_count = 200  # Antal fiskar
-    fish_speed = 2  # Fiskens fart
+    fish_count = 100  # Antal fiskar
+    fish_speed = 3*BL  # Fiskens fart
 
     # Haj parametrar
-    shark_graphic_radius = BL
-    shark_ray_radius = fish_ray_radius
+    shark_graphic_radius = BL + 1
+    shark_ray_radius = fish_ray_radius + (shark_graphic_radius - fish_graphic_radius)
     shark_count = 1  # Antal hajar (kan bara vara 1 just nu...)
     shark_speed = 0.9 * fish_speed  # Hajens fart
-    murder_radius = 2 * shark_graphic_radius  # Hajen äter fiskar inom denna radie
+    murder_radius = shark_graphic_radius + BL  # Hajen äter fiskar inom denna radie
+    fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
     fish_eaten_count = 0  # Antal fiskar ätna
 
     # Fiskens koordinater
-    x = np.array(rng.random(fish_count) * 2 * canvas_length - canvas_length)
-    y = np.array(rng.random(fish_count) * 2 * canvas_length - canvas_length)
+    x = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
+    y = np.array(np.random.rand(fish_count) * 2 * canvas_length - canvas_length)
     fish_coords = np.column_stack((x, y))
-    fish_orientations = rng.random(fish_count) * 2 * np.pi  # orientations
+    fish_orientations = np.random.rand(fish_count) * 2 * np.pi  # orientations
 
     # Startkoordinater hajar
     shark_coords = np.column_stack((0.0, 0.0))  # Array med alla hajars x- och y-koord
-    shark_orientations = rng.random(shark_count) * 2 * np.pi  # Array med alla hajars riktning
-
-    # Spawn fishes outside sharks murder radius
-    spawn_dist = np.linalg.norm(shark_coords - fish_coords, axis=1)
-    indices = np.where(spawn_dist < fish_interaction_radius + murder_radius)[0]
-    for i in indices:
-        while np.linalg.norm(shark_coords- fish_coords[i], axis=1) < fish_interaction_radius + murder_radius :
-            fish_coords[i] = [canvas_length*(rng.random() * 2 - 1), canvas_length * (rng.random() * 2 - 1)]
+    shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
 
     # Rayscasting
     casted_rays = 6
@@ -96,11 +85,9 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
     rect_obst_height = []
 
     def load_obstacles(obstacle_type, num_row, num_col, obstacle_size, displacement):
-        if num_row != 0:
-            horisontal_space = 2 * canvas_length / (num_col)  # Mellanrum i horisentell led
-        if num_col != 0:
-            vertical_space = 2 * canvas_length / (num_row)  # Mellanrum i vertikalled
-            start_vertical = - canvas_length + vertical_space/2  # Start i vertikalled, högst upp till vänster
+        horisontal_space = 2 * canvas_length / (num_col)  # Mellanrum i horisentell led
+        vertical_space = 2 * canvas_length / (num_row)  # Mellanrum i vertikalled
+        start_vertical = - canvas_length + vertical_space/2  # Start i vertikalled, högst upp till vänster
         for i in range(num_row):  # För varje rad
             start_horisontal = - canvas_length + horisontal_space if displacement and i % 2 != 0 \
                 else - canvas_length + horisontal_space / 2  # Förskjuts om True annars vanlig start vi horisontell led
@@ -128,20 +115,22 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
 
     # Canvas grafik fisk
     fish_canvas_graphics = []
+    fish_interaction_radius_canvas_graphics = []
+    fish_ray_radius_canvas_graphics = []
+    fish_canvas_rays_graphics = [[] for i in range(fish_count)]
     fish_direction_arrow_graphics = []
 
     # Canvas grafik haj
     shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
     shark_direction_arrow_graphics = []
+    shark_canvas_rays_graphics = []
 
     # Canvas grafik hinder
     circ_obst_canvas_graphics = []
     rect_obst_canvas_graphics = []
-    fish_eaten_this_sim = []
 
 
-
-# Ta fram hörnen till rektangulära hinder
+    # Ta fram hörnen till rektangulära hinder
     def calculate_rectangle_corner_coordinates(position, base, height):
         x_c, y_c = position[0], position[1]
         b, h = float(base), float(height)
@@ -171,7 +160,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                     (fish_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                     (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                     (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                    outline=fish_color, fill=fish_color))
+                    outline=ccolor[0], fill=ccolor[0]))
             fish_direction_arrow_graphics.append(canvas.create_line((fish_coords[j][0] + fish_graphic_radius * np.cos(
                 fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                                     (fish_coords[j, 1] + fish_graphic_radius * np.sin(
@@ -195,7 +184,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                                    (shark_coords[j, 1] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
                                    (shark_coords[j, 0] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
                                    (shark_coords[j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
-                                   outline=shark_color, fill=shark_color))
+                                   outline=ccolor[1], fill=ccolor[1]))
             shark_direction_arrow_graphics.append(canvas.create_line((shark_coords[j, 0] + shark_graphic_radius * np.cos(
                 shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
                                                                      (shark_coords[j, 1] + shark_graphic_radius * np.sin(
@@ -217,12 +206,29 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         for j in range(fish_count):
             start_angle = fish_orientations[j] - fish_half_FOV  # Startvinkel
             for ray in range(casted_rays):
+                fish_canvas_rays_graphics[j].append(
+                    canvas.create_line((fish_coords[j, 0] + canvas_length) * res / canvas_length / 2,
+                                       (fish_coords[j, 1] + canvas_length) * res / canvas_length / 2,
+                                       (fish_coords[j, 0] + fish_ray_radius * np.cos(
+                                           start_angle) + canvas_length) * res / canvas_length / 2,
+                                       (fish_coords[j, 1] + fish_ray_radius * np.sin(
+                                           start_angle) + canvas_length) * res / canvas_length / 2, fill=ccolor[3]))
+
                 fish_rays_coords[j].append([fish_coords[j, 0] + fish_ray_radius * np.cos(start_angle),
                                             fish_coords[j, 1] + fish_ray_radius * np.sin(start_angle)])
                 start_angle += fish_step_angle  # Uppdaterar vinkel för ray
 
-        start_angle = shark_orientations - shark_half_FOV  # Startvinkel
+        start_angle = shark_orientations[0] - shark_half_FOV  # Startvinkel
         for ray in range(casted_rays):
+            shark_canvas_rays_graphics.append(
+                canvas.create_line((shark_coords[0, 0] + canvas_length) * res / canvas_length / 2,
+                                   (shark_coords[0, 1] + canvas_length) * res / canvas_length / 2,
+                                   (shark_coords[0, 0] + shark_ray_radius * np.cos(
+                                       start_angle) + canvas_length) * res / canvas_length / 2,
+                                   (shark_coords[0, 1] + shark_ray_radius * np.sin(
+                                       start_angle) + canvas_length) * res / canvas_length / 2, fill=ccolor[3]))
+
+
             shark_rays_coords.append([shark_coords[0, 0] + shark_ray_radius * np.cos(start_angle),
                                       shark_coords[0, 1] + shark_ray_radius * np.sin(start_angle)])
             start_angle += shark_step_angle  # Uppdaterar vinkel för ray
@@ -236,7 +242,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                                    (circ_obst_coords[j, 1] - circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
                                    (circ_obst_coords[j, 0] + circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
                                    (circ_obst_coords[j, 1] + circ_obst_radius[j] + canvas_length) * res / canvas_length / 2,
-                                   outline= black, fill=black))
+                                   outline=ccolor[5], fill=ccolor[3]))
 
 
     # Ritar rektangulära hinder
@@ -247,7 +253,7 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                 (rect_obst_coords[j, 1] + rect_obst_height[j] + canvas_length) * res / canvas_length / 2,
                 (rect_obst_coords[j, 0] - rect_obst_width[j] + canvas_length) * res / canvas_length / 2,
                 (rect_obst_coords[j, 1] - rect_obst_height[j] + canvas_length) * res / canvas_length / 2,
-                outline='#000000', fill='#000000'))
+                outline=ccolor[5], fill=ccolor[4]))
 
 
     def is_point_inside_circle(circ_obst_coords, point, radius):
@@ -414,6 +420,22 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
             return np.arctan2((coord2[1]) % (2 * canvas_length) - (coord1[1]) % (2 * canvas_length),
                               (coord2[0]) % (2 * canvas_length) - (coord1[0]) % (2 * canvas_length))
 
+
+    def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Cluster Coefficient
+        v = Voronoi(coords)
+        coeff = 0
+        for i, reg_num in enumerate(v.point_region):
+            # clock = time.time()
+            indices = v.regions[reg_num]
+
+            if -1 not in indices:  # some regions can be opened
+                area = Polygon(v.vertices[indices]).area
+                if area < interaction_radius ** 2 * np.pi:
+                    coeff = coeff + 1
+
+        return coeff / count
+
+
     def murder_fish_coords(dead_fish_index):  # Tar bort fisk som blivit uppäten
         new_fish_coords = np.delete(fish_coords, dead_fish_index, 0)
         return new_fish_coords
@@ -423,16 +445,22 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         new_fish_orientations = np.delete(fish_orientations, dead_fish_index)
         return new_fish_orientations
 
-    # Kallar på de grafiska funktionerna
+    # Skapar ett canvas textobjekt för global alignemnt coefficent
+    global_alignment_canvas_text = canvas.create_text(100, 20, text=1 / fish_count * np.linalg.norm(
+        [np.sum(np.cos(fish_orientations)),
+         np.sum(np.sin(fish_orientations))]))
 
-    if visuals_on:
-        draw_fishes()
-        draw_shark()
-        draw_circular_obstacles()
-        draw_rectangular_obstacles()
-        fish_count_canvas_text = canvas.create_text(100, 20,
-                                                    text=len(fish_coords))
+    # Skapar ett canvas textobjekt för clustering coefficent
+    clustering_coeff_canvas_text = canvas.create_text(100, 40,
+                                                      text=calculate_cluster_coeff(fish_coords, fish_interaction_radius,
+                                                                                   fish_count))
+
+    # Kallar på de grafiska funktionerna
     cast_rays()
+    draw_fishes()
+    draw_shark()
+    draw_circular_obstacles()
+    draw_rectangular_obstacles()
 
     for t in range(simulation_iterations):
         fish_coords = update_position(fish_coords, fish_speed, fish_orientations)  # Uppdatera fiskposition
@@ -443,26 +471,34 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
         # Haj loop
         for j in range(shark_count):
             # Updating animation coordinates haj
-            if visuals_on:
-                canvas.coords(shark_canvas_graphics[j],
-                              (shark_coords[j, 0] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
-                              (shark_coords[j, 1] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
-                              (shark_coords[j, 0] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
-                              (shark_coords[j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2, )
+            canvas.coords(shark_canvas_graphics[j],
+                          (shark_coords[j, 0] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
+                          (shark_coords[j, 1] - shark_graphic_radius + canvas_length) * res / canvas_length / 2,
+                          (shark_coords[j, 0] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
+                          (shark_coords[j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2, )
 
-                canvas.coords(shark_direction_arrow_graphics[j],
-                              (shark_coords[j, 0] + shark_graphic_radius * np.cos(
-                                  shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                              (shark_coords[j, 1] + shark_graphic_radius * np.sin(
-                                  shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                              (shark_coords[j, 0] + (shark_graphic_radius + arrow_length) * np.cos(
-                                  shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                              (shark_coords[j, 1] + (shark_graphic_radius + arrow_length) * np.sin(
-                                  shark_orientations[j]) + canvas_length) * res / canvas_length / 2)
+            canvas.coords(shark_direction_arrow_graphics[j],
+                          (shark_coords[j, 0] + shark_graphic_radius * np.cos(
+                              shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                          (shark_coords[j, 1] + shark_graphic_radius * np.sin(
+                              shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                          (shark_coords[j, 0] + (shark_graphic_radius + arrow_length) * np.cos(
+                              shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                          (shark_coords[j, 1] + (shark_graphic_radius + arrow_length) * np.sin(
+                              shark_orientations[j]) + canvas_length) * res / canvas_length / 2)
+
             start_angle = shark_orientations[j] - shark_half_FOV  # Startvinkel
             for ray in range(casted_rays):
-                shark_rays_coords[ray] = [shark_coords[j, 0] + shark_ray_radius * np.cos(start_angle),
-                                          shark_coords[j, 1] + shark_ray_radius * np.sin(start_angle)]
+                canvas.coords(shark_canvas_rays_graphics[ray],
+                              (shark_coords[j, 0] + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[j, 1] + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[j, 0] + fish_ray_radius * np.cos(
+                                  start_angle) + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[j, 1] + fish_ray_radius * np.sin(
+                                  start_angle) + canvas_length) * res / canvas_length / 2)
+
+                shark_rays_coords[ray] = [shark_coords[0, 0] + shark_ray_radius * np.cos(start_angle),
+                                          shark_coords[0, 1] + shark_ray_radius * np.sin(start_angle)]
                 start_angle += shark_step_angle  # Uppdaterar vinkel för ray
 
             # Obstacle avoidance shark
@@ -477,7 +513,8 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                 closest_obst_distance, ray_boolean = detect_info[0], detect_info[1]  # Tilldelar namn
                 shark_avoid_angle = avoid_obstacle(closest_obst_distance,
                                                    ray_boolean) if closest_obst_distance != np.inf else 0
-                # print(np.rad2deg(shark_avoid_angle))
+
+
 
             rect_obst_detect_ind = detect_obst_in_radius_info[1][0]  # De hindren som detekterats
             circ_obst_detect_ind = detect_obst_in_radius_info[1][1]
@@ -512,29 +549,38 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
 
         # Fisk loop
         for j in range(len(fish_coords)):
-            if visuals_on:
-                # Updating animation coordinates fisk
-                canvas.coords(fish_canvas_graphics[j],
-                              (fish_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2)
-                canvas.coords(fish_direction_arrow_graphics[j],
-                              (fish_coords[j, 0] + fish_graphic_radius * np.cos(
-                                  fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 1] + fish_graphic_radius * np.sin(
-                                  fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 0] + (fish_graphic_radius + arrow_length) * np.cos(
-                                  fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
-                              (fish_coords[j, 1] + (fish_graphic_radius + arrow_length) * np.sin(
-                                  fish_orientations[j]) + canvas_length) * res / canvas_length / 2)
+            # Updating animation coordinates fisk
+            canvas.coords(fish_canvas_graphics[j],
+                          (fish_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j, 1] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2)
+            canvas.coords(fish_direction_arrow_graphics[j],
+                          (fish_coords[j, 0] + fish_graphic_radius * np.cos(
+                              fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j, 1] + fish_graphic_radius * np.sin(
+                              fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j, 0] + (fish_graphic_radius + arrow_length) * np.cos(
+                              fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                          (fish_coords[j, 1] + (fish_graphic_radius + arrow_length) * np.sin(
+                              fish_orientations[j]) + canvas_length) * res / canvas_length / 2)
 
             # Rays casting fish
             start_angle = fish_orientations[j] - fish_half_FOV  # Startvinkel
             for ray in range(casted_rays):
+                canvas.coords(fish_canvas_rays_graphics[j][ray],
+                              (fish_coords[j, 0] + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j, 1] + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j, 0] + fish_ray_radius * np.cos(
+                                  start_angle) + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j, 1] + fish_ray_radius * np.sin(
+                                  start_angle) + canvas_length) * res / canvas_length / 2)
+
                 fish_rays_coords[j][ray] = [fish_coords[j, 0] + fish_ray_radius * np.cos(start_angle),
                                             fish_coords[j, 1] + fish_ray_radius * np.sin(start_angle)]
                 start_angle += fish_step_angle  # Uppdaterar vinkel för ray
+
+
 
             # # Overlapp fishes
             fish_distances = calculate_distance(fish_coords, fish_coords[j])
@@ -601,50 +647,67 @@ def main(obst_type_main, row_main, col_main, obst_size_main, displacement_main, 
                         normal_distance = np.sqrt(Dx[ind] ** 2 + Dy[ind] ** 2) - fish_graphic_radius
                         fish_coords[j, 0] = fish_coords[j, 0] + np.absolute(normal_distance) * np.cos(angle)
                         fish_coords[j, 1] = fish_coords[j, 1] + np.absolute(normal_distance) * np.sin(angle)
-            if visuals_on:
-                if j == closest_fish:
-                    canvas.itemconfig(fish_canvas_graphics[j], fill=closest_fish_color)  # Byt färg på fisk närmst haj
-                else:
-                    canvas.itemconfig(fish_canvas_graphics[j], fill=fish_color)
+
+            if j == closest_fish:
+                canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
+            else:
+                canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
             inter_fish_distances = calculate_distance(fish_coords, fish_coords[
                 j])  # Räknar ut avstånd mellan fisk j och alla andra fiskar
             fish_in_interaction_radius = inter_fish_distances < fish_interaction_radius  # Vilka fiskar är inom en fisks interraktionsradie
 
             if shark_fish_distances[j] < fish_interaction_radius:  # Om hajen är nära fisken, undvik hajen
-                fish_orientations[j] = get_direction(shark_coords[0], fish_coords[j]) + fish_avoid_angle + fish_noise * rng.uniform(-1 / 2,1 / 2)
+                fish_orientations[j] = get_direction(shark_coords[0], fish_coords[j]) + fish_avoid_angle
             else:
-                fish_orientations[j] = weight_boolean_vicsek * np.angle(
-                    np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * rng.uniform(-1 / 2, 1 / 2) + \
-                                       weight_boolean_avoid * (fish_orientations[j] + fish_avoid_angle)
+                fish_orientations[j] = weight_boolean_vicsek * (np.angle(
+                    np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) \
+                                                                + fish_noise * np.random.uniform(-1 / 2,
+                                                                                                 1 / 2)) + weight_boolean_avoid * (
+                                               fish_orientations[j] + fish_avoid_angle)
 
+        # if abs(shark_avoid_angle)>0:
+        #    print(np.rad2deg(shark_avoid_angle))
+        #    time.sleep(0.01)
         #Haj undvik hinder, annars jaga fisk
-        if np.absolute(shark_avoid_angle) > 0:
-            shark_orientations[0] = shark_orientations[0] + shark_avoid_angle + fish_noise * rng.uniform(-1/2, 1/2)
-        elif shark_fish_distances[closest_fish] < fish_interaction_radius * 4:
-            shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish]) + fish_noise * rng.uniform(-1/2, 1/2)
+        shark_orientations[0] = shark_orientations[0] + shark_avoid_angle if np.absolute(shark_avoid_angle) > 0 \
+            else get_direction(shark_coords[0], fish_coords[closest_fish])
+            #else  shark_orientations[0] +  0.01 * np.random.uniform(-1 /2, 1/2)
+
         #shark_orientations[0] = get_direction(shark_coords[0], fish_coords[closest_fish])
+
+        # # Beräknar Global Alignment
+        # global_alignment_coeff = 1 / fish_count * np.linalg.norm(
+        #     [np.sum(np.cos(fish_orientations)), np.sum(np.sin(fish_orientations))])
+        # # Beräknar clustering coefficent
+        # clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
 
         # Kollar om närmaste fisk är inom murder radien
         if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
             if calculate_distance(shark_coords, fish_coords[closest_fish])[0] < murder_radius:
                 last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
-                if visuals_on:
-                    canvas.delete(fish_canvas_graphics[last_index])  # Tar bort fisken
-                    canvas.delete(fish_direction_arrow_graphics[last_index])  # Tar bort fiskens pil
+                canvas.delete(fish_canvas_graphics[last_index])  # Tar bort fisken
+                canvas.delete(fish_direction_arrow_graphics[last_index])  # Tar bort fiskens pil
                 fish_coords = murder_fish_coords(closest_fish)  # Tar bort index i koordinaterna
                 fish_orientations = murder_fish_orientations(closest_fish)  # Tar bort index i orientations
                 fish_eaten_count += 1  # Lägg till en äten fiskx
+                fish_eaten.append((fish_eaten_count, t * time_step))  # Spara hur många fiskar som ätits och när
         else:
             break
-        fish_eaten_this_sim.append(fish_eaten_count)
-        if visuals_on:
-            canvas.itemconfig(fish_count_canvas_text, text='Antal Fiskar: {:.3f}'.format(len(fish_coords)))
-            tk.title('Iteration =' + str(t))
-            tk.update()  # Update animation frame
-    np.save('fish_eaten_this_sim.npy', fish_eaten_this_sim)
 
-    if visuals_on:
-        Tk.destroy(tk) # Destroy window
+        # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
+        # canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
+        # canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
+
+        tk.title('Iteration =' + str(t))
+        tk.update()  # Update animation frame
+
+    # fish_eaten = np.array(fish_eaten)  # Gör om till array för att kunna plotta
+    # plt.plot(fish_eaten[:, 1], fish_eaten[:, 0])  # Plotta
+    # plt.xlabel('Tid')
+    # plt.ylabel('Antal fiskar ätna')
+    # plt.show()
+    Tk.mainloop(canvas)  # Release animation handle (close window to finish)
+    Tk.destroy(tk)
     return fish_eaten_count
 
-#main('circles', 8, 8,28, True, 1)
+main('circles', 4, 4, 16, False)
