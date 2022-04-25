@@ -3,7 +3,7 @@ import numpy as np
 import time
 import simple_torque as st
 
-num_times_run = 100
+num_times_run = 1
 seed = [n for n in range(num_times_run)]
 
 
@@ -13,23 +13,23 @@ start_shark_turn = 0
 end_shark_turn = 0.5
 
 start = time.time()
-fish_turn = np.linspace(start_fish_turn, end_fish_turn, 4, dtype=int) # Ger start till end
-shark_turn = np.linspace(start_shark_turn, end_shark_turn, 4) # Ger start till end
-num_of_points = len(fish_turn)
-print(fish_turn, 'obstacle count')
-print(shark_turn, 'obstacle radius')
+fish_turns = np.linspace(start_fish_turn, end_fish_turn, 4, dtype=int) # Ger start till end
+shark_turns = np.linspace(start_shark_turn, end_shark_turn, 4) # Ger start till end
+num_of_points = len(fish_turns)
+print(fish_turns, 'fish turn speed')
+print(shark_turns, 'shark turn speed')
 
 
-fish_eaten_matrix = np.zeros((len(fish_turn), len(shark_turn)))
+fish_eaten_matrix = np.zeros((len(fish_turns), len(shark_turns)))
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
-new_simulation = False
+new_simulation = True
 if new_simulation:
     print('Simulation initiated')
-    for fts in fish_turn:
+    for fts in fish_turns:
         j = 0
-        for sts in shark_turn:
+        for sts in shark_turns:
             res = 0.0
             for k in range(num_times_run):
                 temp = st.main(fts, sts, False, seed[k])
@@ -62,9 +62,9 @@ cbar = plt.colorbar(heatmap)
 cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
 plt.show()
 
-fish_turn = np.linspace(start_obst_count - 1, end_obst_count, 5, dtype=int) # Ger start till end
-shark_turn = np.linspace(start_obst_radius - 1, end_obst_radius, 5) # Ger start till end
-x_, y_ = np.meshgrid(fish_turn, shark_turn)
+fish_turns = np.linspace(start_obst_count - 1, end_obst_count, 5, dtype=int) # Ger start till end
+shark_turns = np.linspace(start_obst_radius - 1, end_obst_radius, 5) # Ger start till end
+x_, y_ = np.meshgrid(fish_turns, shark_turns)
 fig = plt.figure()
 ax1 = plt.pcolormesh(x_,y_,fish_eaten_matrix)
 plt.xlabel('Fish turn speed')

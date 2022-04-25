@@ -335,6 +335,8 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
         plt.show()
     if visuals_on:
         tk.mainloop()
+
+    return fish_eaten_count
     # end main()
 
 
