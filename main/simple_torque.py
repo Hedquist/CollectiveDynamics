@@ -341,4 +341,4 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
 
 
 if __name__ == "__main__":
-    main(0.035, 0.05, True, 0)
+    main(0.06666, 0.5, True, 0)
