@@ -3,7 +3,7 @@ import numpy as np
 import time
 import simple_torque as st
 
-num_times_run = 1
+num_times_run = 10
 seed = [n for n in range(num_times_run)]
 
 
@@ -13,8 +13,8 @@ start_shark_turn = 0.01
 end_shark_turn = 0.04
 
 start = time.time()
-fish_turns = np.linspace(start_fish_turn, end_fish_turn, 4)  # Ger start till end
-shark_turns = np.linspace(start_shark_turn, end_shark_turn, 2)  # Ger start till end
+fish_turns = np.linspace(start_fish_turn, end_fish_turn, 8)  # Ger start till end
+shark_turns = np.linspace(start_shark_turn, end_shark_turn, 4)  # Ger start till end
 num_of_points = len(fish_turns)
 print(fish_turns, 'fish turn speed')
 print(shark_turns, 'shark turn speed')
@@ -34,14 +34,14 @@ if new_simulation:
             for k in range(num_times_run):
                 temp = st.main(fts, sts, False, seed[k])
                 print('FTS:', fts, ' STS:', sts, ' Fiskar ätna:', temp)
-                print(fish_eaten_matrix)
                 res += temp  # Anropa simulationen med olika turning speed
             res /= num_times_run
             fish_eaten_matrix[i, j] = res  # Medelvärde av antal ätna fiskar
+            print(fish_eaten_matrix)
             j = j + 1
             np.save('fish_eaten_matrix.npy', fish_eaten_matrix)
             # Print how far through the simulation we are currently
-            print('Progress =', round((i / num_of_points * 100) + ((j / num_of_points * 100) / num_of_points), 2), '%')
+            print('Progress =', round((i / len(fish_turns) * 100) + ((j / len(shark_turns) * 100) / len(fish_turns)), 2), '%')
         i = i + 1
         # Print how much time has passed since simulation start
         duration = divmod(time.time() - start, 60)
