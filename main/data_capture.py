@@ -24,7 +24,7 @@ fish_eaten_matrix = np.zeros((len(fish_turns), len(shark_turns)))
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
-new_simulation = True
+new_simulation = False
 if new_simulation:
     print('Simulation initiated')
     for fts in fish_turns:
