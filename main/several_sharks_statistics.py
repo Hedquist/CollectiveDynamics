@@ -6,17 +6,17 @@ import time
 from timeit import default_timer as timer
 
 start = timer()  # Timer startas
-mean_fish_eaten_per_shark_count = []
-std_fish_eaten_per_shark_count = []
+mean_fish_eaten = []
+std_fish_eaten = []
 shark_counts = []
 saved_seeds = []
-for j in range(10):
+for j in range(15):
     sp.shark_count = j+1
-    n = 10  # Antal observationer
+    n = 100  # Antal observationer
     simulation_iterations = sp.simulation_iterations # Hämta antalet iterationer i simulationen
     fish_eaten_all_sim = []
+    print(j)
     for i in range(n):
-        print(i)
         sp.seed = i+j # Välj seed
         sp.main()   # Startar simulationen
         x = np.load('fish_eaten_this_sim.npy')
@@ -32,15 +32,16 @@ for j in range(10):
     #[bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
     #[cap.set_alpha(0.3) for cap in caps]
 
-    mean_fish_eaten_per_shark_count.append(fish_eaten_mean[-1])
-    std_fish_eaten_per_shark_count.append(fish_eaten_std[-1])
+    mean_fish_eaten.append(fish_eaten_mean[-1])
+    std_fish_eaten.append(fish_eaten_std[-1])
     shark_counts.append(sp.shark_count)
 
+data = np.array([mean_fish_eaten, std_fish_eaten, shark_counts])
+np.save('data.npy', data)
 fig, ax = plt.subplots()
-markers, caps, bars = ax.errorbar(shark_counts, mean_fish_eaten_per_shark_count, yerr=std_fish_eaten_per_shark_count, fmt='b-')
+markers, caps, bars = ax.errorbar(shark_counts, mean_fish_eaten, yerr=std_fish_eaten, fmt='b-')
 [bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
 [cap.set_alpha(0.3) for cap in caps]
 #ax.bar(shark_counts, mean_fish_eaten_per_shark_count)
 print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
-print(saved_seeds)
 plt.show()

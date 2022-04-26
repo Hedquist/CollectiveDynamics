@@ -286,7 +286,7 @@ def main():
             # Bestämmer radie för undvikande av hajar. Maxvärde bestäms i början
             shark_avoidance_radius[i] = np.min([shark_interaction_radius * shark_relative_avoidance_radius,
                                                 calculate_distance(np.array([shark_coords[i]]),
-                                                                   fish_coords[closest_fish[i]])[0]]) # Kanske vill ändra denna
+                                                                   fish_coords[closest_fish[i]])[0]*shark_relative_avoidance_radius]) # Kanske vill ändra denna
             shark_avoid_shark = shark_shark_distances[i] < shark_avoidance_radius[i]    # Hajar inom haj i:s avoidance radius
             shark_avoid_shark[i] = False # Undvik inte dig själv
             if any(shark_avoid_shark):  # Om nära en annan haj
@@ -338,10 +338,10 @@ def main():
             tk.title('Iteration =' + str(t))
             tk.update()  # Update animation frame
             time.sleep(wait_time)  # Wait between loops
-    plt.plot(np.linspace(1,simulation_iterations,simulation_iterations), fish_eaten_this_sim)  # Plotta
-    plt.xlabel('Tid')
+    #plt.plot(np.linspace(1,simulation_iterations,simulation_iterations), fish_eaten_this_sim)  # Plotta
+    #plt.xlabel('Tid')
     #plt.ylabel('% av fiskar ätna')
-    print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
+    #print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
     #plt.show()
 
     np.save('fish_eaten_this_sim.npy', fish_eaten_this_sim)
