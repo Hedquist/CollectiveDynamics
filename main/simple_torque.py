@@ -146,9 +146,9 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
 
         # turn speed of 1 means you can turn pi radians per tick,
         calc = current_orientation - (np.pi * turn_speed) * np.sign(relative_orientation)
-        if calc > 2 * np.pi:
+        if calc > np.pi:
             calc -= 2 * np.pi
-        elif calc < 0:
+        elif calc < -np.pi:
             calc += 2 * np.pi
         return calc
 
