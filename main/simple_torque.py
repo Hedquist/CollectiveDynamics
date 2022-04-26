@@ -156,6 +156,7 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
     def update_orientation(current_orientations, desired_orientations, turn_speed):
         for n in range(len(current_orientations)):
             current_orientations[n] = torque_turn(desired_orientations[n], current_orientations[n], turn_speed)
+            + fish_noise * rng.uniform(-1 / 2, 1 / 2)
         return current_orientations
 
     def calculate_cluster_coeff(coords, interaction_radius, count):  # Beräknar Cluster Coefficient
@@ -288,8 +289,7 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
                 fish_desired_orientations[j] = get_direction(shark_coords[0], fish_coords[j])
             else:  # Annars Vicsek-modellen
                 fish_desired_orientations[j] = np.angle(
-                    np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j))) + fish_noise * rng.uniform(
-                    -1 / 2, 1 / 2)
+                    np.sum(np.exp(fish_orientations[fish_in_interaction_radius] * 1j)))
 
             if shark_fish_distances[closest_fish] <= shark_interaction_radius:
                 #   Shark direction härifrån (change 0 to variable when implementing more sharks!)
