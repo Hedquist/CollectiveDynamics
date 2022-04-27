@@ -286,7 +286,7 @@ def main():
             # Bestämmer radie för undvikande av hajar. Maxvärde bestäms i början
             shark_avoidance_radius[i] = np.min([shark_interaction_radius * shark_relative_avoidance_radius,
                                                 calculate_distance(np.array([shark_coords[i]]),
-                                                                   fish_coords[closest_fish[i]])[0]]) # Kanske vill ändra denna
+                                                                   fish_coords[closest_fish[i]])[0]*shark_relative_avoidance_radius]) # Kanske vill ändra denna
             shark_avoid_shark = shark_shark_distances[i] < shark_avoidance_radius[i]    # Hajar inom haj i:s avoidance radius
             shark_avoid_shark[i] = False # Undvik inte dig själv
             if any(shark_avoid_shark):  # Om nära en annan haj
@@ -311,7 +311,6 @@ def main():
         # Haj äter fisk
         if len(fish_coords) > 1:  # <- den if-satsen är för att stoppa crash vid få fiskar
             for j in range(shark_count):
-                #print(len(fish_coords))
                 # Räkna om vilken fisk som är närmst efter att fiskar ätits
                 shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
                 closest_fish = np.zeros(shark_count, dtype=int)
