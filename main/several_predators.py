@@ -311,11 +311,13 @@ def main():
         # Haj äter fisk
         if len(fish_coords) > 1:  # <- den if-satsen är för att stoppa crash vid få fiskar
             for j in range(shark_count):
+                #print(len(fish_coords))
                 # Räkna om vilken fisk som är närmst efter att fiskar ätits
                 shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
                 closest_fish = np.zeros(shark_count, dtype=int)
                 shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
                     j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+
                 closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
                 shark_closest_fish_distances[j] = \
                     calculate_distance(np.array([shark_coords[j]]), fish_coords[closest_fish[j]])[
@@ -327,8 +329,7 @@ def main():
                     fish_coords = murder_fish_coords(closest_fish[j], fish_coords)  # Tar bort index i koordinaterna
                     fish_orientations = murder_fish_orientations(closest_fish[j], fish_orientations)  # Tar bort index i orientations
                     fish_eaten_count += 1 / fish_count * 100  # Lägg till en äten fisk
-        else:
-            break
+
         fish_eaten_this_sim.append(np.array(fish_eaten_count))
         # Skriver Global Alignment och Cluster Coefficient längst upp till vänster i rutan
         # canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
@@ -338,6 +339,8 @@ def main():
             tk.title('Iteration =' + str(t))
             tk.update()  # Update animation frame
             time.sleep(wait_time)  # Wait between loops
+    print("Fish eaten this sim: ",fish_eaten_count)
+
     plt.plot(np.linspace(1,simulation_iterations,simulation_iterations), fish_eaten_this_sim)  # Plotta
     plt.xlabel('Tid')
     #plt.ylabel('% av fiskar ätna')
