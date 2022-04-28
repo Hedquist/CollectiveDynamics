@@ -179,30 +179,30 @@ def main():
         closest_fish = np.zeros(shark_count, dtype=int)  # Initiera array med alla hajars target fish
 
         shark_shark_distances = np.zeros((shark_count, shark_count))  # Initiera matris för haj till haj avstånd
+        if len(fish_coords) > 0:  # <- den if-satsen är för att stoppa crash vid få fiskar
+            for j in range(shark_count):
+                shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
+                    j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
+                closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
 
-        for j in range(shark_count):
-            shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
-                j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
-            closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
+                # # Overlapp sharks
+                shark_shark_distances[j] = calculate_distance(shark_coords, shark_coords[j])
 
-            # # Overlapp sharks
-            shark_shark_distances[j] = calculate_distance(shark_coords, shark_coords[j])
-
-            angle = np.arctan2(shark_coords[:, 1] - shark_coords[j, 1],
-                               shark_coords[:, 0] - shark_coords[j, 0])  # Directions of others array from the particle
-            overlap = shark_shark_distances[j] < (2 * shark_graphic_radius)  # Applying
-            overlap[j] = False  # area extraction
-            for ind in np.where(overlap)[0]:
-                shark_coords[j, 0] = shark_coords[j, 0] + (
-                            shark_shark_distances[j][ind] - 2 * shark_graphic_radius) * np.cos(
-                    angle[ind]) / 2
-                shark_coords[j, 1] = shark_coords[j, 1] + (
-                            shark_shark_distances[j][ind] - 2 * shark_graphic_radius) * np.sin(
-                    angle[ind]) / 2
-                shark_coords[ind] = shark_coords[ind] - (shark_shark_distances[j][ind] - 2 * shark_graphic_radius) * np.cos(
-                    angle[ind]) / 2
-                shark_coords[ind] = shark_coords[ind] - (shark_shark_distances[j][ind] - 2 * shark_graphic_radius) * np.sin(
-                    angle[ind]) / 2
+                angle = np.arctan2(shark_coords[:, 1] - shark_coords[j, 1],
+                                   shark_coords[:, 0] - shark_coords[j, 0])  # Directions of others array from the particle
+                overlap = shark_shark_distances[j] < (2 * shark_graphic_radius)  # Applying
+                overlap[j] = False  # area extraction
+                for ind in np.where(overlap)[0]:
+                    shark_coords[j, 0] = shark_coords[j, 0] + (
+                                shark_shark_distances[j][ind] - 2 * shark_graphic_radius) * np.cos(
+                        angle[ind]) / 2
+                    shark_coords[j, 1] = shark_coords[j, 1] + (
+                                shark_shark_distances[j][ind] - 2 * shark_graphic_radius) * np.sin(
+                        angle[ind]) / 2
+                    shark_coords[ind] = shark_coords[ind] - (shark_shark_distances[j][ind] - 2 * shark_graphic_radius) * np.cos(
+                        angle[ind]) / 2
+                    shark_coords[ind] = shark_coords[ind] - (shark_shark_distances[j][ind] - 2 * shark_graphic_radius) * np.sin(
+                        angle[ind]) / 2
 
         shark_see_shark = shark_shark_distances < shark_interaction_radius  # Bool-matris med hajar som ser hajar
         shark_see_fish = shark_fish_distances < shark_interaction_radius  # Bool-matris fiskar som varje haj ser
@@ -282,41 +282,45 @@ def main():
                         fish_orientations_old[fish_in_interaction_radius] * 1j))) + fish_noise * np.random.uniform(
                     -1 / 2, 1 / 2)
         #   Shark direction härifrån
-        for i in range(shark_count):
-            # Bestämmer radie för undvikande av hajar. Maxvärde bestäms i början
-            shark_avoidance_radius[i] = np.min([shark_interaction_radius * shark_relative_avoidance_radius,
-                                                calculate_distance(np.array([shark_coords[i]]),
-                                                                   fish_coords[closest_fish[i]])[0]*shark_relative_avoidance_radius]) # Kanske vill ändra denna
-            shark_avoid_shark = shark_shark_distances[i] < shark_avoidance_radius[i]    # Hajar inom haj i:s avoidance radius
-            shark_avoid_shark[i] = False # Undvik inte dig själv
-            if any(shark_avoid_shark):  # Om nära en annan haj
-                avoidance = 0
-                for j in range(shark_count): # Undvik de hajar du är nära. Medelrikning från de hajarna
-                    avoidance = avoidance + shark_avoid_shark[j] * np.exp(get_direction(shark_coords[j], shark_coords[i]) * 1j)
-                    shark_orientations[i] = np.angle(avoidance)
-            elif closest_fish[i] > -1:  # Det finns en fisk att jaga och inga hajar att undvika
-                predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
-                                                        shark_fish_distances[i, closest_fish[i]])
-                shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
-            else:  # Annars Viscek med andra hajar
-                shark_orientations[i] = np.angle(
-                    np.sum(np.exp(
-                        shark_orientations_old[shark_see_shark[i]] * 1j))) + fish_noise * np.random.uniform(
-                    -1 / 2, 1 / 2)
+        if len(fish_coords) > 0:  # <- den if-satsen är för att stoppa crash vid få fiskar
+            for i in range(shark_count):
+                # Bestämmer radie för undvikande av hajar. Maxvärde bestäms i början
+                shark_avoidance_radius[i] = np.min([shark_interaction_radius * shark_relative_avoidance_radius,
+                                                    calculate_distance(np.array([shark_coords[i]]),
+                                                                       fish_coords[closest_fish[i]])[0]*shark_relative_avoidance_radius]) # Kanske vill ändra denna
+                shark_avoid_shark = shark_shark_distances[i] < shark_avoidance_radius[i]    # Hajar inom haj i:s avoidance radius
+                shark_avoid_shark[i] = False # Undvik inte dig själv
+                if any(shark_avoid_shark):  # Om nära en annan haj
+                    avoidance = 0
+                    for j in range(shark_count): # Undvik de hajar du är nära. Medelrikning från de hajarna
+                        avoidance = avoidance + shark_avoid_shark[j] * np.exp(get_direction(shark_coords[j], shark_coords[i]) * 1j)
+                        shark_orientations[i] = np.angle(avoidance)
+                elif closest_fish[i] > -1:  # Det finns en fisk att jaga och inga hajar att undvika
+                    predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
+                                                            shark_fish_distances[i, closest_fish[i]])
+                    shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
+                else:  # Annars Viscek med andra hajar
+                    shark_orientations[i] = np.angle(
+                        np.sum(np.exp(
+                            shark_orientations_old[shark_see_shark[i]] * 1j))) + fish_noise * np.random.uniform(
+                        -1 / 2, 1 / 2)
         fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
         shark_coords = update_position(shark_coords, shark_speed, shark_orientations,
                                        time_step)  # Uppdatera hajposition
         # Kollar om närmaste fisk är inom murder radien
         shark_closest_fish_distances = np.zeros(shark_count)  # Avstånd från varje haj till dess närmsta fisk
         # Haj äter fisk
-        if len(fish_coords) > 1:  # <- den if-satsen är för att stoppa crash vid få fiskar
-            for j in range(shark_count):
+
+        for j in range(shark_count):
+            if len(fish_coords) > 0:  # <- den if-satsen är för att stoppa crash vid få fiskar
                 # Räkna om vilken fisk som är närmst efter att fiskar ätits
                 shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
                 closest_fish = np.zeros(shark_count, dtype=int)
                 shark_fish_distances[j] = calculate_distance(fish_coords, shark_coords[
                     j])  # Räknar ut det kortaste avståndet mellan haj och varje fisk
-
+                #if len(fish_coords) < 10:
+                #    print("Current shark: ", j)
+                #    print("shark_fish_distance[j]: ", shark_fish_distances[j])
                 closest_fish[j] = np.argmin(shark_fish_distances[j, :])  # Index av fisk närmst haj
                 shark_closest_fish_distances[j] = \
                     calculate_distance(np.array([shark_coords[j]]), fish_coords[closest_fish[j]])[
