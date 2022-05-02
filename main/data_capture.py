@@ -3,7 +3,7 @@ import numpy as np
 import time
 import simple_torque as st
 
-num_times_run = 10
+num_times_run = 100
 seed = [n for n in range(num_times_run)]
 
 
@@ -20,7 +20,10 @@ print(fish_turns, 'fish turn speed')
 print(shark_turns, 'shark turn speed')
 
 
-fish_eaten_matrix = np.zeros((len(fish_turns), len(shark_turns)))
+#fish_eaten_matrix = np.zeros((len(fish_turns), len(shark_turns)))
+fish_eaten_matrix = np.load('fish_eaten_matrix.npy')
+#standard_dev = np.zeros((len(fish_turns), len(shark_turns)))
+standard_dev = np.load('standard_dev.npy')
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
@@ -30,16 +33,17 @@ if new_simulation:
     for fts in fish_turns:
         j = 0
         for sts in shark_turns:
-            res = 0.0
+            data = np.zeros(num_times_run)
             for k in range(num_times_run):
-                temp = st.main(fts, sts, False, seed[k])
-                print('FTS:', fts, ' STS:', sts, ' Fiskar ätna:', temp)
-                res += temp  # Anropa simulationen med olika turning speed
-            res /= num_times_run
-            fish_eaten_matrix[i, j] = res  # Medelvärde av antal ätna fiskar
-            print(fish_eaten_matrix)
+                data[k] = st.main(fts, sts, False, seed[k]) # Anropa simulationen med olika turning speed
+                print('FTS:', fts, ' STS:', sts, ' Fiskar ätna:', data[k])
+                #print(fish_eaten_matrix)
+            fish_eaten_matrix[i, j] = np.mean(data)  # Medelvärde av antal ätna fiskar
+            standard_dev[i, j] = np.std(data)
+            #print(fish_eaten_matrix)
             j = j + 1
             np.save('fish_eaten_matrix.npy', fish_eaten_matrix)
+            np.save('standard_dev.npy', standard_dev)
             # Print how far through the simulation we are currently
             print('Progress =', round((i / len(fish_turns) * 100) + ((j / len(shark_turns) * 100) / len(fish_turns)), 2), '%')
         i = i + 1
@@ -47,21 +51,25 @@ if new_simulation:
         duration = divmod(time.time() - start, 60)
         print('Time passed:', int(duration[0]), 'm,', round(duration[1], 1), 's')
         np.save('fish_eaten_matrix.npy', fish_eaten_matrix)
+        np.save('standard_dev.npy', standard_dev)
 
     np.save('fish_eaten_matrix.npy', fish_eaten_matrix)
+    np.save('standard_dev.npy', standard_dev)
     # Print total time taken
     duration = divmod(time.time() - start, 60)
     print('Total time:', int(duration[0]), 'm,', round(duration[1], 1), 's')
 else:
     fish_eaten_matrix = np.load('fish_eaten_matrix.npy')
+    standard_dev = np.load('standard_dev.npy')
 
 fish_eaten_matrix = np.rot90(fish_eaten_matrix, 1)
 print(fish_eaten_matrix, 'final fish eaten matrix')
-heatmap = plt.imshow(fish_eaten_matrix, interpolation='spline16', origin='lower')
-plt.xlabel('Fish turn speed')
-plt.ylabel('Shark turn speed')
+fish_eaten_matrix = fish_eaten_matrix/200*100
+heatmap = plt.imshow(fish_eaten_matrix, interpolation='none', origin='lower', extent=[0, 0.08, 0, 0.08])
+plt.xlabel('Byte turn speed')
+plt.ylabel('Rovdjur turn speed')
 cbar = plt.colorbar(heatmap)
-cbar.set_label('Average fish eaten', rotation=270, labelpad=15)
+cbar.set_label('Andel uppätna  byten i %', rotation=270, labelpad=15)
 plt.show()
 
 fish_turns = np.linspace(start_fish_turn - 1, end_fish_turn, 5)  # Ger start till end
