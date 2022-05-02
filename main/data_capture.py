@@ -8,13 +8,13 @@ seed = [n for n in range(num_times_run)]
 
 
 start_fish_turn = 0.01
-end_fish_turn = 0.08
+end_fish_turn = 0.1
 start_shark_turn = 0.01
-end_shark_turn = 0.04
+end_shark_turn = 0.05
 
 start = time.time()
-fish_turns = np.linspace(start_fish_turn, end_fish_turn, 8)  # Ger start till end
-shark_turns = np.linspace(start_shark_turn, end_shark_turn, 4)  # Ger start till end
+fish_turns = np.linspace(start_fish_turn, end_fish_turn, 10)  # Ger start till end
+shark_turns = np.linspace(start_shark_turn, end_shark_turn, 5)  # Ger start till end
 num_of_points = len(fish_turns)
 print(fish_turns, 'fish turn speed')
 print(shark_turns, 'shark turn speed')
