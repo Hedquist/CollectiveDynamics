@@ -10,10 +10,10 @@ mean_fish_eaten = []
 std_fish_eaten = []
 shark_counts = []
 saved_seeds = []
-for j in range(16, 33):
-    sp.shark_count = j
-    print("Antal hajar: ", j)
-    n = 100  # Antal observationer
+for j in range(1):
+    sp.shark_count = j+1
+    print("Antal hajar: ", sp.shark_count)
+    n = 1  # Antal observationer
     simulation_iterations = sp.simulation_iterations # Hämta antalet iterationer i simulationen
     fish_eaten_all_sim = []
     for i in range(n):

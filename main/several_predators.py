@@ -79,7 +79,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 def main():
     np.random.seed(seed)    # Använd seedet
     start = timer()  # Timer startas
-    visuals_on = False  # Välj om simulationen ska visas eller ej.
+    visuals_on = True  # Välj om simulationen ska visas eller ej.
     if visuals_on:
         res = 500  # Resolution of the animation
         tk = Tk()
@@ -131,6 +131,9 @@ def main():
     shark_orientations = np.random.rand(shark_count) * 2 * np.pi  # Array med alla hajars riktning
     fish_canvas_graphics = []  # De synliga cirklarna som är fiskar sparas här
     shark_canvas_graphics = []  # De synliga cirklarna som är hajar sparas här
+    fish_direction_arrow_graphics = [] # Pilar för fiskar
+    shark_direction_arrow_graphics = [] # Pilar för hajar
+    arrow_length = 3  # Pillängd
 
     # Se till att hajar inte spawnat på fisk
     shark_fish_distances = np.zeros((shark_count, len(fish_coords)))
@@ -158,6 +161,20 @@ def main():
                                    (shark_coords[j, 0] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
                                    (shark_coords[j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
                                    outline=ccolor[1], fill=ccolor[1]))
+            shark_direction_arrow_graphics.append(canvas.create_line((shark_coords[j, 0] + shark_graphic_radius * np.cos(
+                shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                                                                     (shark_coords[j, 1] + shark_graphic_radius * np.sin(
+                                                                         shark_orientations[
+                                                                             j]) + canvas_length) * res / canvas_length / 2,
+                                                                     (shark_coords[j, 0] + (
+                                                                             shark_graphic_radius + arrow_length) * np.cos(
+                                                                         shark_orientations[
+                                                                             j]) + canvas_length) * res / canvas_length / 2,
+                                                                     (shark_coords[j, 1] + (
+                                                                             shark_graphic_radius + arrow_length) * np.sin(
+                                                                         shark_orientations[
+                                                                             j]) + canvas_length) * res / canvas_length / 2,
+                                                                     arrow=LAST))
         for j in range(fish_count):  # Skapar cirklar för fiskar
             fish_canvas_graphics.append(
                 canvas.create_oval((fish_coords[j, 0] - fish_graphic_radius + canvas_length) * res / canvas_length / 2,
@@ -165,6 +182,20 @@ def main():
                                    (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                                    (fish_coords[j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                                    outline=ccolor[0], fill=ccolor[0]))
+            fish_direction_arrow_graphics.append(canvas.create_line((fish_coords[j][0] + fish_graphic_radius * np.cos(
+                fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                                                                    (fish_coords[j, 1] + fish_graphic_radius * np.sin(
+                                                                        fish_orientations[
+                                                                            j]) + canvas_length) * res / canvas_length / 2,
+                                                                    (fish_coords[j, 0] + (
+                                                                            fish_graphic_radius + arrow_length) * np.cos(
+                                                                        fish_orientations[
+                                                                            j]) + canvas_length) * res / canvas_length / 2,
+                                                                    (fish_coords[j, 1] + (
+                                                                            fish_graphic_radius + arrow_length) * np.sin(
+                                                                        fish_orientations[
+                                                                            j]) + canvas_length) * res / canvas_length / 2,
+                                                                    arrow=LAST))
 
         # Skapar ett canvas textobjekt för antalet fiskar
         fish_count_canvas_text = canvas.create_text(100, 20,
@@ -236,6 +267,15 @@ def main():
                               (shark_coords[j, 0] + shark_graphic_radius + canvas_length) * res / canvas_length / 2,
                               (shark_coords[
                                    j, 1] + shark_graphic_radius + canvas_length) * res / canvas_length / 2, )
+                canvas.coords(shark_direction_arrow_graphics[j],
+                              (shark_coords[j, 0] + shark_graphic_radius * np.cos(
+                                  shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[j, 1] + shark_graphic_radius * np.sin(
+                                  shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[j, 0] + (shark_graphic_radius + arrow_length) * np.cos(
+                                  shark_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                              (shark_coords[j, 1] + (shark_graphic_radius + arrow_length) * np.sin(
+                                  shark_orientations[j]) + canvas_length) * res / canvas_length / 2)
         for j in range(len(fish_coords)):
             # # Overlapp fishes
             fish_distances = calculate_distance(fish_coords, fish_coords[j])
@@ -261,6 +301,15 @@ def main():
                               (fish_coords[j, 0] + fish_graphic_radius + canvas_length) * res / canvas_length / 2,
                               (fish_coords[
                                    j, 1] + fish_graphic_radius + canvas_length) * res / canvas_length / 2, )
+                canvas.coords(fish_direction_arrow_graphics[j],
+                              (fish_coords[j, 0] + fish_graphic_radius * np.cos(
+                                  fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j, 1] + fish_graphic_radius * np.sin(
+                                  fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j, 0] + (fish_graphic_radius + arrow_length) * np.cos(
+                                  fish_orientations[j]) + canvas_length) * res / canvas_length / 2,
+                              (fish_coords[j, 1] + (fish_graphic_radius + arrow_length) * np.sin(
+                                  fish_orientations[j]) + canvas_length) * res / canvas_length / 2)
                 if j in closest_fish:
                     canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
                 else:
@@ -329,6 +378,7 @@ def main():
                     last_index = len(fish_coords) - 1  # Sista index som kommer försvinna efter den mördade fisken tas bort
                     if visuals_on:
                         canvas.delete(fish_canvas_graphics[last_index])  # Ta bort sista fisk-cirkeln i array
+                        canvas.delete(fish_direction_arrow_graphics[last_index])  # Tar bort fiskens pil
                     fish_coords = murder_fish_coords(closest_fish[j], fish_coords)  # Tar bort index i koordinaterna
                     fish_orientations = murder_fish_orientations(closest_fish[j], fish_orientations)  # Tar bort index i orientations
                     fish_eaten_count += 1 / fish_count * 100  # Lägg till en äten fisk
