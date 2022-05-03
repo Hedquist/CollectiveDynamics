@@ -11,14 +11,14 @@ std_fish_eaten = []
 shark_counts = []
 saved_seeds = []
 for j in range(1):
-    sp.shark_count = j+1
+    sp.shark_count = 20
     print("Antal hajar: ", sp.shark_count)
     n = 1  # Antal observationer
     simulation_iterations = sp.simulation_iterations # Hämta antalet iterationer i simulationen
     fish_eaten_all_sim = []
     for i in range(n):
         print(i)
-        sp.seed = i+j # Välj seed
+        sp.seed = i+j+3 # Välj seed
         #sp.seed = 76 + 28  # Välj seed
         sp.main()   # Startar simulationen
         x = np.load('fish_eaten_this_sim.npy')

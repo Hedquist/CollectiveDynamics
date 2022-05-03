@@ -103,7 +103,7 @@ def main():
     shark_graphic_radius = 3  # Radie av ritad cirkel för hajar
     shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
     shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction  # Hajens interaktions radie
-    shark_relative_avoidance_radius = 0.8 # Andel av interaktionsradie som avoidance radie ska vara
+    shark_relative_avoidance_radius = 0.8*0 # Andel av interaktionsradie som avoidance radie ska vara
     shark_avoidance_radius = np.zeros(shark_count)  # Undviker andra hajar inom denna radie
     murder_radius = 6  # Hajen äter fiskar inom denna radie
     fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
@@ -198,8 +198,7 @@ def main():
                                                                     arrow=LAST))
 
         # Skapar ett canvas textobjekt för antalet fiskar
-        fish_count_canvas_text = canvas.create_text(100, 20,
-                                                    text=len(fish_coords))
+        #fish_count_canvas_text = canvas.create_text(100, 20,text=len(fish_coords))
     # Loop för allt som ska ske varje tidssteg i simulationen
     for t in range(simulation_iterations):
 
@@ -311,7 +310,7 @@ def main():
                               (fish_coords[j, 1] + (fish_graphic_radius + arrow_length) * np.sin(
                                   fish_orientations[j]) + canvas_length) * res / canvas_length / 2)
                 if j in closest_fish:
-                    canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
+                    canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])  # Byt färg på fisk närmst haj
                 else:
                     canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
             inter_fish_distances = calculate_distance(fish_coords, fish_coords[
@@ -388,7 +387,7 @@ def main():
         # canvas.itemconfig(global_alignment_canvas_text, text='Global Alignment: {:.3f}'.format(global_alignment_coeff))
         # canvas.itemconfig(clustering_coeff_canvas_text, text='Global Clustering: {:.3f}'.format(clustering_coeff))
         if visuals_on:
-            canvas.itemconfig(fish_count_canvas_text, text='Antal Fiskar: {:.3f}'.format(len(fish_coords)))
+            #canvas.itemconfig(fish_count_canvas_text, text='Antal Fiskar: {:.3f}'.format(len(fish_coords)))
             tk.title('Iteration =' + str(t))
             tk.update()  # Update animation frame
             time.sleep(wait_time)  # Wait between loops
