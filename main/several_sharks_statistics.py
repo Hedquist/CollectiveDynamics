@@ -18,7 +18,7 @@ for j in range(1):
     fish_eaten_all_sim = []
     for i in range(n):
         print(i)
-        sp.seed = i+j+3 # Välj seed
+        sp.seed = i+j+8 # Välj seed
         #sp.seed = 76 + 28  # Välj seed
         sp.main()   # Startar simulationen
         x = np.load('fish_eaten_this_sim.npy')

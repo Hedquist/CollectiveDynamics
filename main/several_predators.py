@@ -9,7 +9,7 @@ from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
 canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
-simulation_iterations = 1000  # Antalet iterationer simulationen kör
+simulation_iterations = 2000  # Antalet iterationer simulationen kör
 time_step = 1  # Storlek tidssteg
 
 fish_speed = 2  # Hastighet fiskar
@@ -88,7 +88,7 @@ def main():
         canvas = Canvas(tk, bd=2, bg='white')  # Generate animation window
         tk.attributes('-topmost', 0)
         canvas.place(x=res / 20, y=res / 20, height=res, width=res)
-        ccolor = ['#2E86C1', '#f0650c', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
+        ccolor = ['#2E86C1', '#f0650c', '#9E00C9', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
     # Variabler
     wait_time = 0.01  # Väntetiden mellan varje iteration
 
@@ -103,7 +103,7 @@ def main():
     shark_graphic_radius = 3  # Radie av ritad cirkel för hajar
     shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
     shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction  # Hajens interaktions radie
-    shark_relative_avoidance_radius = 0.8*0 # Andel av interaktionsradie som avoidance radie ska vara
+    shark_relative_avoidance_radius = 0.8 # Andel av interaktionsradie som avoidance radie ska vara
     shark_avoidance_radius = np.zeros(shark_count)  # Undviker andra hajar inom denna radie
     murder_radius = 6  # Hajen äter fiskar inom denna radie
     fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
@@ -310,7 +310,7 @@ def main():
                               (fish_coords[j, 1] + (fish_graphic_radius + arrow_length) * np.sin(
                                   fish_orientations[j]) + canvas_length) * res / canvas_length / 2)
                 if j in closest_fish:
-                    canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])  # Byt färg på fisk närmst haj
+                    canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[2])  # Byt färg på fisk närmst haj
                 else:
                     canvas.itemconfig(fish_canvas_graphics[j], fill=ccolor[0])
             inter_fish_distances = calculate_distance(fish_coords, fish_coords[
