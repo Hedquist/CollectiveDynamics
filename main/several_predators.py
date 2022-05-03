@@ -9,7 +9,7 @@ from shapely.geometry import Polygon
 from timeit import default_timer as timer
 
 canvas_length = 200  # Storlek på ruta, från mitten till kant. En sida är alltså 2*l
-simulation_iterations = 2000  # Antalet iterationer simulationen kör
+simulation_iterations = 1000  # Antalet iterationer simulationen kör
 time_step = 1  # Storlek tidssteg
 
 fish_speed = 2  # Hastighet fiskar
