@@ -88,7 +88,7 @@ def main():
         canvas = Canvas(tk, bd=2, bg='white')  # Generate animation window
         tk.attributes('-topmost', 0)
         canvas.place(x=res / 20, y=res / 20, height=res, width=res)
-        ccolor = ['#1E1BB1', '#F0092C', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
+        ccolor = ['#2E86C1', '#f0650c', '#F5F805', '#D80000', '#E87B00', '#9F68D3', '#4B934F', '#FFFFFF']
     # Variabler
     wait_time = 0.01  # Väntetiden mellan varje iteration
 

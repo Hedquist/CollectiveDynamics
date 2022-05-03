@@ -10,7 +10,7 @@ mean_fish_eaten = []
 std_fish_eaten = []
 shark_counts = []
 saved_seeds = []
-for j in range(28, 33):
+for j in range(16, 33):
     sp.shark_count = j
     print("Antal hajar: ", j)
     n = 100  # Antal observationer
@@ -45,9 +45,9 @@ markers, caps, bars = ax.errorbar(shark_counts, mean_fish_eaten, yerr=std_fish_e
 [bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
 [cap.set_alpha(0.3) for cap in caps]
 
-np.save('mean_fish_eaten_per_shark_count_16_to_32.npy', mean_fish_eaten_per_shark_count)
-np.save('std_fish_eaten_per_shark_count_16_to_32.npy', std_fish_eaten_per_shark_count)
-np.save('shark_counts_this_16_to_32.npy', shark_counts)
+np.save('mean_fish_eaten_16_to_32.npy', mean_fish_eaten)
+np.save('std_fish_eaten_16_to_32.npy', std_fish_eaten)
+np.save('shark_counts_this_sim_16_to_32.npy', shark_counts)
 #ax.bar(shark_counts, mean_fish_eaten_per_shark_count)
 print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
 plt.show()
