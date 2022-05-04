@@ -79,7 +79,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 def main():
     np.random.seed(seed)    # Använd seedet
     start = timer()  # Timer startas
-    visuals_on = True  # Välj om simulationen ska visas eller ej.
+    visuals_on = False  # Välj om simulationen ska visas eller ej.
     if visuals_on:
         res = 500  # Resolution of the animation
         tk = Tk()
