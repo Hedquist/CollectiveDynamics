@@ -79,7 +79,7 @@ def predict_position(fish_coord, fish_orientation, distance_to_fish): #
 def main():
     np.random.seed(seed)    # Använd seedet
     start = timer()  # Timer startas
-    visuals_on = False  # Välj om simulationen ska visas eller ej.
+    visuals_on = True  # Välj om simulationen ska visas eller ej.
     if visuals_on:
         res = 500  # Resolution of the animation
         tk = Tk()
@@ -245,7 +245,7 @@ def main():
             seen_fish_count = np.bincount(fish_index)  # Hur många hajar en fisk haj j ser är sedd av
             if len(seen_fish_count) > 0:  # Ser haj j någon fisk alls?
                 closest_fish[j] = closest_fish[j]
-                '''# Mest sedda fisk av haj js sedda fiskar
+                # Mest sedda fisk av haj js sedda fiskar
                 most_seen_fish = np.argwhere(seen_fish_count == np.amax(seen_fish_count))
                 if len(most_seen_fish) == 1:  # Mest sedda fisken är unik
                     closest_fish[j] = most_seen_fish[0]  # Jaga den
@@ -254,7 +254,7 @@ def main():
                     for ind in most_seen_fish:  # Går igenom alla fiskar i most seen fish och väljer den närmsta
                         if sum(seen_shark_seen_fish_distances[:, ind]) < min_dist:
                             min_dist = sum(seen_shark_seen_fish_distances[:, ind])
-                            closest_fish[j] = ind'''
+                            closest_fish[j] = ind
             else:  # Ser inga fiskar alls. Detta fångas upp när hajens riktning väljs
                 closest_fish[j] = -1
 

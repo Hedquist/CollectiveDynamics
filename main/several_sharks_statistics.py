@@ -13,7 +13,7 @@ saved_seeds = []
 for j in range(32):
     sp.shark_count = j+1
     print("Antal hajar: ", sp.shark_count)
-    n = 10  # Antal observationer
+    n = 1  # Antal observationer
     simulation_iterations = sp.simulation_iterations # Hämta antalet iterationer i simulationen
     fish_eaten_all_sim = []
     for i in range(n):
@@ -33,7 +33,8 @@ for j in range(32):
     #markers, caps, bars = ax.errorbar(np.linspace(1,simulation_iterations,simulation_iterations), fish_eaten_mean, yerr=fish_eaten_std, fmt='b-')
     #[bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
     #[cap.set_alpha(0.3) for cap in caps]
-
+    data_tid = np.array([fish_eaten_mean, fish_eaten_std, np.linspace(1,simulation_iterations,simulation_iterations)])
+    #np.save('slow_shark.npy', data_tid)
     mean_fish_eaten.append(fish_eaten_mean[-1])
     std_fish_eaten.append(fish_eaten_std[-1])
     shark_counts.append(sp.shark_count)
