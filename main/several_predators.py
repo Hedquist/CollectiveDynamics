@@ -103,7 +103,7 @@ def main():
     shark_graphic_radius = 3  # Radie av ritad cirkel för hajar
     shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
     shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction  # Hajens interaktions radie
-    shark_relative_avoidance_radius = 0.8 # Andel av interaktionsradie som avoidance radie ska vara
+    shark_relative_avoidance_radius = 0.8*0 # Andel av interaktionsradie som avoidance radie ska vara
     shark_avoidance_radius = np.zeros(shark_count)  # Undviker andra hajar inom denna radie
     murder_radius = 6  # Hajen äter fiskar inom denna radie
     fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
@@ -244,7 +244,8 @@ def main():
             fish_index = np.where(seen_shark_seen_fish_distances > 0)[1]  # Index av de fiskar som haj j ser
             seen_fish_count = np.bincount(fish_index)  # Hur många hajar en fisk haj j ser är sedd av
             if len(seen_fish_count) > 0:  # Ser haj j någon fisk alls?
-                # Mest sedda fisk av haj js sedda fiskar
+                closest_fish[j] = closest_fish[j]
+                '''# Mest sedda fisk av haj js sedda fiskar
                 most_seen_fish = np.argwhere(seen_fish_count == np.amax(seen_fish_count))
                 if len(most_seen_fish) == 1:  # Mest sedda fisken är unik
                     closest_fish[j] = most_seen_fish[0]  # Jaga den
@@ -253,7 +254,7 @@ def main():
                     for ind in most_seen_fish:  # Går igenom alla fiskar i most seen fish och väljer den närmsta
                         if sum(seen_shark_seen_fish_distances[:, ind]) < min_dist:
                             min_dist = sum(seen_shark_seen_fish_distances[:, ind])
-                            closest_fish[j] = ind
+                            closest_fish[j] = ind'''
             else:  # Ser inga fiskar alls. Detta fångas upp när hajens riktning väljs
                 closest_fish[j] = -1
 
@@ -345,12 +346,12 @@ def main():
                         shark_orientations[i] = np.angle(avoidance)
                 elif closest_fish[i] > -1:  # Det finns en fisk att jaga och inga hajar att undvika
                     predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
-                                                            shark_fish_distances[i, closest_fish[i]])
+                                                            shark_fish_distances[i, closest_fish[i]]*0)
                     shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
                 else:  # Annars Viscek med andra hajar
                     shark_orientations[i] = np.angle(
                         np.sum(np.exp(
-                            shark_orientations_old[shark_see_shark[i]] * 1j))) + fish_noise * np.random.uniform(
+                            shark_orientations_old[i] * 1j))) + fish_noise * np.random.uniform(
                         -1 / 2, 1 / 2)
         fish_coords = update_position(fish_coords, fish_speed, fish_orientations, time_step)  # Uppdatera fiskposition
         shark_coords = update_position(shark_coords, shark_speed, shark_orientations,
