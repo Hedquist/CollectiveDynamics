@@ -103,7 +103,7 @@ def main():
     shark_graphic_radius = 3  # Radie av ritad cirkel för hajar
     shark_fish_relative_interaction = 4.0  # Hur mycket längre hajen "ser" jämfört med fisken
     shark_interaction_radius = fish_interaction_radius * shark_fish_relative_interaction  # Hajens interaktions radie
-    shark_relative_avoidance_radius = 0.8*0 # Andel av interaktionsradie som avoidance radie ska vara
+    shark_relative_avoidance_radius = 0.8 # Andel av interaktionsradie som avoidance radie ska vara
     shark_avoidance_radius = np.zeros(shark_count)  # Undviker andra hajar inom denna radie
     murder_radius = 6  # Hajen äter fiskar inom denna radie
     fish_eaten = []  # Array med antal fiskar ätna som 0e element och när det blev äten som 1a element
@@ -346,7 +346,7 @@ def main():
                         shark_orientations[i] = np.angle(avoidance)
                 elif closest_fish[i] > -1:  # Det finns en fisk att jaga och inga hajar att undvika
                     predicted_fish_coord = predict_position(fish_coords[closest_fish[i]], fish_orientations[closest_fish[i]],
-                                                            shark_fish_distances[i, closest_fish[i]]*0)
+                                                            shark_fish_distances[i, closest_fish[i]])
                     shark_orientations[i] = get_direction(shark_coords[i], predicted_fish_coord)
                 else:  # Annars Viscek med andra hajar
                     shark_orientations[i] = np.angle(
