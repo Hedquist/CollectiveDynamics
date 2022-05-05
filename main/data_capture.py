@@ -22,12 +22,12 @@ print(shark_turns, 'shark turn speed')
 
 #fish_eaten_matrix = np.zeros((len(fish_turns), len(shark_turns)))
 fish_eaten_matrix = np.load('fish_eaten_matrix.npy')
-#standard_dev = np.zeros((len(fish_turns), len(shark_turns)))
-standard_dev = np.load('standard_dev.npy')
+standard_dev = np.zeros((len(fish_turns), len(shark_turns)))
+#standard_dev = np.load('standard_dev.npy')
 print(fish_eaten_matrix, 'initial fish eaten matrix eaten')
 
 i = 0
-new_simulation = False
+new_simulation = True
 if new_simulation:
     print('Simulation initiated')
     for fts in fish_turns:
@@ -40,7 +40,7 @@ if new_simulation:
                 #print(fish_eaten_matrix)
             fish_eaten_matrix[i, j] = np.mean(data)  # Medelvärde av antal ätna fiskar
             standard_dev[i, j] = np.std(data)
-            #print(fish_eaten_matrix)
+            print(fish_eaten_matrix)
             j = j + 1
             np.save('fish_eaten_matrix.npy', fish_eaten_matrix)
             np.save('standard_dev.npy', standard_dev)
@@ -64,6 +64,7 @@ else:
 
 fish_eaten_matrix = np.rot90(fish_eaten_matrix, 1)
 print(fish_eaten_matrix, 'final fish eaten matrix')
+print(standard_dev, 'final standard deviation')
 fish_eaten_matrix = fish_eaten_matrix/200*100
 heatmap = plt.imshow(fish_eaten_matrix, interpolation='none', origin='lower', extent=[0, 0.08, 0, 0.08])
 plt.xlabel('Byte turn speed')
