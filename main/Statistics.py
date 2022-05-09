@@ -1,41 +1,54 @@
 # Program som  beräknar medelvärden och std samt plottar en figur
+import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 import time
 from timeit import default_timer as timer
-import Obstacle_Avoidance as oa
+import simple_torque as st
+import data_capture as dc
 
-num_times_run = 1  # Antal observationer
+num_times_run = dc.num_times_run  # Antal observationer
 seed = [n for n in range(num_times_run)]
 
-simulation_iterations = oa.simulation_iterations
-t = np.linspace(0, simulation_iterations-1 , simulation_iterations)
-fish_eaten_all_sim = []
-new_simulation = True
+simulation_iterations = st.simulation_iterations
+num = dc.num_of_points
+t = np.linspace(1, num , num)*0.01
+# fish_eaten_all_sim = []
+# new_simulation = True
+#
+# if new_simulation:
+#     start = timer()
+#     for N in range(num_times_run):
+#         oa.main('circles', 8, 8, 16, True, seed[N])
+#         x = np.load('fish_eaten_this_sim.npy')
+#         fish_eaten_all_sim.append(x)
+#         print('Progress =', round(((N+1) / num_times_run * 100) , 2), '%')
+#     np.save('fish_eaten_all_sim.npy', fish_eaten_all_sim)
+#     print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
+# else:
+#     fish_eaten_all_sim.extend(np.load('fish_eaten_all_sim.npy'))
 
-if new_simulation:
-    start = timer()
-    for N in range(num_times_run):
-        oa.main('circles', 8, 8, 16, True, seed[N])
-        x = np.load('fish_eaten_this_sim.npy')
-        fish_eaten_all_sim.append(x)
-        print('Progress =', round(((N+1) / num_times_run * 100) , 2), '%')
-    np.save('fish_eaten_all_sim.npy', fish_eaten_all_sim)
-    print("Time:", timer() - start)  # Skriver hur lång tid simulationen tog
-else:
-    fish_eaten_all_sim.extend(np.load('fish_eaten_all_sim.npy'))
 
+# fish_eaten_mean = np.mean(np.array(fish_eaten_all_sim), axis=0)
+# fish_eaten_std = np.std(np.array(fish_eaten_all_sim), axis=0)  # Beräkna standardavvikelsen längs rader
+fish_eaten_mean = np.load('result_100_1.npy')
+fish_eaten_mean = fish_eaten_mean[0:2, :]/200*100
+fish_eaten_mean = np.flip(fish_eaten_mean)
+fish_eaten_std = np.load('result_std_100_1.npy')
+fish_eaten_std = fish_eaten_std[0:2, :]/200*100
+fish_eaten_std = np.flip(fish_eaten_std)
 
-fish_eaten_mean = np.mean(np.array(fish_eaten_all_sim), axis=0)
-fish_eaten_std = np.std(np.array(fish_eaten_all_sim), axis=0)  # Beräkna standardavvikelsen längs rader
-fig, ax = plt.subplots(num = 'Meand and std')
-markers, caps, bars = ax.errorbar(t, fish_eaten_mean, yerr=fish_eaten_std, fmt='b-')
-[bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
-[cap.set_alpha(0.3) for cap in caps]
-
-plt.figure('All sim graph')
-for i in range(np.shape(fish_eaten_all_sim)[0]):
-    plt.plot(t , np.array(fish_eaten_all_sim[i]))  # Plotta
-plt.xlabel('Tid')
-plt.ylabel('Antal fiskar ätna')
+# plt.figure('All sim graph')
+fig, ax = plt.subplots(1, 2, num='Medelvärden och standardavvikelser', figsize=(7.5, 6.5), sharex=True, sharey=True)
+ax[1].set_ylabel('.', color=(0, 0, 0, 0))
+fig.text(0.5, 0.04, 'Vinkelhastighet rovdjur [\u03C0 rad/tidssteg]', va='center', ha='center', fontsize=16)
+fig.text(0.03, 0.5, 'Andel fångade byten [%]', va='center', ha='center', rotation='vertical', fontsize=16)
+for i in range(2):
+    plt.axes(ax[i])
+    markers, caps, bars = ax[i].errorbar(t, fish_eaten_mean[1-i, :], yerr=fish_eaten_std[1-i, :], fmt='b-')
+    [bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
+    [cap.set_alpha(0.3) for cap in caps]
+    # plt.xlabel('Vinkelhastighet rovdjur [\u03C0 rad/tidssteg]', labelpad=1)
+    # plt.ylabel('Andel fångade byten [%]', labelpad=1)
+    plt.axis([0, 0.105, 3.5, 23])
 plt.show()
