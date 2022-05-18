@@ -39,16 +39,29 @@ fish_eaten_std = fish_eaten_std[0:2, :]/200*100
 fish_eaten_std = np.flip(fish_eaten_std)
 
 # plt.figure('All sim graph')
-fig, ax = plt.subplots(1, 2, num='Medelvärden och standardavvikelser', figsize=(7.5, 6.5), sharex=True, sharey=True)
-ax[1].set_ylabel('.', color=(0, 0, 0, 0))
-fig.text(0.5, 0.04, 'Vinkelhastighet rovdjur [\u03C0 rad/tidssteg]', va='center', ha='center', fontsize=16)
-fig.text(0.03, 0.5, 'Andel fångade byten [%]', va='center', ha='center', rotation='vertical', fontsize=16)
-for i in range(2):
-    plt.axes(ax[i])
-    markers, caps, bars = ax[i].errorbar(t, fish_eaten_mean[1-i, :], yerr=fish_eaten_std[1-i, :], fmt='b-')
-    [bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
-    [cap.set_alpha(0.3) for cap in caps]
-    # plt.xlabel('Vinkelhastighet rovdjur [\u03C0 rad/tidssteg]', labelpad=1)
-    # plt.ylabel('Andel fångade byten [%]', labelpad=1)
-    plt.axis([0, 0.105, 3.5, 23])
+# fig, ax = plt.subplots(1, 2, num='Medelvärden och standardavvikelser', figsize=(7.5, 6.5), sharex=True, sharey=True)
+# ax[1].set_ylabel('.', color=(0, 0, 0, 0))
+# fig.text(0.5, 0.04, 'Vinkelhastighet rovdjur [\u03C0 rad/tidssteg]', va='center', ha='center', fontsize=16)
+# fig.text(0.03, 0.5, 'Andel fångade byten [%]', va='center', ha='center', rotation='vertical', fontsize=16)
+
+# plt.axes(ax[i])
+plt.figure(0, figsize=(7.5, 6.5))
+markers, caps, bars = plt.errorbar(t, fish_eaten_mean[1, :], yerr=fish_eaten_std[1, :], fmt='b-')
+plt.tick_params(axis='both', labelsize=16, right=True, top=True)
+[bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
+[cap.set_alpha(0.3) for cap in caps]
+plt.xlabel('Vinkelhastighet rovdjur [\u03C0 rad/\u0394t]', labelpad=1, fontsize=16)
+plt.ylabel('Medelvärde av andel fångade bytesdjur [%]', labelpad=1, fontsize=16)
+plt.axis([0, 0.105, 3.5, 23])
+plt.show()
+
+# plt.axes(ax[i])
+plt.figure(1, figsize=(7.5, 6.5))
+plt.tick_params(axis='both', labelsize=16, right=True, top=True)
+markers, caps, bars = plt.errorbar(t, fish_eaten_mean[0, :], yerr=fish_eaten_std[0, :], fmt='b-')
+[bar.set_alpha(0.3) for bar in bars]  # Gör errorbars mer genomskinliga
+[cap.set_alpha(0.3) for cap in caps]
+plt.xlabel('Vinkelhastighet rovdjur [\u03C0 rad/\u0394t]', labelpad=1, fontsize=16)
+plt.ylabel('Medelvärde av andel fångade bytesdjur [%]', labelpad=1, fontsize=16)
+plt.axis([0, 0.105, 3.5, 23])
 plt.show()

@@ -303,7 +303,7 @@ def main(fish_turn_speed, shark_turn_speed, visuals_on, seed):
             # Beräknar clustering coefficent
             clustering_coeff = calculate_cluster_coeff(fish_coords, fish_interaction_radius, fish_count)
 
-    # Kollar om närmaste fisk är inom murder radien
+        # Kollar om närmaste fisk är inom murder radien
         if len(fish_coords) > 4:  # <- den if-satsen är för att stoppa crash vid få fiskar
             if calculate_distance(shark_coords, fish_coords[closest_fish])[
                 0] < murder_radius:

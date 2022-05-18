@@ -67,10 +67,11 @@ print(fish_eaten_matrix, 'final fish eaten matrix')
 fish_eaten_matrix = fish_eaten_matrix/200*100
 plt.figure(figsize=(7.5, 6.5))
 heatmap = plt.imshow(fish_eaten_matrix, interpolation='none', origin='lower', extent=[0.005, 0.105, 0.005, 0.105])
-plt.xlabel('Vinkelhastighet byte [\u03C0 rad/tidssteg]', fontsize=16)
-plt.ylabel('Vinkelhastighet rovdjur [\u03C0 rad/tidssteg]', fontsize=16)
+plt.xlabel('Vinkelhastighet byte [\u03C0 rad/\u0394t]', fontsize=16)
+plt.ylabel('Vinkelhastighet rovdjur [\u03C0 rad/\u0394t]', fontsize=16)
+plt.tick_params(axis='both', labelsize=16, right=True, top=True)
 cbar = plt.colorbar(heatmap)
-cbar.set_label('Andel fångade byten [%]', rotation=270, labelpad=15, fontsize=16)
+cbar.set_label('Medelvärde av andel fångade bytesdjur [%]', rotation=270, labelpad=15, fontsize=16)
 plt.show()
 
 fish_turns = np.linspace(start_fish_turn - 1, end_fish_turn, 5)  # Ger start till end
